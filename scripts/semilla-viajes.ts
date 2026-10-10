@@ -18,6 +18,7 @@ type Db = ReturnType<typeof drizzle<typeof schema>>;
 const token = () => randomBytes(32).toString("base64url");
 const hace = (horas: number) => new Date(Date.now() - horas * 3_600_000);
 
+// La misma clave usa Configuración › Datos y horario al borrarlos.
 export const CLAVE_BORRADOS = "viajes_ejemplo";
 
 export async function sembrarViajes(db: Db, duenoId: string, modo: { local: boolean }) {

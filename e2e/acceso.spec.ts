@@ -33,7 +33,7 @@ test("Dueño ve todo el panel", async ({ page }) => {
     await expect(nav.getByRole("link", { name: s, exact: true })).toBeVisible();
   await expect(nav.getByText("Dueño", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: /^Buen(os|as) (días|tardes|noches)$/ })).toBeVisible();
-  await expect(page.getByText("Todavía no hay viajes")).toBeVisible();
+  await expect(page.getByRole("row", { name: /Nataly Cervantes/ })).toBeVisible();
   await page.screenshot({ path: "test-results/panel-dueno.png", fullPage: true });
 });
 
@@ -76,11 +76,14 @@ test("Contador ve Finanzas y Proveedores, sin catálogos de cotizar", async ({ p
   await expect(nav.getByRole("link", { name: "Configuración" })).toHaveCount(0);
 });
 
-test("buscador sin resultados todavía", async ({ page }) => {
+test("el buscador encuentra viajes por folio y dice cuando no hay", async ({ page }) => {
   await entrarComo(page, CORREOS.asesora);
   await page.keyboard.press("Control+k");
   await page.keyboard.type("AIR-2458");
-  await expect(page.getByRole("status")).toContainText("Sin resultados para «AIR-2458»");
+  await expect(page.getByRole("list", { name: "Viajes encontrados" })).toContainText("Nataly Cervantes");
+  await page.keyboard.press("Control+a");
+  await page.keyboard.type("AIR-9999");
+  await expect(page.getByRole("status")).toContainText("Sin resultados para «AIR-9999»");
 });
 
 test("salir cierra la sesión", async ({ page }) => {

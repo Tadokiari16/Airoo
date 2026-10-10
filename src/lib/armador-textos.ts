@@ -9,7 +9,7 @@ import { nombreRegimen } from "./hoteles";
 import { horaTexto } from "./armador";
 
 const NOMBRE_TIPO = { hotel: "Hotel", vuelo: "Vuelo", actividad: "Actividad", servicio: "Servicio" };
-const GENERICAS = new Set(["hotel", "parque", "tour", "traslado", "seguro", "renta", "club"]);
+const GENERICAS = new Set(["hotel", "parque", "tour", "traslado", "seguro", "renta", "club", "casa", "hacienda", "villa", "hostal"]);
 
 /** «Xel-Há · Todo incluido», «Vuelo redondo · VivaAerobus», «Traslado privado · Van adaptada». */
 export function nombrePartida(p: PartidaArmador, f?: FichaArmador): string {

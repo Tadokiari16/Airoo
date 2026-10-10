@@ -243,3 +243,44 @@ export async function guardarTipoCambioManual(moneda: "USD" | "EUR", diezmilesim
   revalidatePath("/configuracion/precios");
   return { ok: true };
 }
+
+// ---- Viajes de ejemplo ----
+
+/** Clave que recuerda que se borraron: la semilla ya no los vuelve a crear. */
+const CLAVE_VIAJES_EJEMPLO = "viajes_ejemplo";
+
+export async function contarViajesEjemplo(): Promise<number> {
+  const [r] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.viajes)
+    .where(eq(schema.viajes.ejemplo, true));
+  return r?.n ?? 0;
+}
+
+/** Borra los viajes y clientes de ejemplo. Los catálogos no cambian. */
+export async function borrarViajesEjemplo(): Promise<Resultado> {
+  const yo = await usuarioCon("configuracion");
+  if (!yo) return { error: SIN_PERMISO };
+  const n = await contarViajesEjemplo();
+  await db.transaction(async (tx) => {
+    await tx.delete(schema.viajes).where(eq(schema.viajes.ejemplo, true));
+    await tx
+      .delete(schema.clientes)
+      .where(
+        and(
+          eq(schema.clientes.ejemplo, true),
+          sql`not exists (select 1 from ${schema.viajes} where ${schema.viajes.clienteId} = ${schema.clientes.id})`,
+        ),
+      );
+    await tx
+      .insert(schema.configuracion)
+      .values({ clave: CLAVE_VIAJES_EJEMPLO, valor: { borrados: true }, actualizadoPor: yo.id })
+      .onConflictDoNothing();
+    await anotar(
+      { quien: yo.id, texto: `Se borraron los viajes de ejemplo (${n})`, entidad: "configuracion" },
+      tx,
+    );
+  });
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

@@ -57,8 +57,8 @@ export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestan
       </div>
 
       <Tarjeta>
-        <div className="flex flex-wrap items-start gap-4 px-[22px] pt-5">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-start gap-4 px-4 pt-5 sm:px-[22px]">
+          <div className="min-w-[260px] flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-[26px] font-bold tracking-[-0.02em]">{v.cliente}</h1>
               <span className="num rounded-md bg-fondo px-2 py-0.5 text-[12px] font-bold text-tinta-2">{v.folioTexto}</span>
@@ -117,8 +117,8 @@ export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestan
           </div>
         </div>
 
-        <div className="px-[22px] pt-5" aria-label="Etapas del viaje">
-          <ol className="grid grid-cols-6 gap-1.5">
+        <div className="px-4 pt-5 sm:px-[22px]" aria-label="Etapas del viaje">
+          <ol className="grid grid-cols-3 gap-x-1.5 gap-y-3 sm:grid-cols-6">
             {BARRA.map((e, i) => (
               <li key={e.valor} className="flex flex-col gap-1.5">
                 <span
@@ -139,7 +139,7 @@ export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestan
           </p>
         </div>
 
-        <nav aria-label="Secciones del viaje" className="mt-4 flex gap-6 border-t border-linea px-[22px]">
+        <nav aria-label="Secciones del viaje" className="mt-4 flex gap-6 overflow-x-auto border-t border-linea px-4 whitespace-nowrap sm:px-[22px]">
           {pestanas.map((p) =>
             p.href ? (
               <Link

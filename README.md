@@ -63,7 +63,13 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.
 - `src/app/(acceso)`: entrar, cambiar contraseña y aceptar invitación.
-- `src/app/(panel)`: el panel con la barra lateral.
+- `src/app/(panel)`: el panel con la barra lateral (en celular, un menú arriba).
+- `src/lib/cotizacion.ts`: cálculo de cada partida y de los totales en centavos, plan de pagos (con el tope de días antes del viaje) y vigencia. Los totales no se guardan: se calculan.
+- `src/lib/armador.ts`, `src/lib/armador-textos.ts` y `src/lib/etapas.ts`: lo que el armador revisa antes de enviar, cómo se nombra cada partida y las etapas del viaje.
+- `src/app/(panel)/viajes`: lista de viajes, nuevo viaje y la vista del viaje.
+- `src/app/(armador)/viajes/[folio]/armador`: el armador de cotizaciones, a pantalla completa. Guarda cada servicio solo, unos instantes después del último cambio.
+- `src/lib/tipo-cambio.ts` y `src/app/api/tareas/tipo-cambio`: el FIX de Banxico del día (tarea diaria de Vercel) o capturado a mano.
+- `scripts/semilla-viajes.ts`: los viajes de ejemplo (AIR-2458 de Nataly Cervantes y dos más). Se borran desde Configuración › Datos y horario y ya no vuelven.
 - `src/app/fuentes`: tipografías guardadas en el repo (Plus Jakarta Sans en el panel; Gilroy para la vista del cliente).
 
 ## Producción (Supabase + Vercel)
@@ -78,4 +84,6 @@ Vercel corre `npm run vercel-build`: primero `scripts/arranque.ts` aplica las mi
    - `ALMACEN_FOTOS=supabase`, para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
    - `DUENO_CORREO` y `DUENO_NOMBRE`: quién es el Dueño en el primer arranque.
    - `NEXT_PUBLIC_SITE_URL` es opcional: sin ella se usa la dirección de producción de Vercel.
+   - `BANXICO_TOKEN`: el token del SIE de Banxico para el FIX diario. Sin él, el Dueño captura el FIX a mano en Configuración › Precios.
+   - `CRON_SECRET`: una cadena larga al azar; Vercel la manda a la tarea diaria del tipo de cambio para que nadie más la pueda llamar.
 3. Mientras una fase se prueba antes de unirla a main, en Vercel › Settings › Environments › Production › Branch Tracking va la rama de esa fase. Vercel solo deja elegir una rama que ya tenga un deploy.

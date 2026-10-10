@@ -12,6 +12,9 @@ test("las pantallas del panel cargan sin errores en la consola", async ({ page }
   await entrarComo(page, CORREOS.dueno);
   for (const ruta of [
     "/viajes",
+    "/viajes/2458",
+    "/viajes/2458?p=historial",
+    "/viajes/2458/armador",
     "/avisos",
     "/clientes",
     "/finanzas",
