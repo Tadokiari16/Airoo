@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ficha del hotel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;font-display:swap;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--blue-t2:#D3E0FD;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--card:#FFFFFF;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;--red:#A23B3B;--red-t:#FCE9E9;--ease:cubic-bezier(.2,.8,.2,1);}
+  *{box-sizing:border-box;}
+  html{overflow-x:hidden;}
+  body{margin:0;overflow-x:hidden;font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45;}
+  button{font-family:inherit;color:inherit;}
+  h1,h2,h3{margin:0;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .row{display:flex;align-items:center;}
+  .app{display:flex;width:1440px;min-height:100vh;}
+  /* ---- Barra lateral ---- */
+  .side{width:232px;flex-shrink:0;background:#fff;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:22px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px;}
+  .brand img{width:30px;height:30px;display:block;}
+  .brand b{font-size:19px;font-weight:700;letter-spacing:-.02em;}
+  .brand span{font-size:11.5px;color:var(--ink3);font-weight:600;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:auto;}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-k{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:14px 10px 6px;}
+  .nv{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;text-align:left;width:100%;}
+  .nv svg{color:var(--ink3);flex-shrink:0;}
+  .nv:hover{background:#F4F6FA;}
+  .nv.on{background:var(--blue-t);color:var(--blue-d);}
+  .nv .cnt.g{background:#E3E8F0;color:var(--ink);}
+  .nv.on svg{color:var(--blue);}
+  .nv .cnt{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:999px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;}
+  .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);}
+  .av{width:28px;height:28px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .av.b{background:#EFE9FB;color:#5B3FA0;} .av.c{background:#E4F5EB;color:var(--green);}
+  /* ---- Contenido ---- */
+  .main{flex:1;min-width:0;padding:24px 32px 40px;}
+  .top{display:flex;align-items:center;gap:14px;}
+  .search{flex:1;max-width:520px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--ink3);font-size:14px;}
+  .search kbd{margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:6px;padding:2px 6px;}
+  .btn{height:40px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;cursor:pointer;white-space:nowrap;transition:background-color .15s var(--ease);}
+  .btn:hover{background:var(--blue-d);}
+  .btn2{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 12px;cursor:pointer;white-space:nowrap;color:var(--ink);}
+  .btn2:hover{background:#F7F8FA;}
+  .btn2.pri{background:var(--blue);color:#fff;box-shadow:none;}
+  .btn2.pri:hover{background:var(--blue-d);}
+  .hello{margin:26px 0 20px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .hello h1{font-size:28px;font-weight:700;letter-spacing:-.02em;}
+  .hello h1::first-letter{color:var(--blue);}
+  .hello p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+  .card{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -18px rgba(17,26,43,.2);}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 10px;}
+  .card-h h2{font-size:17px;font-weight:700;}
+  .card-h .s{font-size:13px;color:var(--ink3);font-weight:500;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);} .b-green{background:var(--green-t);color:var(--green);}
+  .b-amber{background:var(--amber-t);color:var(--amber);} .b-gray{background:#EEF1F5;color:var(--ink2);} .b-red{background:var(--red-t);color:var(--red);}
+  .b-ball{background:var(--blue);color:#fff;}
+  /* ---- Bandeja de pendientes ---- */
+  .grp{padding:4px 18px 8px;}
+  .grp-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px;display:flex;align-items:center;gap:8px;}
+  .grp-k i{flex:1;height:1px;background:var(--line);}
+  .td{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);}
+  .grp-k + .td{border-top:none;}
+  .td-ic{flex-shrink:0;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+  .td-ic.blue{background:var(--blue-t);color:var(--blue);} .td-ic.amber{background:var(--amber-t);color:var(--amber);}
+  .td-ic.green{background:var(--green-t);color:var(--green);} .td-ic.gray{background:#EEF1F5;color:var(--ink2);} .td-ic.red{background:var(--red-t);color:var(--red);}
+  .td-t{min-width:0;display:flex;flex-direction:column;}
+  .td-t b{font-weight:600;font-size:14.5px;}
+  .td-t > span{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .td-a{display:flex;align-items:center;gap:8px;}
+  .when{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;min-width:92px;text-align:right;}
+  .when.hot{color:var(--amber);} .when.late{color:var(--red);}
+  .done-row{display:flex;align-items:center;gap:10px;padding:10px 18px 16px;color:var(--green);font-size:13.5px;font-weight:600;}
+  /* ---- Agenda ---- */
+  .ag{padding:2px 18px 14px;}
+  .ag-d{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;}
+  .ag-r{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;margin:0 -8px;width:calc(100% + 16px);border:none;background:none;border-radius:10px;text-align:left;cursor:pointer;transition:background-color .12s var(--ease);}
+  .ag-r:hover{background:#F4F6FA;}
+  .ag-d.today{color:var(--blue-d);}
+  .st-s{display:block;font-size:12.5px;color:var(--ink3);margin:3px 0 0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .st-s.ok{color:var(--green);font-weight:600;} .st-s.miss{color:var(--amber);font-weight:600;} .st-s.air{color:var(--blue-d);font-weight:600;}
+  .st-s.ok::before{content:'✓ ';} .st-s.tm::before{content:'◷ ';} .st-s.tm.hot{color:var(--amber);font-weight:600;}
+  .st-s.part{color:var(--ink2);}
+  .st-s.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;margin-top:4px;} .st-s.part::before{content:'◐ ';} .st-s.miss::before{content:'● ';font-size:9px;vertical-align:2px;}
+  .st i.gray{background:#AAB3C1;}
+  .ag-r .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .dot.blue{background:var(--blue);} .dot.amber{background:#D38A1E;} .dot.green{background:#2E9A62;} .dot.gray{background:#AAB3C1;}
+  .ag-r b{font-weight:600;font-size:13.5px;display:block;line-height:1.35;}
+  .ag-r div > span{font-size:12.5px;color:var(--ink2);}
+  .ag-r > .tm{margin-left:auto;padding-left:6px;font-size:12.5px;color:var(--ink3);font-weight:600;white-space:nowrap;}
+  /* ---- Viajes: pestañas por formato + etapas ---- */
+  .vj{position:relative;}
+  .vj-h{display:flex;align-items:flex-end;gap:22px;padding:14px 18px 0;margin-bottom:0;border-bottom:1px solid var(--line);}
+  .vj-h h2{font-size:17px;font-weight:700;padding-bottom:12px;margin-right:6px;}
+  .tab{border:none;background:none;padding:0 2px 11px;font-size:14.5px;font-weight:600;color:var(--ink3);cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 -2px 0 transparent;transition:color .15s var(--ease),box-shadow .15s var(--ease);}
+  .tab:hover{color:var(--ink);}
+  .tab.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--blue);}
+  .tab > span:last-child{font-size:12px;font-weight:700;color:var(--ink2);background:#EEF1F5;border-radius:999px;min-width:22px;height:20px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;}
+  .tab.on > span:last-child{background:var(--blue-t);color:var(--blue-d);}
+  .lnk{margin-bottom:10px;border:none;background:none;font-size:13.5px;font-weight:600;color:var(--blue-d);cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 4px;border-radius:8px;}
+  .lnk:hover{background:var(--blue-t);}
+  .sps{display:flex;gap:6px;padding:12px 18px;flex-wrap:wrap;}
+  .sp{height:32px;border:none;border-radius:999px;background:none;padding:0 12px;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background-color .15s var(--ease),color .15s var(--ease);}
+  .sp:hover{background:#F2F4F8;color:var(--ink);}
+  .sp > span:last-child{font-weight:700;color:var(--ink3);}
+  .sp.on{background:var(--ink);color:#fff;}
+  .sp.on > span:last-child{color:rgba(255,255,255,.7);}
+  .sp.z{color:#A7AEBA;cursor:default;} .sp.z:hover{background:none;color:#A7AEBA;}
+  .sp.z > span:last-child{color:#C3C8D1;}
+  .dd-w{position:relative;margin-left:auto;margin-bottom:9px;z-index:5;}
+  .dd-w .dd-m{right:0;left:auto;}
+  .dd{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 12px;cursor:pointer;color:var(--ink);white-space:nowrap;}
+  .dd:hover{background:#F7F8FA;}
+  .dd.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);color:var(--blue-d);}
+  .dd-k{color:var(--ink3);font-weight:600;}
+  .dd.on .dd-k{color:var(--blue-d);opacity:.75;}
+  .dd svg{color:var(--ink3);}
+  .dd-m{top:40px;width:250px;}
+  .mo{display:flex;align-items:center;gap:10px;width:100%;height:38px;border:none;background:none;border-radius:9px;padding:0 10px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;}
+  .mo:hover{background:#F4F6FA;}
+  .mo > i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .mo > i.blue{background:var(--blue);} .mo > i.amber{background:#D38A1E;} .mo > i.green{background:#2E9A62;} .mo > i.teal{background:#0E8C8C;} .mo > i.none{background:transparent;}
+  .mo > span:nth-of-type(2){margin-left:auto;color:var(--ink3);font-weight:700;}
+  .mo-ck{width:16px;display:inline-flex;color:var(--blue);visibility:hidden;}
+  .mo.on .mo-ck{visibility:visible;}
+  .mo.z{color:#A7AEBA;cursor:default;} .mo.z:hover{background:none;}
+  .mo.z > span:nth-of-type(2){color:#C3C8D1;}
+  .dd-scrim{position:fixed;inset:0;z-index:4;display:none;}
+  .dd-scrim.show{display:block;}
+  /* resumen del saludo */
+  .sum{display:flex;gap:10px;}
+  .sum-c{display:inline-flex;align-items:center;gap:8px;height:40px;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);padding:0 14px;font-size:13.5px;color:var(--ink2);font-weight:500;}
+  .sum-c b{font-size:16px;font-weight:700;color:var(--ink);}
+  button.sum-c{cursor:pointer;transition:background-color .15s var(--ease),box-shadow .15s var(--ease);}
+  .sum-c.air i{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .sum-c.air b{color:var(--blue-d);}
+  button.sum-c:hover{background:#F7F9FD;}
+  .sum-c.air.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* filtros en el encabezado de columna */
+  .fth{position:relative;}
+  .thb{border:none;background:none;padding:4px 6px;margin:-4px -6px;border-radius:7px;font:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+  .thb:hover{background:#EEF1F5;color:var(--ink);}
+  .thb svg{width:13px;height:13px;}
+  .thb-d{display:none;width:6px;height:6px;border-radius:50%;background:var(--blue);}
+  .thb.on{color:var(--blue-d);background:var(--blue-t);}
+  .thb.on .thb-d{display:inline-block;}
+  .fth .dd-m{left:6px;right:auto;top:38px;text-transform:none;letter-spacing:0;z-index:20;}
+  .fth.r .dd-m{left:auto;right:-40px;}
+  .menu.hide{visibility:hidden;}
+  .clr{color:var(--ink2);}
+  .ract{text-align:right;white-space:nowrap;padding-right:18px!important;}
+  .ract .btn2{height:32px;}
+  .listo{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--green);}
+  /* semana */
+  .sched{padding:6px 18px 10px;}
+  .sd{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line);align-items:start;}
+  .sd:first-child{border-top:none;}
+  .sd-h{display:flex;flex-direction:column;padding-top:4px;}
+  .sd-h b{font-size:15px;font-weight:700;}
+  .sd-h > span{font-size:12.5px;color:var(--ink3);font-weight:500;}
+  .sd.today .sd-h b{color:var(--blue-d);}
+  .sd-l{display:flex;flex-wrap:wrap;gap:10px;}
+  .sd.empty{padding:10px 0;}
+  .sd.empty .sd-h{flex-direction:row;gap:8px;align-items:baseline;padding-top:0;}
+  .sd.empty .sd-h b{font-size:14px;color:var(--ink3);font-weight:600;}
+  .sd-e{font-size:13px;color:#A7AEBA;}
+  .we{flex:0 0 268px;}
+  .we{border:none;background:#F7F8FB;border-radius:12px;padding:10px 12px 10px 15px;text-align:left;cursor:pointer;box-shadow:inset 3px 0 0 #AAB3C1,0 1px 2px rgba(17,26,43,.05);display:flex;flex-direction:column;gap:1px;transition:box-shadow .15s var(--ease),transform .15s var(--ease);}
+  .we:hover{box-shadow:inset 3px 0 0 #AAB3C1,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.blue{box-shadow:inset 3px 0 0 var(--blue),0 1px 2px rgba(17,26,43,.05);} .we.blue:hover{box-shadow:inset 3px 0 0 var(--blue),0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.amber{box-shadow:inset 3px 0 0 #D38A1E,0 1px 2px rgba(17,26,43,.05);} .we.amber:hover{box-shadow:inset 3px 0 0 #D38A1E,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.green{box-shadow:inset 3px 0 0 #2E9A62,0 1px 2px rgba(17,26,43,.05);} .we.green:hover{box-shadow:inset 3px 0 0 #2E9A62,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we b{font-size:14px;font-weight:600;line-height:1.35;margin-top:1px;}
+  .we > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.35;}
+  .we-tm{font-size:12px;font-weight:700;color:var(--ink3);}
+  .vw{display:inline-flex;background:#EEF1F5;border-radius:10px;padding:3px;margin-bottom:9px;margin-right:4px;}
+  .vw button{height:30px;border:none;border-radius:8px;background:none;padding:0 11px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .vw button svg{width:15px;height:15px;color:var(--ink3);}
+  .vw button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(17,26,43,.1);}
+  .vw button.on svg{color:var(--blue);}
+  .sum-c.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* celdas sobrias: el color solo marca lo que pide acción */
+  .st{display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap;}
+  .st i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .st i.blue{background:var(--blue);} .st i.amber{background:#D38A1E;} .st i.green{background:#2E9A62;} .st i.teal{background:#0E8C8C;}
+  .pd{font-size:13.5px;color:var(--ink3);font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+  .pd.air{color:var(--blue-d);font-weight:700;}
+  .pd.air::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .pd.ok{color:var(--green);font-weight:600;}
+  .svt{font-size:13.5px;color:var(--ink2);white-space:nowrap;}
+  .svt.ok{color:var(--green);font-weight:600;} .svt.miss{color:var(--amber);font-weight:600;}
+  .dt > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;}
+  .py{display:flex;flex-direction:column;gap:3px;min-width:120px;}
+  .py b{font-weight:600;font-size:13.5px;}
+  .py-s{font-size:12.5px;color:var(--ink3);white-space:nowrap;}
+  .py.ok .py-s{color:var(--green);font-weight:600;} .py.late .py-s{color:var(--amber);font-weight:600;} .py.late .bar i{background:#D38A1E;}
+  .py .bar{margin-top:2px;}
+  .chev{color:#B6BDC8;opacity:0;transition:opacity .12s var(--ease);}
+  .tbl tr.r:hover .chev{opacity:1;}
+  .chev{display:inline-flex;}
+  .tbl tr.r.sel{background:var(--blue-t);}
+  /* ---- Panel lateral (vista rápida) ---- */
+  .scrim{position:fixed;inset:0;background:rgba(17,26,43,.28);opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;z-index:30;}
+  .scrim.show{opacity:1;visibility:visible;}
+  .dw{position:fixed;top:0;right:0;height:100vh;width:460px;background:#fff;box-shadow:-1px 0 0 var(--line),-24px 0 48px -24px rgba(17,26,43,.28);transform:translateX(104%);visibility:hidden;transition:transform .25s var(--ease),visibility .25s;z-index:31;display:flex;flex-direction:column;}
+  .dw.show{transform:none;visibility:visible;}
+  .dw-h{padding:14px 20px 14px;}
+  .dw-nav{display:flex;align-items:center;gap:6px;margin-bottom:8px;color:var(--ink3);font-size:12.5px;font-weight:600;}
+  .dw-nav kbd{font-family:inherit;font-size:11px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:5px;padding:1px 5px;margin-left:4px;}
+  .nv-b{width:28px;height:28px;border:none;border-radius:8px;background:#F2F4F8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink2);}
+  .nv-b:hover{background:#E8EBF0;}
+  .dw-q{display:flex;gap:8px;padding:10px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;}
+  .qa{height:32px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px;cursor:pointer;color:var(--ink);}
+  .qa:hover{background:#F7F8FA;}
+  .qa-k{color:var(--ink3);font-weight:600;}
+  .qa svg{color:var(--ink3);}
+  .note{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#F6F8FB;box-shadow:inset 3px 0 0 #AAB3C1;}
+  .note svg{color:var(--ink3);margin-top:2px;}
+  .note b{display:block;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+  .note div > span{font-size:13.5px;color:var(--ink);line-height:1.45;}
+  .eng{margin-top:12px;padding:12px 14px;border-radius:12px;background:#F6F8FB;}
+  .eng-k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:8px;}
+  .eng-k svg{color:var(--blue);}
+  .eng-r{display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;padding:4px 0;}
+  .eng-l{font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .eng-b{height:6px;border-radius:3px;background:#E3E8F0;overflow:hidden;}
+  .eng-b i{display:block;height:100%;background:var(--blue);border-radius:3px;}
+  .eng-m{font-size:12.5px;color:var(--ink2);font-weight:600;text-align:right;}
+  .dw-t{display:flex;align-items:center;gap:8px;}
+  .dw-t h3{font-size:19px;font-weight:700;letter-spacing:-.01em;}
+  .dw-x{margin-left:auto;width:32px;height:32px;border:none;border-radius:9px;background:#F2F4F8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink2);}
+  .dw-x:hover{background:#E8EBF0;}
+  .dw-s{font-size:13.5px;color:var(--ink2);margin-top:3px;}
+  .prog{display:flex;gap:4px;margin-top:14px;}
+  .prog i{flex:1;height:4px;border-radius:2px;background:#E6EAF0;}
+  .prog i.on{background:var(--blue);}
+  .prog-l{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink3);margin-top:6px;font-weight:600;}
+  .prog-l b{color:var(--ink);}
+  .prog-l .hot{color:var(--amber);}
+  .dw-b{flex:1;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:18px;}
+  .nxt{border-radius:14px;background:#F6F8FB;padding:14px;}
+  .nxt.air{background:var(--blue-t);}
+  .nxt-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
+  .nxt.air .nxt-k{color:var(--blue-d);}
+  .nxt b{display:block;font-size:15px;font-weight:600;margin-top:4px;}
+  .nxt > span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;}
+  .nxt .btn2{margin-top:12px;}
+  .btn2.act{background:#000D25;color:#fff;box-shadow:none;}
+  .btn2.act:hover{background:#1A2640;}
+  .sec-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sec-k + div .li:first-child,.sec-k + .li{border-top:none;}
+  .li-ic{width:30px;height:30px;border-radius:9px;background:#F2F4F8;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .li-t{flex:1;min-width:0;}
+  .li-t b{display:block;font-weight:600;}
+  .li-t > span{font-size:12.5px;color:var(--ink3);}
+  .li-s{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;}
+  .li-s.ok{color:var(--green);} .li-s.miss{color:var(--amber);}
+  .more{font-size:13px;color:var(--ink3);padding-top:6px;}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;}
+  .kv span{color:var(--ink2);} .kv b{font-weight:600;}
+  .kv.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:9px;}
+  .dw-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;}
+  .dw-f .btn{flex:1;}
+  .dw-f .btn.sec{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
+  .dw-f .btn.sec:hover{background:#F7F8FA;}
+  .tbl{width:100%;border-collapse:collapse;}
+  .tbl.fixed{table-layout:fixed;}
+  .tbl.fixed th:nth-child(1){width:24%;}.tbl.fixed th:nth-child(2){width:12%;}.tbl.fixed th:nth-child(3){width:17%;}.tbl.fixed th:nth-child(4){width:15%;}.tbl.fixed th:nth-child(5){width:22%;}.tbl.fixed th:nth-child(6){width:10%;}
+  .tbl.fixed th:last-child,.tbl.fixed td:last-child{text-align:right;padding-right:20px !important;}
+  /* a prueba de textos largos: una línea y puntos suspensivos, el texto completo en el title */
+  .tbl.fixed .trip b,.tbl.fixed .nx b,.tbl.fixed .nx > span,.tbl.fixed .py-s,.tbl.fixed .dt > span,.tbl.fixed .st{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .tbl.fixed .st{display:flex;}
+                .tbl.fixed td{padding:14px 14px;}
+  .tbl.fixed th{padding-left:14px;padding-right:14px;}
+  .trip > span{overflow:hidden;text-overflow:ellipsis;}
+  .tbl th{font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;white-space:nowrap;}
+  .tbl th:first-child,.tbl td:first-child{padding-left:18px;}
+  .tbl td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13.5px;}
+  .tbl tr.r{cursor:pointer;transition:background-color .12s var(--ease);}
+  .tbl tr.r:hover{background:#F8FAFD;}
+  .tbl tbody tr:last-child td{border-bottom:none;}
+  .trip-b{border:none;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:block;}
+  .trip-b:hover b{color:var(--blue-d);}
+  .trip b{font-weight:600;font-size:14.5px;display:block;white-space:nowrap;}
+  .trip > span{font-size:12.5px;color:var(--ink2);display:block;margin-top:2px;white-space:nowrap;}
+  .trip-l{display:flex;align-items:center;gap:6px;}
+  .fmt{font-style:normal;display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;font-size:11px;font-weight:700;background:#F2F4F8;color:var(--ink2);flex-shrink:0;}
+  .svcs{display:flex;gap:4px;}
+  .sv{width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;}
+  .sv.ok{background:var(--green-t);color:var(--green);} .sv.wait{background:#EEF1F5;color:#8A93A3;} .sv.miss{background:var(--amber-t);color:var(--amber);}
+  .pay{display:flex;flex-direction:column;gap:4px;min-width:110px;}
+  .pay span{font-size:12.5px;color:var(--ink2);font-weight:600;}
+  .bar{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .bar i{display:block;height:100%;background:#2E9A62;border-radius:3px;}
+  .nx b{font-weight:600;display:block;font-size:13.5px;}
+  .nx > span{font-size:12.5px;color:var(--ink3);display:block;}
+  .chg{font-style:normal;display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:6px;background:#F0F2F6;color:var(--ink2);font-size:11.5px;font-weight:600;margin-left:6px;vertical-align:1px;}
+  .fol{font-style:normal;color:#A7AEBA;font-weight:500;font-size:11.5px;margin-right:6px;}
+  .fol-b{border:none;background:#F2F4F8;border-radius:6px;padding:1px 7px;margin-right:8px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;}
+  .fol-b:hover{background:#E8EBF0;}
+  .tl{position:relative;padding-left:4px;}
+  .tl-r{display:flex;gap:12px;position:relative;padding:0 0 12px;}
+  .tl-r::before{content:'';position:absolute;left:4px;top:14px;bottom:-2px;width:1px;background:var(--line);}
+  .tl-r:last-child::before{display:none;}
+  .tl-d{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;background:#C3C8D1;}
+  .tl-d.now{background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);} .tl-d.blue{background:#7FA7F8;}
+  .tl-r b{display:block;font-weight:600;font-size:13.5px;}
+  .tl-r div > span{font-size:12.5px;color:var(--ink3);}
+  .lnk-s{margin:-4px 0 12px -4px;}
+  .lnk-s .lnk{margin:0;font-size:13px;}
+  .vw-k{font-size:12px;font-weight:700;color:var(--ink3);margin:2px 0 6px;}
+  .vrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);}
+  .vw-k + .vrow{border-top:none;}
+  .vrow > div{flex:1;min-width:0;}
+  .vrow b{display:block;font-weight:600;font-size:13.5px;}
+  .vrow > div > span{font-size:12.5px;color:var(--ink3);}
+  .vt{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap;}
+  .vnone{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--ink2);padding:6px 0;}
+  .ins{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#F6F8FB;font-size:13px;color:var(--ink2);}
+  .ins svg{color:var(--blue);}
+  .shr-k{font-size:12px;font-weight:700;color:var(--ink3);margin:14px 0 4px;}
+  .shr{display:grid;grid-template-columns:1fr auto 84px;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .shr-k + .shr{border-top:none;}
+  .shr div > b{display:block;font-weight:600;} .shr div > span{font-size:12.5px;color:var(--ink3);}
+  .shr-s{justify-self:end;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EEF1F5;color:var(--ink2);}
+  .shr-s.ok{background:var(--green-t);color:var(--green);}
+  .nx .hot{color:var(--amber);} .nx .late{color:var(--red);} .nx .air{color:var(--blue-d);}
+  .empty{padding:28px 18px;text-align:center;color:var(--ink2);}
+  /* ---- Menú y aviso ---- */
+  .menu{position:absolute;right:0;top:46px;width:280px;background:#fff;border-radius:14px;box-shadow:0 0 0 1px rgba(17,26,43,.06),0 18px 40px -12px rgba(17,26,43,.3);padding:6px;z-index:20;transition:opacity .15s var(--ease),transform .15s var(--ease);}
+  .menu.hide{opacity:0;transform:translateY(-4px);pointer-events:none;}
+  .mi{display:flex;gap:12px;align-items:flex-start;width:100%;border:none;background:none;border-radius:10px;padding:10px;text-align:left;cursor:pointer;}
+  .mi:hover{background:#F4F6FA;}
+  .mi b{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+  .mi > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.4;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;visibility:hidden;background:var(--ink);color:#fff;font-size:13.5px;font-weight:500;border-radius:999px;padding:10px 16px;z-index:50;transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s;}
+  .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+  svg{flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+</style>
+
+<style>
+  /* ===== Catálogo (compartido por Proveedores, Hoteles y Ficha) ===== */
+  .tabs{display:flex;gap:28px;padding:16px 20px 0;border-bottom:1px solid var(--line);}
+  .tabs .tab{padding-bottom:13px;}
+  .tabs .tab > span:last-child{margin-left:2px;}
+  .c-tools{display:flex;align-items:center;gap:10px;padding:14px 20px;}
+  .c-tools .search{max-width:340px;height:36px;border-radius:10px;font-size:13.5px;}
+  .c-tools .sp{flex:1;}
+  .tbl.cat{table-layout:fixed;}
+  .tbl.cat th,.tbl.cat td{padding-left:14px;padding-right:14px;}
+  .tbl.cat th:first-child,.tbl.cat td:first-child{padding-left:18px;}
+  .tbl.cat th:last-child,.tbl.cat td:last-child{text-align:right;padding-right:20px;}
+  .tbl.cat td > *{max-width:100%;}
+  .tbl.cat .t1{display:flex;flex-direction:column;min-width:0;}
+  .tbl.cat .t1 > b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tbl.cat .t1 > span{font-size:12.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tbl.cat .t1 > span.amb{color:var(--amber);font-weight:600;}
+  .tbl.cat .t1 > span.ok{color:var(--green);font-weight:600;}
+  .tbl.cat .t1.r{align-items:flex-end;}
+  .tbl.pv th:nth-child(1){width:26%;} .tbl.pv th:nth-child(2){width:20%;} .tbl.pv th:nth-child(3){width:24%;}
+  .tbl.pv th:nth-child(4){width:17%;} .tbl.pv th:nth-child(5){width:13%;}
+  .tbl.ht th:nth-child(1){width:23%;} .tbl.ht th:nth-child(2){width:9%;} .tbl.ht th:nth-child(3){width:17%;}
+  .tbl.ht th:nth-child(4){width:17%;} .tbl.ht th:nth-child(5){width:21%;} .tbl.ht th:nth-child(6){width:13%;}
+  .typ{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#EEF1F5;color:var(--ink2);font-size:12px;font-weight:600;white-space:nowrap;}
+  /* moneda: monto en la moneda de la tarifa + etiqueta con la conversión */
+  .cur{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#F2F4F8;color:var(--ink2);font-size:11.5px;font-weight:600;white-space:nowrap;margin-left:6px;}
+  .cur.blk{margin-left:0;}
+  /* estado de datos bancarios */
+  .bk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap;}
+  .bk svg{flex-shrink:0;}
+  .bk.ok{color:var(--green);} .bk.pend{color:var(--amber);} .bk.none{color:var(--ink3);} .bk.card{color:var(--ink2);}
+  /* aviso arriba de la tabla */
+  .ban{display:flex;align-items:center;gap:12px;margin:0 18px 12px;padding:11px 14px;border-radius:12px;background:var(--amber-t);color:#5E3906;font-size:13.5px;}
+  .ban svg{color:var(--amber);flex-shrink:0;}
+  .ban b{font-weight:700;}
+  .ban .btn2{margin-left:auto;}
+  /* secciones del panel lateral, editables por sección */
+  .sx{border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);padding:12px 14px;}
+  .sx-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .sx-h .sec-k{margin:0;}
+  .sx-h .lnk{margin:0 0 0 auto;padding:2px 6px;font-size:13px;}
+  .vis{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--ink3);}
+  .vis.cli{color:var(--blue-d);}
+  .kv2{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .kv2{border-top:none;}
+  .kv2 > span{color:var(--ink3);}
+  .kv2 > b{font-weight:600;}
+  .kv2 > b em{display:block;font-style:normal;font-weight:500;color:var(--ink3);font-size:12.5px;margin-top:1px;}
+  .kv2 > b.amb{color:var(--amber);}
+  .seg2{display:flex;flex-wrap:wrap;gap:6px;}
+  .seg2 button{height:30px;border:none;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;font-weight:600;padding:0 10px;cursor:pointer;color:var(--ink2);}
+  .seg2 button.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);color:var(--blue-d);}
+  .in{height:34px;border-radius:9px;box-shadow:inset 0 0 0 1px var(--line);background:#fff;display:inline-flex;align-items:center;padding:0 10px;font-size:13.5px;color:var(--ink);gap:6px;}
+  .in.sm{width:64px;justify-content:flex-end;}
+  .in.w{width:100%;}
+  .in .u{color:var(--ink3);}
+  .ed{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
+  .ed-l{font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px;}
+  .ed-a{display:flex;gap:8px;justify-content:flex-end;}
+  /* cuenta bancaria */
+  .acct{border-radius:12px;background:#F6F8FB;padding:12px 14px;display:flex;flex-direction:column;gap:3px;}
+  .acct-t{display:flex;align-items:center;gap:8px;}
+  .acct-t b{font-size:14.5px;font-weight:600;}
+  .acct-t .bk{margin-left:auto;font-size:12.5px;}
+  .acct > span{font-size:12.5px;color:var(--ink2);}
+  .acct.new{background:var(--amber-t);}
+  .acct.new > span{color:#5E3906;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;letter-spacing:.02em;}
+  .hist{font-size:12.5px;color:var(--ink3);margin-top:8px;display:flex;gap:6px;align-items:flex-start;}
+  .hist svg{margin-top:2px;flex-shrink:0;}
+  .warn{display:flex;gap:10px;padding:11px 12px;border-radius:12px;background:var(--amber-t);color:#5E3906;font-size:13px;line-height:1.45;margin-top:10px;}
+  .warn svg{color:var(--amber);flex-shrink:0;margin-top:2px;}
+  .warn .btn2{margin-top:8px;}
+  .fx{font-size:12.5px;color:var(--ink3);margin-top:6px;}
+  .pr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .pr{border-top:none;}
+  .pr-d{width:46px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;border-radius:9px;background:#F2F4F8;padding:4px 0;}
+  .pr-d b{font-size:13px;font-weight:700;line-height:1.1;}
+  .pr-d span{font-size:10.5px;color:var(--ink3);font-weight:600;text-transform:uppercase;}
+  .pr-d.late{background:var(--amber-t);} .pr-d.late b,.pr-d.late span{color:var(--amber);}
+  .pr-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .pr-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pr-t span{font-size:12.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pr-m{text-align:right;display:flex;flex-direction:column;align-items:flex-end;}
+  .pr-m b{font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .ctc{display:flex;align-items:center;gap:10px;}
+  .ctc .av{width:34px;height:34px;}
+  .ctc b{display:block;font-weight:600;}
+  .ctc span{font-size:12.5px;color:var(--ink3);}
+  /* modal */
+  .mdl-s{position:fixed;inset:0;background:rgba(17,26,43,.36);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding-top:80px;opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;}
+  .mdl-s.show{opacity:1;visibility:visible;}
+  .mdl{width:520px;background:#fff;border-radius:18px;box-shadow:0 30px 80px -20px rgba(17,26,43,.45);overflow:hidden;transform:translateY(8px);transition:transform .2s var(--ease);}
+  .mdl-s.show .mdl{transform:none;}
+  .mdl-h{padding:18px 20px 6px;display:flex;align-items:flex-start;gap:10px;}
+  .mdl-h h3{font-size:18px;font-weight:700;}
+  .mdl-h p{margin:4px 0 0;font-size:13.5px;color:var(--ink2);}
+  .mdl-b{padding:10px 20px 4px;display:flex;flex-direction:column;gap:12px;}
+  .mdl-f{padding:14px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--line);margin-top:12px;}
+  .cmp{display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;gap:8px;}
+  .cmp .acct{padding:10px 12px;}
+  .cmp > svg{color:var(--ink3);justify-self:center;}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;border:none;background:#fff;text-align:left;width:100%;font:inherit;color:inherit;}
+  .step:hover{background:#FAFBFD;}
+  .step.on{box-shadow:inset 0 0 0 1.5px var(--green);background:#F6FBF8;}
+  .ckb{width:22px;height:22px;border-radius:7px;box-shadow:inset 0 0 0 1.5px #C5CCD8;display:inline-flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;margin-top:1px;}
+  .step.on .ckb{background:var(--green);box-shadow:none;}
+  .ckb svg{opacity:0;} .step.on .ckb svg{opacity:1;}
+  .step b{display:block;font-weight:600;font-size:14px;}
+  .step span{font-size:13px;color:var(--ink2);}
+  .btn2.ok{background:var(--green);color:#fff;box-shadow:none;}
+  .btn2.dis{opacity:.4;cursor:not-allowed;}
+  .tbl .bk::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .fld{display:flex;flex-direction:column;}
+  /* foto (placeholder de cielo, mar y arena, igual que en la propuesta) */
+  .ph{position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 60%,#EADCC2 60.5%);}
+  .ph.b{background:linear-gradient(180deg,#F3D9B5,#E9A96A 55%,#3C6E8F 55.5%);}
+  .ph.c{background:linear-gradient(160deg,#CFE5D8,#7FB79A 58%,#E9E1CF 58.5%);}
+  .ph.d{background:linear-gradient(180deg,#DCE6F2,#9DB4CF 50%,#D7C7AE 50.5%);}
+  .ph.e{background:linear-gradient(200deg,#E7D3C8,#C9917A 60%,#5A7D6C 60.5%);}
+  .ph.f{background:linear-gradient(180deg,#C8E1F1,#4C9AC9 45%,#F1E6CF 45.5%);}
+  .ph i{position:absolute;left:8px;top:8px;font-style:normal;font-size:11px;font-weight:700;background:rgba(17,26,43,.62);color:#fff;border-radius:6px;padding:2px 7px;}
+  /* completitud de la ficha */
+  .cpl{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;white-space:nowrap;}
+  .cpl .rg{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+  .cpl.ok{color:var(--green);} .cpl.miss{color:var(--amber);}
+  .tbl .cpl{display:flex;max-width:100%;}
+  .tbl .cpl > span{overflow:hidden;text-overflow:ellipsis;}
+  .tbl .cpl::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .rate{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);}
+  .bub{display:inline-flex;gap:2px;}
+  .bub i{width:10px;height:10px;border-radius:50%;background:#00AA6C;display:inline-block;}
+  .bub i.h{background:linear-gradient(90deg,#00AA6C 50%,#fff 50%);box-shadow:inset 0 0 0 1.5px #00AA6C;}
+  .bub i.e{background:#fff;box-shadow:inset 0 0 0 1.5px #00AA6C;}
+  .reg{display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:6px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;}
+  .reg + .reg{margin-left:4px;}
+  .mx{display:flex;flex-direction:column;gap:6px;}
+  .mx-r{display:flex;align-items:center;gap:8px;font-size:13.5px;}
+  .mx-r svg{flex-shrink:0;color:var(--amber);}
+  .mx-r .lnk{margin:0 0 0 auto;padding:2px 6px;font-size:12.5px;}
+  /* galería en el panel del hotel */
+  .gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:74px 74px;gap:6px;margin:0 20px 12px;}
+  .gal .ph:first-child{grid-row:1 / span 2;}
+  .gal .ph{border-radius:12px;}
+  .ph.add{background:#F6F8FB;border:1.5px dashed #C5CCD8;display:flex;align-items:center;justify-content:center;}
+  .ph.add::after{content:'Agregar foto';font-size:12.5px;font-weight:600;color:var(--ink3);}
+  .gal .more-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(17,26,43,.42);color:#fff;font-size:13px;font-weight:700;}
+  .rm{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .rm{border-top:none;}
+  .rm-t{flex:1;min-width:0;}
+  .rm-t b{display:block;font-weight:600;}
+  .rm-t span{font-size:12.5px;color:var(--ink3);}
+  .al{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:6px;background:#F2F4F8;color:var(--ink2);font-size:12px;font-weight:600;white-space:nowrap;}
+  .al.miss{background:var(--amber-t);color:var(--amber);}
+  .ok-line{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--green);font-weight:600;}
+  .desc{font-size:13.5px;color:var(--ink);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .tbl.cat .regs{display:flex;flex-wrap:wrap;gap:4px;}
+  .tbl.cat .regs .reg + .reg{margin-left:0;}
+  .draft{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#EEF1F5;color:var(--ink2);font-size:11.5px;font-weight:700;margin-left:6px;vertical-align:1px;}
+  .paid-c{display:flex;flex-direction:column;gap:8px;padding:10px 12px;margin:2px 0 8px 56px;border-radius:10px;background:#F6F8FB;font-size:13px;color:var(--ink2);}
+  .pr-a{flex-basis:100%;display:flex;align-items:center;gap:6px;padding-left:56px;margin-top:2px;}
+  .pr-a > span{font-size:12.5px;font-weight:600;color:var(--ink3);margin-right:auto;}
+  .pr-a > span.amb{color:var(--amber);}
+  .pr-a .btn2{height:30px;}
+  /* mini tabla dentro del panel lateral */
+  .mt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+  .mt th{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:4px 6px 6px 0;}
+  .mt td{padding:7px 6px 7px 0;border-top:1px solid var(--line);vertical-align:top;}
+  .mt td b{font-weight:600;}
+  .mt td em{display:block;font-style:normal;color:var(--ink3);font-size:12px;}
+  .vf{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .vf.ok{color:var(--green);} .vf.pend{color:var(--amber);}
+  .auto{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:#F6F8FB;font-size:12.5px;color:var(--ink2);margin-top:8px;}
+  .auto svg{color:var(--blue);flex-shrink:0;margin-top:1px;}
+  .tbl.ac th:nth-child(1){width:24%;} .tbl.ac th:nth-child(2){width:15%;} .tbl.ac th:nth-child(3){width:20%;}
+  .tbl.ac th:nth-child(4){width:15%;} .tbl.ac th:nth-child(5){width:15%;} .tbl.ac th:nth-child(6){width:11%;}
+  .tbl.svc th:nth-child(1){width:24%;} .tbl.svc th:nth-child(2){width:12%;} .tbl.svc th:nth-child(3){width:16%;}
+  .tbl.svc th:nth-child(4){width:15%;} .tbl.svc th:nth-child(5){width:22%;} .tbl.svc th:nth-child(6){width:11%;}
+  .tbl.ae th:nth-child(1){width:20%;} .tbl.ae th:nth-child(2){width:20%;} .tbl.ae th:nth-child(3){width:17%;}
+  .tbl.ae th:nth-child(4){width:19%;} .tbl.ae th:nth-child(5){width:13%;} .tbl.ae th:nth-child(6){width:11%;}
+  .iata{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;flex-shrink:0;}
+  .sx.warnx{box-shadow:inset 0 0 0 1px #F3D9A8;background:#FFFBF3;}
+  .sx.warnx .sec-k{color:var(--amber);}
+  .mt td b.w5,.kv2 b.w5{font-weight:500;}
+  .kv2 > b.amb{color:var(--amber);}
+  .nm{display:flex;align-items:center;gap:10px;min-width:0;}
+</style>
+
+<style>
+  /* ===== Ficha del hotel (edición en una página) ===== */
+  .crumb{border:none;background:none;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;padding:4px 6px;margin:22px 0 0 -6px;border-radius:8px;}
+  .crumb:hover{background:#E9ECF2;}
+  .crumb svg{transform:rotate(180deg);}
+  .fh{display:flex;align-items:flex-end;justify-content:space-between;margin:6px 0 20px;}
+  .fh h1{font-size:28px;font-weight:700;letter-spacing:-.02em;}
+  .fh p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;}
+  .fh-a{display:flex;gap:8px;}
+  .fg{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start;}
+  .fcol{display:flex;flex-direction:column;gap:16px;}
+  .fc{padding:18px 20px 20px;}
+  .fc-h{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+  .fc-h h2{font-size:17px;font-weight:700;}
+  .fc-h .vis{margin-left:auto;}
+  .fc-s{font-size:13.5px;color:var(--ink2);margin:0 0 14px;}
+  .f2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .fl{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .fl > label{font-size:13px;font-weight:600;color:var(--ink2);}
+  .ip{min-height:40px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);background:#fff;display:flex;align-items:center;padding:0 12px;font-size:14px;gap:8px;}
+  .ip.ta{align-items:flex-start;padding:10px 12px;line-height:1.5;min-height:84px;}
+  .ip .u{color:var(--ink3);margin-left:auto;font-size:12.5px;}
+  .ip.ok{box-shadow:inset 0 0 0 1px #9ED3B6;}
+  .hint{font-size:12.5px;color:var(--ink3);}
+  .cnt2{font-size:12px;color:var(--ink3);text-align:right;}
+  .rg{display:flex;gap:6px;}
+  .rg button{height:36px;min-width:46px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font:inherit;font-size:13px;font-weight:700;color:var(--ink2);cursor:pointer;padding:0 10px;}
+  .rg button.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);color:var(--blue-d);}
+  .rg-l{font-size:12.5px;color:var(--ink3);margin-top:6px;}
+  /* fotos */
+  .phs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+  .phs .ph{height:92px;cursor:grab;border:none;padding:0;}
+  .phs .ph:first-child{grid-column:span 2;grid-row:span 2;height:auto;}
+  .phs .ph .g{position:absolute;right:6px;top:6px;color:#fff;opacity:0;transition:opacity .15s;}
+  .phs .ph:hover .g{opacity:.9;}
+  .phs .ph .mk{position:absolute;left:6px;bottom:6px;font-size:11px;font-weight:700;background:rgba(255,255,255,.9);color:var(--ink);border-radius:6px;padding:2px 7px;opacity:0;transition:opacity .15s;border:none;cursor:pointer;font-family:inherit;}
+  .phs .ph:hover .mk{opacity:1;}
+  .phs .up{height:92px;border-radius:10px;border:1.5px dashed #C5CCD8;background:#F8FAFC;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink3);font-size:12.5px;font-weight:600;}
+  /* habitaciones */
+  .rt{width:100%;border-collapse:collapse;table-layout:fixed;}
+  .rt th{font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
+  .rt td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13.5px;}
+  .rt tr:last-child td{border-bottom:none;}
+  .rt th:nth-child(1){width:28%;} .rt th:nth-child(2){width:16%;} .rt th:nth-child(3){width:11%;} .rt th:nth-child(4){width:45%;}
+  .rt td b{font-weight:600;}
+  .sup{display:flex;flex-wrap:wrap;gap:6px;}
+  .sc{display:inline-flex;align-items:center;gap:6px;max-width:100%;height:26px;padding:0 8px;border-radius:7px;background:#F2F4F8;font-size:12.5px;color:var(--ink);}
+  .sc i{font-style:normal;font-weight:700;color:var(--ink3);font-size:11px;}
+  .sc span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sc-add{height:26px;border:none;border-radius:7px;background:none;box-shadow:inset 0 0 0 1px var(--line);font:inherit;font-size:12.5px;font-weight:600;color:var(--blue-d);padding:0 8px;cursor:pointer;}
+  .unk{margin-top:12px;border-radius:12px;background:var(--amber-t);padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+  .unk-t{display:flex;gap:10px;font-size:13.5px;color:#5E3906;}
+  .unk-t svg{color:var(--amber);flex-shrink:0;margin-top:2px;}
+  .unk-t b{font-weight:700;}
+  .unk-a{display:flex;flex-wrap:wrap;gap:6px;padding-left:27px;}
+  .unk-a button{height:32px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px #EBCB97;font:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:0 10px;cursor:pointer;}
+  .unk-a button:hover{background:#FFFDF8;}
+  .unk.done{background:var(--green-t);}
+  .unk.done .unk-t{color:#0F5434;}
+  .unk.done svg{color:var(--green);}
+  /* cargos en el hotel */
+  .ch{display:grid;grid-template-columns:1.6fr .7fr .6fr 1.3fr 32px;gap:8px;align-items:center;margin-bottom:8px;}
+  .ch-h{font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
+  .ch .ip{min-height:38px;font-size:13.5px;}
+  .ic-b{width:32px;height:32px;border:none;border-radius:8px;background:none;color:var(--ink3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+  .ic-b:hover{background:#F2F4F8;color:var(--ink);}
+  .add-l{border:none;background:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--blue-d);cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;border-radius:8px;}
+  .add-l:hover{background:var(--blue-t);}
+  /* proveedores e IDs */
+  .vr{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);}
+  .vr:first-of-type{border-top:none;}
+  .vr b{font-weight:600;}
+  .vr .t1{display:flex;flex-direction:column;}
+  .vr .t1 span{font-size:12.5px;color:var(--ink3);}
+  .ta-p{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-top:8px;}
+  /* columna lateral */
+  .aside{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px;}
+  .ac{padding:16px 18px;}
+  .ac h3{font-size:14.5px;font-weight:700;margin-bottom:10px;}
+  .pbar{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;margin:2px 0 10px;}
+  .pbar i{display:block;height:100%;background:var(--green);border-radius:3px;}
+  .cl{display:flex;align-items:center;gap:8px;font-size:13.5px;padding:5px 0;}
+  .cl svg{flex-shrink:0;}
+  .cl.ok svg{color:var(--green);}
+  .cl.ms{color:var(--amber);} .cl.ms svg{color:var(--amber);}
+  .cl span:last-child{margin-left:auto;color:var(--ink3);font-size:12.5px;}
+  .tr{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-top:1px solid var(--line);}
+  .tr:first-of-type{border-top:none;}
+  .tr span{color:var(--ink3);}
+  /* barra de cambios sin guardar (como Shopify) */
+  .sbar{position:fixed;left:0;right:0;top:0;height:56px;background:#0B1324;color:#fff;display:flex;align-items:center;gap:12px;padding:0 24px 0 256px;z-index:35;transform:translateY(-100%);transition:transform .22s var(--ease);}
+  .sbar.show{transform:none;}
+  .sbar b{font-size:14.5px;font-weight:600;}
+  .sbar span{font-size:13px;color:#AEB7C7;}
+  .sbar .sp{flex:1;}
+  .sbar .btn2{box-shadow:inset 0 0 0 1px #33405A;background:transparent;color:#fff;}
+  .sbar .btn2:hover{background:#1A2640;}
+  .sbar .btn2.pri{background:var(--blue);box-shadow:none;}
+  .imp{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:var(--blue-t);color:#0B3B8C;font-size:13.5px;}
+  .imp svg{color:var(--blue);flex-shrink:0;}
+  .imp .btn2{margin-left:auto;}
+  .lbl-s{font-weight:500;color:var(--ink3);}
+  .ta-r{display:flex;gap:14px;align-items:center;}
+  .cv{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start;}
+  .cv-f{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;}
+  .cv-f .ph{position:absolute;inset:0;border-radius:0;}
+  .cv-f > i{position:absolute;left:10px;top:10px;font-style:normal;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.92);border-radius:6px;padding:2px 8px;}
+  .cv-f.sq{background:#1B2230;}
+  .cv-f.sq .ph{left:21.9%;right:21.9%;}
+  .cv-crop{position:absolute;left:21.9%;right:21.9%;top:21.9%;height:56.2%;box-shadow:0 0 0 999px rgba(17,26,43,.55);outline:2px solid #fff;}
+  .cv-i b{display:block;font-size:14.5px;font-weight:700;}
+  .cv-i > span{display:block;font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.45;}
+  .cv-f.sq + .cv-i b{color:var(--amber);}
+  .cv-a{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .phs.g2 .ph:first-child{grid-column:auto;grid-row:auto;height:92px;}
+  .rt.r3 th:nth-child(1){width:30%;} .rt.r3 th:nth-child(2){width:22%;} .rt.r3 th:nth-child(3){width:48%;}
+  .rph{display:flex;align-items:center;gap:4px;}
+  .rph .ph{width:34px;height:34px;border-radius:7px;flex-shrink:0;}
+  .rph-0{font-size:12.5px;color:var(--amber);font-weight:600;margin-right:2px;}
+  .rph-up{flex-shrink:0;width:34px;height:34px;border-radius:7px;border:1.5px dashed #C5CCD8;background:#F8FAFC;color:var(--ink3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .rph-up svg{width:14px;height:14px;}
+  .rph-n{font-size:12px;color:var(--ink3);margin-left:4px;}
+  .acx{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+  .acx .lnk{margin:0 0 0 -4px;padding:4px;}
+  .acx .lnk.dis{color:var(--ink3);cursor:not-allowed;}
+  .acx .lnk.dis:hover{background:none;}
+  .acx .hint{margin-top:4px;line-height:1.4;}
+  .tgl-r{display:flex;align-items:center;gap:10px;border:none;background:none;padding:2px 0;cursor:pointer;font:inherit;color:inherit;text-align:left;}
+  .tgl{width:40px;height:24px;border-radius:999px;background:#C5CCD8;position:relative;flex-shrink:0;transition:background .18s;}
+  .tgl i{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(17,26,43,.3);transition:transform .18s;}
+  .tgl.on{background:var(--green);}
+  .tgl.on i{transform:translateX(16px);}
+  .tgl-r b{font-size:14px;font-weight:600;}
+  .cf-l{display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--ink2);}
+  .cf-l div{padding-left:14px;position:relative;line-height:1.45;}
+  .cf-l div::before{content:'';position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:#AAB3C1;}
+</style>
+
+</helmet>
+
+<div class="app">
+  <div class="toast {{toastCls}}" role="status">{{toastMsg}}</div>
+  <div class="sbar {{sbar}}" role="region" aria-label="Cambios sin guardar"><b>Cambios sin guardar</b><span>Las cotizaciones ya enviadas no cambian; las nuevas usan la ficha guardada.</span><span class="sp"></span><button class="btn2" onClick="{{discard}}">Descartar</button><button class="btn2 pri" onClick="{{save}}">Guardar</button></div>
+  <aside class="side" aria-label="Navegación">
+    <div class="brand"><img src="/_blob/9415e1981290d924b54d965a0e67aa4b" alt=""><b>airoo</b><span>Panel</span></div>
+    <nav class="nav">
+      <button class="nv {{navVj}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>Viajes<span class="cnt num">5</span></button>
+      <button class="nv "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Avisos<span class="cnt g num">7</span></button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Clientes</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>Finanzas</button>
+      <div class="nav-k">Catálogos</div>
+      <button class="nv {{navHt}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M15 9h4a2 2 0 0 1 2 2v10M2 21h20M7 7h4M7 11h4M7 15h4"/></svg>Hoteles</button>
+      <button class="nv {{navAc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>Actividades</button>
+      <button class="nv {{navSv}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>Servicios</button>
+      <button class="nv {{navAe}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>Aerolíneas</button>
+      <button class="nv {{navPv}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.6-5h14.8L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/></svg>Proveedores</button>
+      <div class="nav-k">Agencia</div>
+      <button class="nv "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Configuración</button>
+    </nav>
+    <div class="me"><span class="av">TÚ</span><div><div style="font-weight:600;font-size:13.5px;">Tu cuenta</div><div style="font-size:12px;color:var(--ink3);">Administrador</div></div></div>
+  </aside>
+
+  <main class="main">
+    <button class="crumb" onClick="{{back}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Hoteles</button>
+    <div class="fh">
+      <div>
+        <h1>Seadust Cancún Family Resort</h1>
+        <p>Cancún, Quintana Roo, México · usado en 11 viajes</p>
+      </div>
+      <div class="fh-a"><button class="btn2" style="height:40px;" onClick="{{preview}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Vista previa como cliente</button></div>
+    </div>
+
+    <div class="fg">
+      <div class="fcol">
+
+        <!-- LO QUE VE EL CLIENTE -->
+        <section class="card fc" aria-labelledby="h-cli">
+          <div class="fc-h"><h2 id="h-cli">Lo que ve el cliente</h2><span class="vis cli"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>En la propuesta y en el viaje</span></div>
+          <p class="fc-s">Encabezado del hotel: régimen, nombre y calificación de Tripadvisor.</p>
+          <div class="f2">
+            <div class="fl"><label>Nombre</label><div class="ip" onClick="{{markDirty}}">Seadust Cancún Family Resort</div></div>
+            <div class="fl"><label>Ciudad</label><div class="ip">Cancún, Quintana Roo, México<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg><span class="u">lista de ciudades</span></div><span class="hint">La lista la comparten todos los hoteles, actividades y viajes.</span></div>
+          </div>
+          <div class="fl"><label>Calificación de Tripadvisor</label>
+            <div class="ta-r"><div class="ip num ok" style="flex:1;">1234517<span class="u">ID de Tripadvisor · encontrado</span></div><div class="rate"><span class="bub"><i></i><i></i><i></i><i></i><i class="h"></i></span><b>4.5</b><span class="num">3,106 opiniones</span></div></div>
+            <span class="hint">El ID está en la dirección de la página del hotel en Tripadvisor, después de «-d». La calificación se actualiza sola.</span>
+          </div>
+          <div class="fl"><label>Régimen que maneja</label><div class="rg"><sc-for list="{{regs}}" as="r" hint-placeholder-count="5"><button class="{{r.c}}" title="{{r.t}}" onClick="{{r.go}}">{{r.k}}</button></sc-for></div><div class="rg-l">{{regTxt}} · en cada cotización se elige cuál se vende</div></div>
+          <div class="fl"><label>Descripción</label><div class="ip ta" onClick="{{markDirty}}">En el km 16.5 de la Zona Hotelera, con acceso directo a la playa. Albercas con zona infantil, parque acuático, Kids Club, diez centros de consumo y espectáculos nocturnos.</div><div class="cnt2 num">174 de 400</div></div>
+          <div class="f2">
+            <div class="fl"><label>Dirección</label><div class="ip" onClick="{{markDirty}}">Blvd. Kukulcán km 16.5, Zona Hotelera, 77500 Cancún, Q. Roo</div></div>
+            <div class="fl"><label>Liga de Google Maps</label><div class="ip" onClick="{{markDirty}}">maps.app.goo.gl/sd8Kq2…<span class="u">botón «Cómo llegar»</span></div></div>
+          </div>
+          <div class="fl" style="margin-bottom:0;"><label>Teléfono del hotel</label><div class="ip num" style="max-width:50%;">+52 998 881 8000</div><span class="hint">Lo ve el cliente en su viaje confirmado. El de reservaciones, solo para el equipo, va abajo.</span></div>
+        </section>
+
+        <!-- PORTADA Y GALERÍA -->
+        <section class="card fc" aria-labelledby="h-ph">
+          <div class="fc-h"><h2 id="h-ph">Portada y galería</h2><span class="vis cli"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>En la propuesta</span></div>
+          <p class="fc-s">La portada va en la tarjeta del hotel y tiene un formato fijo. La galería es lo que se ve al abrir las fotos.</p>
+          <div class="cv">
+            <div class="cv-f {{cvC}}"><div class="ph a"></div><sc-if value="{{cvSq}}" hint-placeholder-val="{{ false }}"><div class="cv-crop"></div></sc-if><i>Portada · 16:9</i></div>
+            <div class="cv-i">
+              <b>{{cvT}}</b>
+              <span>{{cvS}}</span>
+              <div class="cv-a"><button class="btn2" onClick="{{cvSwap}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Cambiar portada</button><button class="btn2" onClick="{{cvFrame}}">Ajustar encuadre</button></div>
+              <div class="hint" style="margin-top:10px;">Formato horizontal 16:9, de al menos 1600 × 900 px. Si la foto es cuadrada o vertical, se elige qué parte se usa; no se estira. <button class="lnk" style="margin:0;padding:0 2px;font-size:12.5px;" onClick="{{cvDemo}}">{{cvDemoL}}</button></div>
+            </div>
+          </div>
+          <div class="fl" style="margin:16px 0 0;"><label>Galería de la propiedad <span class="lbl-s">· {{galN}} fotos · albercas, restaurantes, áreas comunes</span></label>
+            <div class="phs g2">
+              <sc-for list="{{phs}}" as="p" hint-placeholder-count="8">
+                <div class="ph {{p.c}}"><span class="g"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01"/></svg></span></div>
+              </sc-for>
+              <div class="up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><span>Subir</span></div>
+            </div>
+            <div class="hint" style="margin-top:8px;">Se ordenan arrastrando. Las fotos de cada habitación van en su habitación, abajo.</div>
+          </div>
+        </section>
+
+        <!-- HABITACIONES -->
+        <section class="card fc" aria-labelledby="h-rm">
+          <div class="fc-h"><h2 id="h-rm">Habitaciones</h2><span class="vis cli"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>El cliente ve tu nombre y sus fotos</span></div>
+          <p class="fc-s">Cada plataforma llama distinto a la misma habitación. Guardar sus nombres sirve para encontrarla rápido al reservar y para revisar que el bono coincida; el cliente siempre ve el tuyo. Camas y número de personas no se guardan aquí: se eligen en el armador, en cada cotización.</p>
+          <table class="rt r3">
+            <thead><tr><th>Nombre para el cliente</th><th>Fotos</th><th>Nombres de proveedor</th></tr></thead>
+            <tbody>
+              <sc-for list="{{rooms}}" as="r" hint-placeholder-count="4">
+                <tr><td><b>{{r.name}}</b></td>
+                  <td><div class="rph"><sc-for list="{{r.ph}}" as="p" hint-placeholder-count="3"><span class="ph {{p}}"></span></sc-for><sc-if value="{{r.noPh}}" hint-placeholder-val="{{ false }}"><span class="rph-0">Sin fotos</span></sc-if><button class="rph-up" onClick="{{r.up}}" aria-label="Subir fotos"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></button><span class="num rph-n">{{r.phN}}</span></div></td>
+                  <td><div class="sup"><sc-for list="{{r.al}}" as="a" hint-placeholder-count="3"><span class="sc" title="{{a.w}} · {{a.n}}"><i>{{a.w}}</i><span>{{a.n}}</span></span></sc-for><button class="sc-add" onClick="{{addAl}}">+ Nombre</button></div></td></tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- LLEGADA, SALIDA Y CARGOS -->
+        <section class="card fc" aria-labelledby="h-ll">
+          <div class="fc-h"><h2 id="h-ll">Llegada, salida y cargos en el hotel</h2><span class="vis cli"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>En el viaje confirmado</span></div>
+          <p class="fc-s">Los cargos se muestran aparte, en «Pagas directamente en el hotel». No se suman al total de la cotización.</p>
+          <div class="f3">
+            <div class="fl"><label>Llegada desde</label><div class="ip num">3:00 PM</div></div>
+            <div class="fl"><label>Salida hasta</label><div class="ip num">12:00 PM</div></div>
+            <div class="fl"><label>Edad de menores</label><div class="ip num">De 3 a 12 años</div></div>
+          </div>
+          <div class="fl"><label>Llegada anticipada</label><div class="ip" onClick="{{markDirty}}">Puedes dejar las maletas y usar las albercas desde tu llegada; la habitación se entrega a las 3:00 PM.</div></div>
+          <div class="fl"><label>Reglas del hotel <span class="lbl-s">· opcional</span></label><div class="ip ta" onClick="{{markDirty}}">Se pide identificación oficial y tarjeta de crédito para el depósito de incidentales al registrarse. No se aceptan mascotas.</div></div>
+          <div class="fl" style="margin-bottom:6px;"><label>Cargos que se pagan en el hotel</label></div>
+          <sc-if value="{{hasCharges}}" hint-placeholder-val="{{ true }}">
+            <div class="ch"><span class="ch-h">Concepto</span><span class="ch-h">Monto</span><span class="ch-h">Moneda</span><span class="ch-h">Se cobra</span><span></span></div>
+            <sc-for list="{{charges}}" as="c" hint-placeholder-count="1">
+              <div class="ch"><div class="ip" style="{{c.lc}}">{{c.l}}</div><div class="ip num" style="justify-content:flex-end;">{{c.m}}</div><div class="ip">{{c.c}}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div><div class="ip">{{c.p}}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div><button class="ic-b" onClick="{{c.del}}" aria-label="Quitar cargo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button></div>
+            </sc-for>
+          </sc-if>
+          <button class="add-l" onClick="{{addCharge}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Agregar cargo</button>
+        </section>
+
+        <!-- EN QUÉ PLATAFORMAS ESTÁ -->
+        <section class="card fc" aria-labelledby="h-rs">
+          <div class="fc-h"><h2 id="h-rs">Dónde se puede reservar</h2><span class="vis"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Solo el equipo</span></div>
+          <p class="fc-s">Las plataformas donde existe este hotel, con su ID en cada una. No obliga a reservar en ninguna: la plataforma y la moneda de cada reserva se eligen en el armador, según la tarifa.</p>
+          <div class="vr"><div class="t1"><b>RateHawk</b><span>Plataforma</span></div><div class="ip num ok">6011734<span class="u">Encontrado</span></div><button class="lnk" style="margin:0;" onClick="{{openSup}}">Ver proveedor</button></div>
+          <div class="vr"><div class="t1"><b>TBO Holidays</b><span>Plataforma</span></div><div class="ip num ok">1043920<span class="u">Encontrado</span></div><button class="lnk" style="margin:0;" onClick="{{openSup}}">Ver proveedor</button></div>
+          <button class="add-l" onClick="{{addSup}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Agregar plataforma o trato directo</button>
+        </section>
+
+        <!-- PARA EL EQUIPO -->
+        <section class="card fc" aria-labelledby="h-eq">
+          <div class="fc-h"><h2 id="h-eq">Para el equipo</h2><span class="vis"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Solo el equipo</span></div>
+          <div class="f2">
+            <div class="fl"><label>Teléfono de reservaciones</label><div class="ip num">+52 998 881 8000</div><span class="hint">Aparece en el viaje cuando toca corroborar una clave.</span></div>
+            <div class="fl"><label>Correo de reservaciones</label><div class="ip">reservaciones@seadust.com</div></div>
+          </div>
+          <div class="fl" style="margin-bottom:0;"><label>Nota interna</label><div class="ip ta" onClick="{{markDirty}}">Pedir habitación en piso alto para vista al mar; la recepción la asigna al llegar. Con niños menores de 3, pedir cuna al reservar.</div></div>
+        </section>
+      </div>
+
+      <!-- COLUMNA LATERAL -->
+      <aside class="aside" aria-label="Resumen de la ficha">
+        <div class="card ac">
+          <h3>Estado</h3>
+          <button class="tgl-r" role="switch" aria-checked="{{stOn}}" onClick="{{stAsk}}"><span class="tgl {{stC}}"><i></i></span><span><b>{{stL}}</b></span></button>
+          <div class="hint" style="margin-top:8px;">{{stHint}}</div>
+          <div class="acx">
+            <button class="lnk" onClick="{{merge}}">Unir con otro hotel</button>
+            <button class="lnk dis" onClick="{{del}}">Eliminar hotel</button>
+            <div class="hint">Se usó en 11 viajes, así que no se puede eliminar; se puede archivar. «Unir» sirve para duplicados: los viajes del otro pasan a este.</div>
+          </div>
+        </div>
+        <div class="card ac">
+          <h3>{{cplTxt}}</h3>
+          <div class="pbar"><i style="width:{{cplW}};"></i></div>
+          <sc-for list="{{checks}}" as="c" hint-placeholder-count="7">
+            <div class="cl {{c.c}}"><sc-if value="{{c.ok}}" hint-placeholder-val="{{ true }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg></sc-if><sc-if value="{{c.ms}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></sc-if><span>{{c.l}}</span><span class="num">{{c.v}}</span></div>
+          </sc-for>
+        </div>
+        <div class="card ac">
+          <h3>Uso</h3>
+          <div class="tr"><span>Viajes</span><b class="num">11</b></div>
+          <div class="tr"><span>Último</span><b class="num">AIR-2458 · 1 oct</b></div>
+          <div class="tr"><span>Editada</span><b>Tú · 28 sep</b></div>
+          <button class="lnk" style="margin:6px 0 0 -4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Ver historial de cambios</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <!-- ================= CONFIRMAR ARCHIVAR / REACTIVAR ================= -->
+  <div class="mdl-s {{cfShow}}" role="alertdialog" aria-modal="true" aria-label="{{cf.t}}">
+    <div class="mdl" style="width:460px;">
+      <div class="mdl-h"><div><h3>{{cf.t}}</h3><p>{{cf.p}}</p></div></div>
+      <div class="mdl-b"><div class="cf-l"><sc-for list="{{cf.l}}" as="x" hint-placeholder-count="3"><div>{{x}}</div></sc-for></div></div>
+      <div class="mdl-f"><button class="btn2" onClick="{{cf.no}}">Cancelar</button><button class="btn2 pri" onClick="{{cf.yes}}">{{cf.btn}}</button></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3420}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      reg: ['AI'], dirty: false, phs: ['f', 'a', 'd', 'b', 'c', 'e', 'd', 'a'], unk: '', mapTo: '',
+      charges: [{ l: 'Derecho de saneamiento ambiental', m: '69.00', c: 'MXN', p: 'Por habitación, por noche' }],
+      status: 'act', cfm: false, cvSq: false, toast: '', toastOn: false
+    };
+    this.timers = {};
+  }
+  componentWillUnmount() { clearTimeout(this.timers.t); }
+  toast(m) { clearTimeout(this.timers.t); this.setState({ toast: m, toastOn: true }); this.timers.t = setTimeout(() => this.setState({ toastOn: false }), 2600); }
+  dirty(patch) { this.setState(Object.assign({ dirty: true }, patch)); }
+
+  renderVals() {
+    const s = this.state;
+    const REG = [['RO', 'Solo habitación'], ['BB', 'Desayuno'], ['HB', 'Media pensión'], ['FB', 'Pensión completa'], ['AI', 'Todo incluido']];
+    const RH = 'RateHawk', TBO = 'TBO';
+    const rooms = [
+      { name: 'Suite Deluxe', ph: ['a', 'd', 'c'], n: 6, al: [[RH, 'Family Deluxe Room 2 Double Beds'], [TBO, 'FAMILY DLX 2DB'], [RH, 'Deluxe Family Room']] },
+      { name: 'Suite Deluxe vista al mar', ph: ['b', 'a', 'f'], n: 5, al: [[RH, 'Family Deluxe Ocean View 2 Double'], [TBO, 'FAMILY DLX OV'], [RH, 'Family Room Ocean View']] },
+      { name: 'Junior Suite', ph: ['e', 'c'], n: 2, al: [[RH, 'Junior Suite King'], [TBO, 'JR SUITE KG']] },
+      { name: 'Suite familiar 2 recámaras', ph: [], n: 0, al: [[RH, 'Two Bedroom Family Suite'], [TBO, 'FAM STE 2BR']] }
+    ];
+    const NEWN = 'Deluxe Family Ocean Front';
+    if (s.unk === 'map') rooms.forEach((r) => { if (r.name === s.mapTo) r.al.push([RH, NEWN]); });
+    if (s.unk === 'new') rooms.push({ name: NEWN, ph: [], n: 0, al: [[RH, NEWN]] });
+    const nAl = rooms.reduce((a, r) => a + r.al.length, 0);
+    const roomPh = rooms.filter((r) => r.n > 0).length;
+    const checks = [
+      ['Portada 16:9', s.cvSq ? 'por ajustar' : '', !s.cvSq], ['Galería', s.phs.length + 18 + '', true], ['Descripción', '', true], ['Dirección y mapa', '', true],
+      ['Fotos por habitación', roomPh + ' de ' + rooms.length, roomPh === rooms.length], ['Nombres en plataformas', nAl + '', true], ['Tripadvisor', '4.5', true],
+      ['Cargos en el hotel', s.charges.length + '', s.charges.length > 0], ['Teléfono de reservaciones', '', true]
+    ];
+    const okN = checks.filter((c) => c[2]).length;
+    return {
+      navHt: 'on', navPv: '', navVj: '', navAc: '', navSv: '', navAe: '',
+      toastCls: s.toastOn ? 'show' : '', toastMsg: s.toast,
+      sbar: s.dirty ? 'show' : '',
+      discard: () => this.setState({ dirty: false, reg: ['AI'], charges: [{ l: 'Derecho de saneamiento ambiental', m: '69.00', c: 'MXN', p: 'Por habitación, por noche' }] }),
+      save: () => { this.setState({ dirty: false }); this.toast('Ficha guardada · las cotizaciones nuevas ya usan estos datos'); },
+      back: () => this.toast('Regresa a la lista de hoteles'),
+      preview: () => this.toast('Vista previa: así se ve el hotel en la propuesta del cliente'),
+      reimport: () => this.toast('Se vuelven a traer fotos, horarios y habitaciones de RateHawk; lo que editaste no se toca'),
+      regs: REG.map(([k, l]) => ({ k: k, t: l, c: s.reg.indexOf(k) >= 0 ? 'on' : '', go: () => this.dirty({ reg: s.reg.indexOf(k) >= 0 ? s.reg.filter((x) => x !== k) : s.reg.concat([k]) }) })),
+      regTxt: s.reg.length ? REG.filter(([k]) => s.reg.indexOf(k) >= 0).map(([, l]) => l).join(' · ') : 'Falta elegir al menos uno',
+      phs: s.phs.map((p) => ({ c: p })), galN: s.phs.length + 18,
+      cvC: s.cvSq ? 'sq' : '', cvSq: s.cvSq,
+      cvT: s.cvSq ? 'La foto es cuadrada (1080 × 1080)' : 'Portada lista',
+      cvS: s.cvSq ? 'Para 16:9 se usa solo la franja marcada. Con 1080 px de ancho se ve pixeleada en pantallas grandes; conviene una horizontal de al menos 1600 px.' : '2400 × 1350 px · se ve nítida en celular y computadora.',
+      cvSwap: () => this.toast('Se elige una foto del equipo o de la galería'), cvFrame: () => this.toast('Se mueve el recuadro para elegir qué parte de la foto se usa'),
+      cvDemo: () => this.setState({ cvSq: !this.state.cvSq }), cvDemoL: s.cvSq ? 'Ver con foto correcta' : 'Ver con una foto cuadrada',
+      rooms: rooms.map((r) => ({ name: r.name, ph: r.ph, noPh: r.n === 0, phN: r.n > r.ph.length ? '+' + (r.n - r.ph.length) : '', up: () => this.toast('Fotos de «' + r.name + '»: se suben aquí y solo aparecen en esta habitación'), al: r.al.map(([w, n]) => ({ w: w, n: n })) })),
+      addAl: () => this.toast('El nombre va tal como aparece en la tarifa del proveedor'),
+      unkOpen: !s.unk, unkDone: !!s.unk, newName: NEWN,
+      unkDoneTxt: s.unk === 'new' ? 'Se creó la habitación «' + NEWN + '». Falta ponerle el nombre que verá el cliente.' : 'Listo: «' + NEWN + '» ahora se reconoce como ' + s.mapTo + '.',
+      mapOpts: rooms.slice(0, 4).map((r) => ({ l: r.name, go: () => this.dirty({ unk: 'map', mapTo: r.name }) })),
+      mapNew: () => this.dirty({ unk: 'new' }),
+      charges: s.charges.map((c, i) => ({ l: c.l || 'Ej. Depósito en garantía', lc: c.l ? '' : 'color:var(--ink3);', m: c.m || '0.00', c: c.c, p: c.p, del: () => this.dirty({ charges: s.charges.filter((_, j) => j !== i) }) })),
+      addCharge: () => this.dirty({ charges: s.charges.concat([{ l: '', m: '', c: 'MXN', p: 'Por estancia' }]) }),
+      hasCharges: s.charges.length > 0,
+      checks: checks.map(([l, v, ok]) => ({ l: l, v: v, c: ok ? 'ok' : 'ms', ok: ok, ms: !ok })),
+      cplTxt: okN === checks.length ? 'Ficha completa' : 'Ficha · ' + okN + ' de ' + checks.length,
+      cplW: Math.round(okN / checks.length * 100) + '%',
+      // Activo/archivado: el interruptor no cambia nada hasta confirmar; se aplica al momento (no espera a «Guardar»)
+      stOn: s.status === 'act' ? 'true' : 'false', stC: s.status === 'act' ? 'on' : '', stL: s.status === 'act' ? 'Activo' : 'Archivado',
+      stAsk: () => this.setState({ cfm: true }), cfShow: s.cfm ? 'show' : '',
+      cf: s.status === 'act'
+        ? { t: '¿Archivar Seadust Cancún Family Resort?', p: 'Se puede reactivar en cualquier momento.', l: ['Deja de aparecer al buscar hoteles en el armador.', 'Los 11 viajes y las cotizaciones que ya lo usan no cambian.', 'La ficha se conserva completa: fotos, habitaciones y nombres de proveedor.'], btn: 'Archivar hotel',
+            no: () => this.setState({ cfm: false }), yes: () => { this.setState({ cfm: false, status: 'arc' }); this.toast('Hotel archivado · ya no aparece al cotizar'); } }
+        : { t: '¿Reactivar Seadust Cancún Family Resort?', p: 'Vuelve a aparecer al buscar hoteles en el armador.', l: ['Se cotiza con la ficha tal como está; conviene revisar que siga al día.'], btn: 'Reactivar hotel',
+            no: () => this.setState({ cfm: false }), yes: () => { this.setState({ cfm: false, status: 'act' }); this.toast('Hotel activo · ya aparece al cotizar'); } },
+      stHint: s.status === 'act' ? 'Aparece al buscar hoteles en el armador.' : 'No aparece al cotizar; los viajes que ya lo usan no cambian.',
+      openSup: () => this.toast('Abre el proveedor en Catálogo → Proveedores'),
+      addSup: () => this.toast('Se elige la plataforma o el proveedor directo, y el ID del hotel ahí si lo tiene'),
+      merge: () => this.toast('Se elige el hotel duplicado; sus viajes, fotos y nombres de proveedor pasan a este'),
+      del: () => this.toast('No se puede eliminar: se usó en 11 viajes. Se puede archivar'),
+      markDirty: () => this.dirty({})
+    };
+  }
+}
+
+</script>
+</body>
+</html>

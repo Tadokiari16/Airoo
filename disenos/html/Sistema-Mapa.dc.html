@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mapa del sistema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.45;}
+  .wrap{width:1440px;padding:56px 64px 72px;}
+  h1{font-size:44px;font-weight:700;letter-spacing:-.025em;margin:0;}
+  h1::first-letter,h2::first-letter{color:var(--blue);}
+  h2{font-size:26px;font-weight:700;letter-spacing:-.015em;margin:0 0 4px;}
+  .lead{font-size:17px;color:var(--ink2);margin:10px 0 0;max-width:80ch;}
+  .sec{margin-top:52px;}
+  .sub{font-size:15px;color:var(--ink2);margin:0 0 18px;max-width:90ch;}
+  .card{background:#fff;border-radius:22px;padding:8px 24px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -16px rgba(17,26,43,.18);}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px;}
+  .kpi{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 1px 2px rgba(17,26,43,.04);}
+  .kpi b{display:block;font-size:34px;font-weight:700;letter-spacing:-.02em;}
+  .kpi span{font-size:14px;color:var(--ink2);}
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:16px 14px 10px 0;}
+  td{padding:13px 14px 13px 0;border-top:1px solid var(--line);vertical-align:top;font-size:14.5px;}
+  td.f{font-weight:700;width:210px;}
+  td .m{display:block;color:var(--ink3);font-size:13px;margin-top:2px;}
+  .st{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .ok{background:var(--green-t);color:var(--green);} .pa{background:var(--blue-t);color:var(--blue-d);} .no{background:var(--amber-t);color:var(--amber);}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .col{background:#fff;border-radius:20px;padding:20px 22px;box-shadow:0 1px 2px rgba(17,26,43,.04);}
+  .col h3{font-size:17px;font-weight:700;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+  .col p{margin:0 0 10px;font-size:13.5px;color:var(--ink2);}
+  .it{padding:10px 0;border-top:1px solid var(--line);}
+  .it b{display:block;font-size:14.5px;font-weight:600;}
+  .it span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;}
+  .fx{display:grid;grid-template-columns:1fr 1fr;gap:0 36px;}
+  .fx .it b{font-size:14px;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;}
+  .it span .arrow{display:inline;color:var(--ink3);padding:0 6px 0 0;margin:0;font-size:13px;}
+</style>
+</helmet>
+<div class="wrap">
+  <h1>Mapa del sistema</h1>
+  <p class="lead">Qué está diseñado, qué falta y qué se corrigió en la revisión del Sáb 3 oct. Esta página tiene solo las versiones vigentes; todo lo anterior sigue en la página Exploración.</p>
+  <div class="kpis">
+    <div class="kpi"><b>27</b><span>tableros de diseño vigentes en esta página</span></div>
+    <div class="kpi"><b>25</b><span>inconsistencias corregidas en la revisión</span></div>
+    <div class="kpi"><b>13</b><span>ventanas o estados por diseñar</span></div>
+    <div class="kpi"><b>22</b><span>decisiones de negocio pendientes</span></div>
+  </div>
+
+  <div class="sec">
+    <h2>Flujos de punta a punta</h2>
+    <p class="sub">Cada flujo tiene dos lados: lo que ve el cliente en su enlace y lo que hace Airoo en el panel. El ejemplo que recorre todos los tableros es el viaje de Nataly Cervantes, AIR-2458.</p>
+    <div class="card">
+      <table>
+        <tr><th>Flujo</th><th>Lo que ve el cliente</th><th>Lo que hace Airoo</th><th style="width:130px;">Estado</th></tr>
+        <tr><td class="f">1 · Solicitud de viaje</td><td>Formulario por enlace para pedir su viaje<span class="m">Falta</span></td><td>Recibe la solicitud y crea la cotización<span class="m">«Nueva cotización» está en estilo anterior</span></td><td><span class="st no">Falta</span></td></tr>
+        <tr><td class="f">2 · Cotizar</td><td>—</td><td>Armador v3 y «Agregar servicio»: hotel del catálogo o de la plataforma con ficha mínima, vuelo por número, actividad con boletos por edad</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">3 · Enviar</td><td>Recibe el enlace por WhatsApp</td><td>Revisar y enviar: lo que bloquea, vigencia, mensaje de WhatsApp y confirmar que se envió<span class="m">Falta el catálogo completo de mensajes</span></td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">4 · Propuesta</td><td>Propuesta v4: opciones, una estancia y dos estancias<span class="m">Falta la propuesta de itinerario, día por día</span></td><td>Ve aperturas y lo que más vio, en Inicio</td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">5 · Dudas y cambios</td><td>Escribir a mi asesora, con temas y fechas</td><td>Etiqueta «Solicitud de cambios» y aviso por WhatsApp</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">6 · Confirmar selección</td><td>Confirma su hotel y ve «Confirmando tu selección», servicio por servicio</td><td>Validar y aprobar: cada servicio queda Igual, Cambió precio, Agotado o No pude verificar; la versión 1 se congela</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">7 · Precio cambió o no hay</td><td>Precio actualizado o alternativa si se agotó, con plazo para aceptar</td><td>Versión 2 con las diferencias, tolerancia que absorbe Airoo, alternativa si se agotó y plazo para aceptar; vista previa de lo que ve el cliente</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">8 · Datos y pago</td><td>3 pasos, plazo, dividir pagos y enlace del pasajero</td><td>Confirmar el pago contra el banco: CEP de Banxico, o portal si es del mismo banco<span class="m">Falta «Extender plazo»</span></td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">9 · Reservar</td><td>«Estamos reservando»; ve cada servicio confirmarse</td><td>Pestañas Reservas, Documentos y Pagos: clave por servicio y habitación, pago al proveedor, documentos esperados y carga con asignación automática</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">10 · Pagos a proveedores</td><td>—</td><td>Pagar ahora o antes del fin de la cancelación gratuita; Proveedores y Finanzas → Por pagar</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">11 · Reservada y check-in</td><td>Viaje confirmado, check-in asistido y pases por pasajero</td><td>Agenda de los próximos 7 días y pases por pasajero y tramo en Documentos</td><td><span class="st ok">Diseñado</span></td></tr>
+        <tr><td class="f">12 · Cambio de horario</td><td>Aviso con la hora anterior y la nueva; aceptar o pedir otra opción</td><td>Registrar el cambio y avisar<span class="m">Falta</span></td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">13 · En viaje</td><td>«Hoy», documentos sin internet y emergencias</td><td>Ve el viaje en curso<span class="m">Faltan las incidencias (vuelo cancelado, hotel sin reserva) en los dos lados</span></td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">14 · Finalizada</td><td>Recibo, reseña, volver a viajar<span class="m">Falta</span></td><td>Liquidación y comisiones en Finanzas</td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">15 · Cancelada</td><td>Qué se reembolsa y cuándo<span class="m">Falta</span></td><td>Cancelar viaje: lo que se recupera por servicio, penalización, devolución por SPEI o crédito y pendientes con proveedores</td><td><span class="st pa">Parcial</span></td></tr>
+        <tr><td class="f">16 · Pago atrasado</td><td>Recordatorios 3 días antes y el mismo día</td><td>Gracia, penalización y cancelación<span class="m">Falta definir días y cálculo</span></td><td><span class="st no">Falta</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Ventanas y estados por diseñar</h2>
+    <p class="sub">Ordenados por lo que bloquea el flujo principal: cotizar, cobrar, reservar y entregar.</p>
+    <div class="cols">
+      <div class="col">
+        <h3><span class="st no">Alta</span>Bloquean el flujo</h3>
+        <p>Sin estas no se puede operar un viaje completo dentro del sistema.</p>
+      </div>
+      <div class="col">
+        <h3><span class="st pa">Media</span>Completan la operación</h3>
+        <p>Se puede operar sin ellas, pero con pasos por fuera del sistema.</p>
+        <div class="it"><b>Propuesta de itinerario y armador por días</b><span>Ya hay itinerarios en Inicio (Castillo, Márquez) sin vista para el cliente.</span></div>
+        <div class="it"><b>Clientes</b><span>Lista y perfil en el estilo nuevo, con viajeros guardados.</span></div>
+        <div class="it"><b>Formulario de solicitud</b><span>Enlace para que un cliente nuevo pida su viaje.</span></div>
+        <div class="it"><b>Mensajes de WhatsApp</b><span>Catálogo de plantillas de los dos bots: clientes y equipo.</span></div>
+        <div class="it"><b>Extender plazo</b><span>Revalidar precios y dar más tiempo en Datos y pago.</span></div>
+        <div class="it"><b>Registrar cambio de horario</b><span>Del lado de Airoo; el cliente ya tiene su vista.</span></div>
+        <div class="it"><b>Enlace vencido o inválido</b><span>Página de rescate con cómo pedir uno nuevo.</span></div>
+      </div>
+      <div class="col">
+        <h3><span class="st ok">Baja</span>Pulido y crecimiento</h3>
+        <p>Mejoran la experiencia; ninguna detiene un viaje.</p>
+        <div class="it"><b>Finalizada y Cancelada del cliente</b><span>Recibo, reseña y volver a viajar.</span></div>
+        <div class="it"><b>Incidencias</b><span>Vuelo cancelado, el hotel no encuentra la reserva, un proveedor no confirma.</span></div>
+        <div class="it"><b>Búsqueda ⌘K</b><span>Resultados de viaje, cliente, folio y proveedor.</span></div>
+        <div class="it"><b>Estados vacíos y errores</b><span>Sin viajes, pago fallido, enlace caído.</span></div>
+        <div class="it"><b>Fichas de actividad, servicio y aerolínea</b><span>Con el mismo patrón que la ficha del hotel.</span></div>
+        <div class="it"><b>Panel en el celular</b><span>Los avisos del bot del equipo se abren en el celular.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Inconsistencias corregidas</h2>
+    <p class="sub">Todos los tableros cuentan ya la misma historia: mismo viaje, mismos datos, mismas reglas.</p>
+    <div class="card" style="padding:16px 24px;">
+      <div class="fx">
+        <div class="it"><b>Folio del viaje de Nataly</b><span>Había tres (AIR-2610-084, AIR-2481, AIR-2458). Ahora es AIR-2458 en todos los tableros.</span></div>
+        <div class="it"><b>Nombre del hotel</b><span>«Seadust Family Resort» y «Seadust Cancún Family Resort». Ahora el segundo, el nombre real.</span></div>
+        <div class="it"><b>Dirección del hotel</b><span>km 16.9 en la propuesta y 16.5 en el viaje confirmado. Ahora 16.5.</span></div>
+        <div class="it"><b>Habitaciones</b><span>«Suite Deluxe» con el cliente y «Family Deluxe» en el catálogo. Ahora Suite Deluxe en todos.</span></div>
+        <div class="it"><b>Opiniones de Tripadvisor</b><span>El catálogo tenía otras cifras que la propuesta. Igualadas.</span></div>
+        <div class="it"><b>Ciudad de salida</b><span>Inicio decía CDMX; todo lo demás, Guadalajara. Ahora Guadalajara.</span></div>
+        <div class="it"><b>Fechas de los parques</b><span>Tres versiones distintas. Ahora Xel-Há el Jue 22 oct y Xcaret Plus el Sáb 24 oct.</span></div>
+        <div class="it"><b>Día de la semana</b><span>«Dom 27 oct» en el armador y «Mié 23 oct» en Inicio. Corregidos.</span></div>
+        <div class="it"><b>Viajeros</b><span>La vista del viaje tenía otros nombres. Ahora son los mismos del enlace del cliente.</span></div>
+        <div class="it"><b>Claves y póliza</b><span>Vuelo K7M2QX, hotel 5521884 y 5521885, póliza AS-448120 en todos los tableros.</span></div>
+        <div class="it"><b>Montos del viaje</b><span>La vista del viaje sumaba $78,888 y la propuesta $42,248.48. Ahora la propuesta manda, con sus fechas de pago (5 y 12 oct).</span></div>
+        <div class="it"><b>Costo de Seadust al proveedor</b><span>Era mayor que la venta. Ahora $21,800 en Proveedores, Finanzas y el viaje.</span></div>
+        <div class="it"><b>Pagos a proveedores cruzados</b><span>Había una reserva por pagar de un viaje que ya terminó. Se reacomodaron con los viajes de Inicio.</span></div>
+        <div class="it"><b>Proveedor de traslados</b><span>La vista del viaje usaba Traslados Riviera y no existía en Proveedores. Agregado.</span></div>
+        <div class="it"><b>Check-in con horas fijas</b><span>El cliente leía «72 horas antes». Ahora «en cuanto Viva abre el check-in», como dice la regla.</span></div>
+        <div class="it"><b>Rojo en la cuenta regresiva</b><span>El plazo se ponía rojo, y el rojo es solo para errores. Ahora es ámbar, más intenso con menos de 1 hora, igual que en el panel.</span></div>
+        <div class="it"><b>Pasos al confirmar</b><span>Decía «te envía los datos para pagar». Ahora: Datos y pago se habilita en el mismo enlace, con plazo de hasta 3 horas.</span></div>
+        <div class="it"><b>Cargos en el hotel</b><span>El cliente leía «el hotel te dice los montos». Ahora ve el monto que guarda el catálogo.</span></div>
+        <div class="it"><b>IVA en el armador</b><span>Venía activado; la regla es que los precios no llevan IVA. Ahora va apagado y dice «solo si pide factura».</span></div>
+        <div class="it"><b>Formato de fechas</b><span>«21/10/2026» en el armador y en Componentes. Ahora «Mié 21 oct».</span></div>
+        <div class="it"><b>Unidad del traslado</b><span>Van Sprinter, van y van adaptada. Ahora van adaptada, como en la propuesta.</span></div>
+        <div class="it"><b>Equipaje de la tarifa Switch</b><span>El catálogo agregaba maleta de mano que la propuesta no da. Igualado.</span></div>
+        <div class="it"><b>Pago del traslado</b><span>La vista del viaje decía tarjeta; Traslados Riviera cobra por transferencia a su cuenta verificada. Corregido.</span></div>
+        <div class="it"><b>Anticipo «validado»</b><span>Ahora dice «confirmado con CEP», que es lo que se revisa.</span></div>
+        <div class="it"><b>Comisión de asesoras</b><span>Airoo se queda con el 35% de la utilidad de cada viaje de asesora; el resto es de ella. Está en Configuración › Equipo y permisos.</span></div>
+        <div class="it"><b>Cancelación</b><span>El cliente ve un solo «cargo por cancelación» por servicio; el desglose (proveedor y ganancia de Airoo) solo lo ve el equipo. La condición aparece por escrito en Datos y pago.</span></div>
+        <div class="it"><b>Tono</b><span>Segunda pasada en panel y cliente: los textos describen qué pasa y por qué; las órdenes quedan solo en los botones.</span></div>
+        <div class="it"><b>Pulido del cliente</b><span>Aplicado a todas las vistas del cliente; las copias «Pulida» ya no hacen falta.</span></div>
+        <div class="it"><b>Fecha límite de pago</b><span>Ya no sale de una regla del proveedor: cada reserva guarda la fecha de su tarifa y Airoo avisa un día antes.</span></div>
+        <div class="it"><b>Proveedores con reglas fijas</b><span>Cuándo se paga, cancelación y moneda estaban fijos por proveedor. Ahora Proveedores solo guarda datos y cada reserva lleva su acuerdo.</span></div>
+        <div class="it"><b>Plataformas que no existen como API</b><span>El armador buscaba en RateHawk y TBO, y la ficha recibía tarifas solas. Ahora el alta es manual con lo mínimo; la importación queda como conexión opcional.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec two">
+    <div>
+      <h2>Decisiones pendientes</h2>
+      <p class="sub">Sin estas, algunas pantallas no se pueden programar tal como están.</p>
+      <div class="col">
+        <div class="it"><b>Finanzas</b><span>¿Algún proveedor paga comisión? ¿La venta cuenta por fecha de venta o de viaje? ¿Tu prima ve la utilidad de sus viajes? ¿Qué pasarela y con qué porcentaje?</span></div>
+        <div class="it"><b>Pagos del cliente</b><span>Días de gracia y penalización por pago tardío; cuándo se ofrecen pagos flexibles; anticipo de un viaje de solo hospedaje.</span></div>
+        <div class="it"><b>Plazo</b><span>¿Siempre 3 horas o lo define la asesora? ¿Verificación por celular al entrar a Datos y pago?</span></div>
+        <div class="it"><b>Viajeros</b><span>Longitud exacta del IDMEX; documentos de menores en vuelo nacional; cuánto se guardan INE y pasaportes.</span></div>
+        <div class="it"><b>Acompañantes</b><span>Alcance exacto de su vista del viaje.</span></div>
+        <div class="it"><b>Atención</b><span>Horario real y si hay atención 24/7 durante el viaje.</span></div>
+        <div class="it"><b>Tipo de cambio</b><span>Colchón sobre el FIX al cotizar en dólares o euros.</span></div>
+        <div class="it"><b>Reservas sin clave</b><span>¿Recordatorio para pedirla, por ejemplo a las 2 horas?</span></div>
+        <div class="it"><b>Vuelo por comprar</b><span>¿Aviso por WhatsApp al equipo en cuanto entra el anticipo?</span></div>
+        <div class="it"><b>Panel en el celular</b><span>Mínimo la vista del viaje, porque los avisos se abren ahí.</span></div>
+        
+                      </div>
+    </div>
+    <div>
+      <h2>Lo que quedó en Exploración</h2>
+      <p class="sub">Tableros anteriores. Se conservan como historia; la versión vigente es la de esta página.</p>
+      <div class="col">
+        <div class="it"><b>Cotizaciones, Itinerarios, Reservas y Vencimientos</b><span><span class="arrow">→</span>Inicio (Viajes), con alcances y vista de 7 días.</span></div>
+        <div class="it"><b>Catálogos con formulario en dos pasos</b><span><span class="arrow">→</span>Catálogos nuevos con panel lateral y ficha en una página.</span></div>
+        <div class="it"><b>Armador, Armador propuesta UX y Armador v2</b><span><span class="arrow">→</span>Armador v3.</span></div>
+        <div class="it"><b>Vista del cliente, móvil v2 y v3, portadas y pase adaptable</b><span><span class="arrow">→</span>Propuesta v4, Datos y pago y Viaje confirmado.</span></div>
+        <div class="it"><b>Sistema visual v2</b><span><span class="arrow">→</span>Reglas del sistema v4, hasta que exista el sistema único de tokens.</span></div>
+        <div class="it"><b>Clientes, ficha, nuevo cliente, enviar y nueva cotización</b><span><span class="arrow">→</span>Por rediseñar (ventanas pendientes).</span></div>
+        <div class="it"><b>Modales para agregar hotel, vuelo y actividad</b><span><span class="arrow">→</span>Por rediseñar contra los catálogos nuevos.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":4700}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

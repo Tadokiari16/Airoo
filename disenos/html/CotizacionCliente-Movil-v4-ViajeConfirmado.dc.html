@@ -1,0 +1,1395 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta v4 — Viaje confirmado</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;font-display:swap;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--blue-t2:#D3E0FD;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--card:#FFFFFF;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;--ease:cubic-bezier(.2,.8,.2,1);--safe:env(safe-area-inset-bottom,0px);}
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:'Gilroy','Figtree',system-ui,sans-serif;color:var(--ink);background:#E3E8EF;-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.45;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;color:inherit;font-size:15px;}
+  h1,h2,h3{margin:0;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .row{display:flex;align-items:center;}
+  .muted{color:var(--ink2);}
+  .cents{font-size:.6em;color:var(--ink3);font-weight:600;vertical-align:.5em;margin-left:1px;}
+  .card{background:var(--card);border-radius:22px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -16px rgba(17,26,43,.18);}
+  .pad{padding:18px;}
+  .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-t);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);}
+  .b-green{background:var(--green-t);color:var(--green);}
+  .b-amber{background:var(--amber-t);color:var(--amber);}
+  .b-gray{background:#EEF1F5;color:var(--ink2);}
+  .sec{scroll-margin-top:64px;margin-top:28px;}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;}
+  .sec-t{font-size:22px;font-weight:700;letter-spacing:-.015em;}
+  .tabs{position:sticky;top:0;z-index:30;background:rgba(242,244,248,.9);backdrop-filter:blur(12px);padding:10px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent);}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs::after{content:'';flex:0 0 24px;}
+  .tab{height:36px;padding:0 14px;border-radius:999px;border:none;background:transparent;color:var(--ink2);font-weight:600;font-size:14px;white-space:nowrap;cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease);flex-shrink:0;}
+  .tab.on{background:var(--ink);color:#fff;}
+  .car{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 16px 8px;margin:0 -16px;scrollbar-width:none;}
+  .car::-webkit-scrollbar{display:none;}
+  .hc{scroll-snap-align:center;flex:0 0 84%;border:none;padding:0;text-align:left;cursor:pointer;border-radius:22px;background:#fff;overflow:hidden;box-shadow:0 0 0 1.5px transparent,0 8px 24px -16px rgba(17,26,43,.2);transition:box-shadow .2s var(--ease),transform .12s var(--ease);font:inherit;}
+  .hc:active{transform:scale(.985);}
+  .hc.on{box-shadow:0 0 0 2px var(--blue),0 12px 28px -16px rgba(20,99,246,.55);}
+  .ph{height:150px;position:relative;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 60%,#EADCC2 60.5%);}
+  .ph.g{background:linear-gradient(180deg,#CFE6D9,#86C3A1 58%,#EADCC2 58.5%);}
+  .ph .tag{position:absolute;left:12px;top:12px;}
+  .ph .sel{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;color:transparent;transition:background-color .2s var(--ease),color .2s var(--ease),transform .2s var(--ease);}
+  .hc.on .ph .sel{background:var(--blue);color:#fff;transform:scale(1.05);}
+  .ph .pt{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:500;color:#5A4A2E;background:rgba(255,255,255,.85);border-radius:6px;padding:2px 7px;}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px;}
+  .kv > span:first-child{color:var(--ink2);white-space:nowrap;}
+  .kv > span:last-child{font-weight:600;text-align:right;min-width:0;}
+  .link{border:none;background:none;padding:0;color:var(--blue);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:#fff;box-shadow:0 1px 2px rgba(17,26,43,.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .clp{display:grid;transition:grid-template-rows .26s var(--ease),opacity .2s var(--ease);}
+  .clp > div{overflow:hidden;min-height:0;}
+  .chev{display:inline-flex;transition:transform .22s var(--ease);}
+  .chev.open{transform:rotate(180deg);}
+  .fl-t{position:relative;}
+  .dot{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2.5px var(--blue);flex-shrink:0;}
+  .fa{animation:flA .7s var(--ease);} .fb{animation:flB .7s var(--ease);}
+  @keyframes flA{0%{background-color:var(--blue-t2);}100%{background-color:rgba(211,224,253,0);}}
+  @keyframes flB{0%{background-color:var(--blue-t2);}100%{background-color:rgba(211,224,253,0);}}
+  .mA{display:inline-block;animation:mA .32s var(--ease);} .mB{display:inline-block;animation:mB .32s var(--ease);}
+  @keyframes mA{0%{opacity:0;transform:translateY(6px);filter:blur(3px);}100%{opacity:1;transform:none;filter:none;}}
+  @keyframes mB{0%{opacity:0;transform:translateY(6px);filter:blur(3px);}100%{opacity:1;transform:none;filter:none;}}
+  .sched{display:flex;flex-direction:column;}
+  .sc-row{display:flex;gap:12px;}
+  .sc-rail{display:flex;flex-direction:column;align-items:center;width:14px;}
+  .sc-rail i{width:12px;height:12px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0;}
+  .sc-rail i.o{background:#fff;box-shadow:inset 0 0 0 2.5px #C3CBD7;}
+  .sc-rail b{flex:1;width:2px;background:var(--line);margin:4px 0;}
+  .scrim{position:fixed;inset:0;background:rgba(17,26,43,.4);z-index:40;transition:opacity .22s var(--ease);}
+  .scrim.hide{opacity:0;pointer-events:none;}
+  .tray{position:fixed;left:50%;bottom:calc(10px + var(--safe));width:calc(min(100%,430px) - 20px);background:#fff;border-radius:24px;box-shadow:0 0 0 1px rgba(17,26,43,.06),0 18px 40px -12px rgba(17,26,43,.35);z-index:50;overflow:hidden;touch-action:pan-x;}
+  .grab{display:flex;justify-content:center;padding:10px 0 0;cursor:grab;}
+  .grab i{width:40px;height:5px;border-radius:3px;background:#D5DAE2;display:block;}
+  .btn{height:50px;border:none;border-radius:16px;background:var(--blue);color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 22px;cursor:pointer;transition:background-color .15s var(--ease),transform .1s var(--ease);white-space:nowrap;}
+  .btn:hover{background:var(--blue-d);}
+  .btn:active{transform:scale(.97);}
+  .btn2{height:48px;border:none;border-radius:16px;background:#EEF1F5;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;width:100%;cursor:pointer;}
+  .cmp{display:grid;grid-template-columns:86px 1fr 1fr;font-size:14px;}
+  .cmp > div{padding:10px 8px;border-bottom:1px solid var(--line);}
+  .cmp .h{font-weight:700;font-size:15px;line-height:1.25;cursor:pointer;border-radius:14px 14px 0 0;border-bottom:none;padding-top:12px;}
+  .cmp .k{color:var(--ink2);padding-left:0;}
+  .cmp .on{background:var(--blue-t);}
+  .cmp .col{cursor:pointer;transition:background-color .18s var(--ease);}
+  .radio{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px #C3CBD7;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .radio i{width:10px;height:10px;border-radius:50%;background:var(--blue);transform:scale(0);transition:transform .18s var(--ease);}
+  .on .radio{box-shadow:inset 0 0 0 2px var(--blue);}
+  .on .radio i{transform:scale(1);}
+  .step{display:flex;gap:12px;align-items:flex-start;font-size:15px;}
+  .step b{width:24px;height:24px;border-radius:50%;background:var(--blue-t);color:var(--blue);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ok{width:56px;height:56px;border-radius:50%;background:var(--green-t);color:var(--green);display:flex;align-items:center;justify-content:center;animation:pop .35s var(--ease);}
+  @keyframes pop{0%{transform:scale(.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  .gal{position:fixed;inset:0;background:#0B111D;z-index:70;display:flex;flex-direction:column;transition:opacity .22s var(--ease);}
+  .gal.hide{opacity:0;pointer-events:none;}
+  .gal-img{flex:1;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 55%,#EADCC2 55.5%);display:flex;align-items:flex-end;padding:16px;color:#5A4A2E;font-size:12px;}
+  .gal-img.g{background:linear-gradient(180deg,#CFE6D9,#86C3A1 55%,#EADCC2 55.5%);}
+  .gbtn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .toast{position:fixed;left:50%;top:18px;opacity:0;visibility:hidden;transform:translate(-50%,-140%);background:var(--ink);color:#fff;font-size:14px;font-weight:500;border-radius:999px;padding:10px 16px;z-index:80;transition:transform .22s var(--ease),opacity .22s var(--ease),visibility .22s;}
+  .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+  .svc{padding:16px 14px;}
+  .svc-top{display:flex;gap:14px;align-items:flex-start;}
+  .svc-ic{width:52px;height:52px;border-radius:16px;background:var(--blue-t);color:var(--blue-d);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .svc-t{font-size:17px;font-weight:700;color:var(--blue-d);}
+  .svc-d{font-size:14px;color:var(--ink2);margin-top:2px;line-height:1.4;}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:14px;}
+  .chip{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 7px;border-radius:10px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:600;white-space:nowrap;}
+  .inv-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .inv-row:first-of-type{border-top:none;padding-top:2px;}
+  .inv-k{font-weight:600;}
+  .inv-d{font-size:13px;color:var(--ink3);margin-top:1px;}
+  .inv-v{font-weight:600;border-radius:4px;white-space:nowrap;}
+  .inv-tot{margin:4px -18px 0;padding:16px 18px;background:linear-gradient(150deg,#1463F6,#0050BB);color:#fff;}
+  .alt{display:flex;align-items:center;gap:12px;margin:0 -18px;padding:14px 18px;border-top:1px solid var(--line);background:#F6F8FB;}
+  .band{background:linear-gradient(150deg,#1463F6 0%,#1463F6 45%,#0050BB 100%);color:#fff;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 70px;}
+  .band-t{font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:6px;}
+  .glass{background:rgba(255,255,255,.16);color:#fff;box-shadow:none;}
+  .sec-t::first-letter{color:var(--blue);}
+  .sec-s{font-size:14px;color:var(--ink2);margin-top:2px;}
+  .sec-h{align-items:flex-end;}
+  .plan{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px;}
+  .dots{display:flex;justify-content:center;gap:6px;margin-top:4px;}
+  .dots i{width:6px;height:6px;border-radius:3px;background:#C9D1DD;transition:width .2s var(--ease),background-color .2s var(--ease);}
+  .dots i.on{width:18px;background:var(--blue);}
+  .desc{font-size:14.5px;color:var(--ink2);line-height:1.55;margin:12px 0 4px;}
+  .desc.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .rooms{margin-top:14px;border-top:1px solid var(--line);}
+  .rooms-h{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink3);font-weight:500;padding:10px 0 2px;}
+  .room{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;}
+  .room:last-child{border-bottom:none;}
+  .guests{font-size:13px;font-weight:600;white-space:nowrap;background:#F2F4F8;border-radius:8px;padding:4px 8px;}
+  .inset{margin-top:14px;padding:4px 0 4px 14px;border-left:3px solid var(--blue);font-size:14.5px;line-height:1.5;color:#2E3950;font-style:italic;}
+  .logo-band{height:112px;background:var(--blue);display:flex;align-items:center;justify-content:center;position:relative;color:#fff;}
+  .logo-band span{font-size:30px;font-weight:700;letter-spacing:-.02em;}
+  .logo-band em{position:absolute;right:10px;bottom:8px;font-size:11px;font-style:normal;background:rgba(255,255,255,.2);border-radius:6px;padding:2px 7px;}
+  .fine{font-size:13px;color:var(--ink2);line-height:1.5;margin:12px 4px 0;}
+  .fine b{color:var(--ink);font-weight:600;}
+  .foot{margin-top:32px;background:linear-gradient(150deg,#1463F6,#0050BB);color:#fff;padding:28px 20px calc(120px + var(--safe));}
+  .wa{margin-top:16px;background:#fff;color:var(--ink);width:100%;}
+  .wa:hover{background:#F2F4F8;}
+  .svc-img{width:92px;height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .svc-img img{width:100%;height:auto;display:block;}
+  .al-logo{width:52px;height:52px;border-radius:16px;background:#00A650;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:17px;letter-spacing:-.02em;}
+  .leg{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .leg-h{font-size:14px;color:var(--ink2);}
+  .leg-h b{color:var(--blue);font-weight:600;}
+  .leg-h strong{color:var(--ink);font-weight:700;}
+  .leg-r{display:flex;align-items:flex-start;gap:10px;margin-top:12px;}
+  .lp{flex-shrink:0;min-width:84px;}
+  .lp.r{text-align:right;}
+  .tm{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.1;white-space:nowrap;}
+  .tm small{font-size:12px;font-weight:700;letter-spacing:0;}
+  .term{font-size:13px;font-weight:600;color:var(--blue);margin-top:4px;}
+  .city{font-size:13px;color:var(--ink2);}
+  .mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:0;min-width:0;}
+  .mid .dur{font-size:11.5px;color:var(--ink3);white-space:nowrap;}
+  .dash{position:relative;width:100%;height:2px;background:repeating-linear-gradient(90deg,#CDD4DF 0 6px,transparent 6px 11px);}
+  .dash::before,.dash::after{content:'';position:absolute;top:-2px;width:6px;height:6px;border-radius:50%;background:#CDD4DF;}
+  .dash::before{left:0;} .dash::after{right:0;}
+  .mid .dir{font-size:13px;color:var(--ink2);margin-top:2px;}
+  .stay{margin-top:0;scroll-margin-top:72px;}
+  .ph-btn{position:absolute;right:10px;bottom:10px;height:32px;padding:0 12px;border:none;border-radius:999px;background:rgba(17,26,43,.62);color:#fff;font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;backdrop-filter:blur(6px);}
+  .stay-r{margin-top:14px;padding:14px 0 2px;border-top:1px solid var(--line);}
+  .stay-r .term{margin-top:0;margin-bottom:2px;}
+  .hop{display:flex;flex-direction:column;align-items:center;padding:4px 0;}
+  .hop i{width:2px;height:14px;background:repeating-linear-gradient(180deg,#B9C3D3 0 4px,transparent 4px 7px);}
+  .hop-pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);box-shadow:0 1px 2px rgba(17,26,43,.06),0 4px 12px -8px rgba(17,26,43,.25);}
+  .hop-pill svg{color:var(--blue);}
+  .idx{display:flex;flex-direction:column;margin:0 0 14px;border-top:1px solid var(--line);}
+  .idx-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border:none;border-bottom:1px solid var(--line);background:none;font:inherit;text-align:left;cursor:pointer;color:inherit;}
+  .idx-n{width:24px;height:24px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .idx-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .idx-t b{font-weight:600;font-size:15px;}
+  .idx-t > span{font-size:13px;color:var(--ink2);}
+  .idx-t b{color:var(--ink);}
+  .idx-c{color:var(--ink3);display:inline-flex;}
+  .hn{font-size:17px;font-weight:700;line-height:1.25;}
+  .ta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--ink2);}
+  .ta b{color:var(--ink);font-weight:700;font-size:14px;}
+  .ta-logo{width:18px;height:18px;border-radius:50%;background:#E3E8EF;box-shadow:inset 0 0 0 1.5px #C9D1DD;flex-shrink:0;}
+  .bub{display:inline-flex;gap:2px;}
+  .bub i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #8A93A3;}
+  .bub i.f{background:#8A93A3;}
+  .bub i.h{background:linear-gradient(90deg,#8A93A3 50%,transparent 50%);}
+  .opt-h{font-size:14px;color:var(--ink2);padding-bottom:10px;}
+  .opt-h b{color:var(--ink);font-weight:600;}
+  .sig{font-size:13.5px;color:var(--ink2);margin-top:12px;line-height:1.45;}
+  .sig b{color:var(--ink);font-weight:600;}
+  .note{font-size:14px;color:var(--ink2);margin:8px 0 0;line-height:1.45;}
+  .note b{color:var(--ink);font-weight:600;}
+  .act + .act{margin-top:12px;}
+  .alts{margin:0 -18px;background:#F6F8FB;}
+  .alts-h{font-size:12.5px;font-weight:600;color:var(--ink3);padding:12px 18px 0;}
+  .alts .alt{background:none;border-top:none;margin:0;padding:10px 18px;}
+  .alts .alt + .alt{border-top:1px solid var(--line);}
+  .tray-tot{flex:1;min-width:0;border:none;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;}
+  .up{color:var(--ink3);} .down{color:var(--green);}
+  .pk{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .pk-row{display:flex;align-items:center;gap:12px;padding:12px;border:none;border-radius:14px;background:#F6F8FB;font:inherit;color:inherit;text-align:left;cursor:pointer;box-shadow:inset 0 0 0 1.5px transparent;transition:background-color .18s var(--ease),box-shadow .18s var(--ease);}
+  .pk-row.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .pk-row .radio{margin:0;flex-shrink:0;background:#fff;}
+  .pk-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .pk-t b{font-weight:600;font-size:15px;line-height:1.25;}
+  .pk-t > span{font-size:13px;color:var(--ink2);}
+  .pk-t em{font-style:normal;font-weight:600;}
+  .pk-t em.rec{color:var(--blue-d);} .pk-t em.eco{color:var(--green);}
+  .pk-v{font-weight:700;white-space:nowrap;}
+  .pk-link{display:flex;justify-content:center;height:14px;}
+  .pk-link i{width:2px;height:14px;background:var(--blue-t2);}
+  .bar-l{flex:1;min-width:0;display:grid;}
+  .bar-s{grid-area:1/1;display:flex;flex-direction:column;min-width:0;transition:opacity .2s var(--ease),transform .2s var(--ease);}
+  .bar-s.off{opacity:0;transform:translateY(6px);pointer-events:none;}
+  .bar-k{font-size:12px;color:var(--ink2);white-space:nowrap;}
+  .bar-v{font-size:17px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .topic{height:36px;padding:0 14px;border:none;border-radius:999px;background:#F2F4F8;box-shadow:inset 0 0 0 1.5px #E3E8EF;font:inherit;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease),box-shadow .15s var(--ease);}
+  .topic.on{background:var(--blue-t);color:var(--blue-d);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .ask-in{width:100%;margin-top:14px;border:none;border-radius:14px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px #E3E8EF;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);resize:none;outline:none;}
+  .ask-in:focus{box-shadow:inset 0 0 0 2px var(--blue);background:#fff;}
+  .btn.dis{background:#C9D1DD;cursor:default;}
+  .dates-box{margin-top:12px;padding:12px;border-radius:14px;background:#F6F8FB;}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .dfield{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--ink2);min-width:0;}
+  .dfield input{height:44px;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1.5px #E3E8EF;padding:0 10px;font:inherit;font-size:15px;color:var(--ink);min-width:0;width:100%;}
+  .dfield input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--blue);}
+  .derr{font-size:13px;color:var(--amber);margin-top:8px;font-weight:600;}
+  .topic.sm{height:32px;font-size:13px;margin-top:10px;background:#fff;}
+  .topic.sm.on{background:var(--blue-t);}
+  svg{flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+</style>
+<style>
+  .band.sm{padding-bottom:64px;}
+  .band.sm .band-t{font-size:34px;}
+  .steps{display:flex;align-items:flex-start;gap:0;margin-top:0;}
+  .stp{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:11.5px;font-weight:600;color:var(--ink3);text-align:center;}
+  .stp i{width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px #C9D1DD;display:flex;align-items:center;justify-content:center;color:#fff;z-index:1;font-style:normal;}
+  .stp.done i{background:var(--green);box-shadow:none;}
+  .stp.now i{box-shadow:inset 0 0 0 2px var(--blue),0 0 0 4px var(--blue-t);background:#fff;}
+  .stp.now i::after{content:'';width:8px;height:8px;border-radius:50%;background:var(--blue);}
+  .stp.now{color:var(--ink);}
+  .stp::before{content:'';position:absolute;top:10px;left:-50%;width:100%;height:2px;background:#DDE2EA;}
+  .stp:first-child::before{display:none;}
+  .stp.done::before,.stp.now::before{background:var(--green);}
+  .okline{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);}
+  .okline .ck{width:22px;height:22px;border-radius:50%;background:var(--green-t);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .grp{margin-top:26px;}
+  .grp-h{display:flex;align-items:flex-end;justify-content:space-between;padding:0 4px 10px;}
+  .grp-t{font-size:20px;font-weight:700;letter-spacing:-.01em;}
+  .grp-t::first-letter{color:var(--blue);}
+  .cnt{font-size:12.5px;font-weight:600;color:var(--amber);white-space:nowrap;}
+  .cnt.b-okc{color:var(--green);}
+  .note-box{font-size:13.5px;color:var(--ink2);background:#F6F8FB;border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+  .note-box b{color:var(--ink);font-weight:600;}
+  .px{border-top:1px solid var(--line);}
+  .px:first-child{border-top:none;}
+  .px-h{display:flex;align-items:center;gap:12px;width:100%;padding:14px 0;border:none;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer;}
+  .px-n{width:30px;height:30px;border-radius:50%;background:#F2F4F8;color:var(--ink2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .px-n.st-ok{background:var(--green-t);color:var(--green);}
+  .px-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .px-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .px-t > span{font-size:13px;color:var(--ink3);}
+  .px-s{font-size:12.5px;font-weight:600;white-space:nowrap;}
+  .px-s.st-ok{color:var(--green);} .px-s.st-pend{color:var(--amber);}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 0 16px;}
+  .fields .full{grid-column:1/-1;}
+  .fld{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--ink2);min-width:0;}
+  .fld input{height:46px;border:none;border-radius:12px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px #E3E8EF;padding:0 12px;font:inherit;font-size:15px;color:var(--ink);min-width:0;width:100%;}
+  .fld input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--blue);background:#fff;}
+  .fld em{font-style:normal;font-weight:500;color:var(--ink3);font-size:12px;}
+  .from{font-size:12px;color:var(--green);font-weight:600;}
+  .room-b{padding:14px 0;border-top:1px solid var(--line);}
+  .room-b:first-of-type{border-top:none;padding-top:4px;}
+  .whos{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .who{height:36px;padding:0 12px;border:none;border-radius:999px;background:#F2F4F8;box-shadow:inset 0 0 0 1.5px #E3E8EF;font:inherit;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;}
+  .who.on{background:var(--blue-t);color:var(--blue-d);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .opt{display:flex;gap:12px;align-items:flex-start;width:100%;padding:14px;border:none;border-radius:16px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;transition:background-color .18s var(--ease),box-shadow .18s var(--ease);}
+  .opt + .opt{margin-top:10px;}
+  .opt.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .opt .radio{margin:2px 0 0;background:#fff;flex-shrink:0;}
+  .opt-t{flex:1;min-width:0;}
+  .opt-t b{display:block;font-size:16px;font-weight:700;}
+  .opt-t .d{font-size:13.5px;color:var(--ink2);margin-top:2px;}
+  .opt-amt{font-weight:700;white-space:nowrap;}
+  .mini-sched{margin-top:8px;font-size:13px;color:var(--ink2);display:flex;flex-direction:column;gap:2px;}
+  .mini-sched span{display:flex;justify-content:space-between;gap:8px;}
+  .seg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mth{height:auto;min-height:64px;padding:10px 12px;border:none;border-radius:14px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;}
+  .mth b{font-size:15px;font-weight:700;} .mth span{font-size:12.5px;color:var(--ink2);}
+  .mth.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .chk{display:flex;gap:12px;align-items:flex-start;width:100%;border:none;background:none;padding:0;font:inherit;color:var(--ink2);font-size:14px;text-align:left;cursor:pointer;margin-top:16px;}
+  .box{width:22px;height:22px;border-radius:7px;box-shadow:inset 0 0 0 2px #C3CBD7;display:flex;align-items:center;justify-content:center;color:transparent;flex-shrink:0;transition:background-color .15s var(--ease);}
+  .chk.on .box{background:var(--blue);box-shadow:none;color:#fff;}
+  .chk a{color:var(--blue);font-weight:600;}
+  .faq{border-top:1px solid var(--line);}
+  .faq:first-of-type{border-top:none;}
+  .faq-q{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 0;border:none;background:none;font:inherit;font-weight:600;color:var(--ink);text-align:left;cursor:pointer;}
+  .faq-a{font-size:14px;color:var(--ink2);line-height:1.55;padding-bottom:14px;}
+  .bar-cap{font-size:12px;color:var(--ink2);white-space:nowrap;}
+  .bank{background:#F6F8FB;border-radius:14px;padding:4px 14px;margin-top:12px;}
+</style>
+<style>
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .seg button{height:46px;border:none;border-radius:14px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px #E3E8EF;font:inherit;font-weight:600;font-size:15px;color:var(--ink2);cursor:pointer;}
+  .seg button.on{background:var(--blue-t);color:var(--blue-d);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .cp{border:none;background:var(--blue-t);color:var(--blue-d);font:inherit;font-size:12.5px;font-weight:600;border-radius:999px;height:32px;min-width:32px;padding:0 12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+  .msg{background:#E7F7EE;border-radius:16px 16px 16px 4px;padding:12px 14px;margin-top:12px;text-align:left;font-size:14px;line-height:1.5;}
+  .back{border:none;background:#EEF1F5;width:50px;height:50px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+  .lead{font-size:17px;font-weight:700;line-height:1.3;}
+  .lead-s{font-size:14px;color:var(--ink2);margin-top:4px;}
+  .steps + .lead{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  /* ---- Lo que sigue ---- */
+  .nx{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line);}
+  .nx:first-child{border-top:none;padding-top:4px;}
+  .nx-d{width:52px;flex-shrink:0;display:flex;flex-direction:column;}
+  .nx-d b{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;}
+  .nx-d > span{font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px;}
+  .nx-b{flex:1;min-width:0;}
+  .nx-t{font-weight:600;font-size:15px;line-height:1.3;}
+  .nx-s{font-size:13.5px;color:var(--ink2);margin-top:2px;}
+  .nx-f{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+  .nx.done .nx-t,.nx.done .nx-d b{color:var(--ink3);}
+  .mini{border:none;background:var(--blue-t);color:var(--blue-d);font:inherit;font-size:13px;font-weight:600;border-radius:999px;height:30px;padding:0 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .mini.ghost{background:#F2F4F8;color:var(--ink2);}
+  /* ---- Hero (el próximo servicio) ---- */
+  .hero{padding:18px;}
+  .hero-k{font-size:12.5px;font-weight:700;color:var(--blue-d);letter-spacing:.02em;text-transform:uppercase;}
+  .hero-t{font-size:19px;font-weight:700;margin-top:4px;line-height:1.25;}
+  .call{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px;border-radius:14px;background:#F6F8FB;font-size:14px;color:var(--ink2);}
+  .call b{color:var(--ink);font-weight:700;}
+  .call svg{color:var(--blue);margin-top:1px;}
+  /* ---- Clave ---- */
+  .code{margin-top:14px;padding:12px 14px;border-radius:16px;background:#F6F8FB;display:flex;align-items:center;gap:10px;}
+  .code-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .code-t > span{font-size:12.5px;font-weight:600;color:var(--ink2);}
+  .code-v{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:24px;font-weight:700;letter-spacing:.12em;color:var(--ink);line-height:1.2;}
+  .code-v.sm{font-size:17px;letter-spacing:.08em;}
+  .code-a{display:flex;gap:6px;flex-shrink:0;}
+  .code-s{font-size:12.5px;color:var(--ink3);margin-top:6px;padding:0 2px;}
+  /* ---- Estado de servicio ---- */
+  .svc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .verif{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px;color:var(--green);font-weight:600;}
+  .dts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .dt{padding:12px;border-radius:14px;background:#F6F8FB;}
+  .dt-k{font-size:12px;color:var(--ink3);font-weight:600;}
+  .dt-v{font-size:20px;font-weight:700;letter-spacing:-.01em;margin-top:2px;}
+  .dt-s{font-size:13px;color:var(--ink2);}
+  .rm{padding:14px 0;border-top:1px solid var(--line);}
+  .rm:first-child{border-top:none;}
+  .rm-t{font-weight:600;}
+  .rm-s{font-size:13.5px;color:var(--ink2);margin-top:2px;}
+  .rm-c{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;}
+  .rm-c div > span{font-size:12.5px;color:var(--ink3);font-weight:600;}
+  .rm-c b{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:16px;letter-spacing:.06em;margin-left:6px;color:var(--ink);}
+  .kvs .kv:first-child{border-top:none;}
+  .kv .g{color:var(--green);} .kv .a{color:var(--amber);} .kv .n{color:var(--ink2);font-weight:500;}
+  .help{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% + 36px);height:48px;margin:16px -18px -18px;border:none;border-top:1px solid var(--line);border-radius:0;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;}
+  .help svg{color:#1FA855;}
+  /* ---- Vuelo: estado del check-in por tramo ---- */
+  .ckl{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:12px;background:#F6F8FB;font-size:13.5px;color:var(--ink2);}
+  .ckl.ckok{background:var(--green-t);color:var(--green);}
+  .ckl.ckok b{color:var(--green);}
+  .ckl b{color:var(--ink);font-weight:600;}
+  .ckl .grow{flex:1;min-width:0;}
+  .ckl .mini{background:#fff;}
+  .old{text-decoration:line-through;color:var(--ink3);font-weight:600;font-size:13px;}
+  .newt .tm{color:var(--amber);}
+  .ckbox{margin-top:16px;padding:16px;border-radius:18px;background:linear-gradient(160deg,#EAF0FE,#F6F8FB);box-shadow:inset 0 0 0 1.5px var(--blue-t2);}
+  .ckbox-t{font-weight:700;font-size:16px;}
+  .ckbox p{font-size:14px;color:var(--ink2);margin:6px 0 0;line-height:1.5;}
+  .pxl{margin-top:14px;border-top:1px solid var(--line);}
+  .pxl-h{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 0 6px;border:none;background:none;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;}
+  .pxr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;font-size:14px;}
+  .pxr b{font-weight:700;letter-spacing:.03em;font-size:13.5px;}
+  .pxr > span{font-size:12.5px;color:var(--ink3);white-space:nowrap;}
+  /* ---- Documentos ---- */
+  .doc{margin-top:14px;padding:14px;border-radius:16px;background:#F6F8FB;}
+  .doc-h{display:flex;align-items:center;gap:12px;}
+  .doc-ic{width:40px;height:40px;border-radius:12px;background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 1px 2px rgba(17,26,43,.06);}
+  .doc-ic.off{color:#AAB3C1;}
+  .doc-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .doc-t b{font-weight:600;font-size:15px;}
+  .doc-t > span{font-size:12.5px;color:var(--ink3);}
+  .doc-f{font-size:13px;color:var(--ink2);margin-top:10px;line-height:1.45;}
+  .doc-a{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px;}
+  .doc-a button{height:38px;border:none;border-radius:12px;background:#fff;font:inherit;font-size:13.5px;font-weight:600;color:var(--blue-d);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 1px 2px rgba(17,26,43,.06);}
+  .pick{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:14px;}
+  .pick svg{color:var(--blue);margin-top:2px;}
+  .pick b{font-weight:700;}
+  .pick div > span{color:var(--ink2);}
+  .dl{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .dl:first-child{border-top:none;padding-top:2px;}
+  .off-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:#F6F8FB;margin-bottom:10px;}
+  .off-row .t{flex:1;min-width:0;font-size:13.5px;color:var(--ink2);}
+  .off-row .t b{display:block;color:var(--ink);font-size:14.5px;font-weight:600;}
+  .off-row.on{background:var(--green-t);}
+  .off-row.on .t b{color:var(--green);}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+  .two .btn2{height:46px;font-size:14px;gap:6px;}
+  /* ---- Traslado ---- */
+  .tr{padding:14px 0;border-top:1px solid var(--line);}
+  .tr:first-of-type{margin-top:12px;}
+  .tr-h{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .tr-h b{font-weight:600;}
+  .tr-b{font-size:14px;color:var(--ink2);margin-top:6px;line-height:1.5;}
+  .tr-b strong{color:var(--ink);font-weight:600;}
+  .drv{display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px 12px;border-radius:14px;background:#F6F8FB;}
+  .drv-a{width:40px;height:40px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .drv-t{flex:1;min-width:0;font-size:13px;color:var(--ink2);}
+  .drv-t b{display:block;color:var(--ink);font-size:15px;font-weight:600;}
+  .rbtn{width:40px;height:40px;border-radius:50%;border:none;background:#fff;color:var(--blue);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 2px rgba(17,26,43,.08);}
+  /* ---- Pagos ---- */
+  .py{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .py:first-child{border-top:none;padding-top:2px;}
+  .py-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .py-t b{font-weight:600;}
+  .py-t > span{font-size:12.5px;color:var(--ink3);}
+  .py-v{font-weight:700;white-space:nowrap;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+  .prog{height:8px;border-radius:4px;background:#E6EAF0;overflow:hidden;margin-top:14px;}
+  .prog i{display:block;height:100%;background:var(--green);border-radius:4px;}
+  .prog-l{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-top:8px;}
+  .prog-l b{color:var(--ink);font-weight:700;}
+  .hotelpay{margin-top:12px;padding:14px;border-radius:16px;background:#F6F8FB;font-size:14px;color:var(--ink2);}
+  .hotelpay b{color:var(--ink);font-weight:700;display:block;margin-bottom:6px;}
+  .hotelpay ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+  /* ---- Alerta de cambio ---- */
+  .chg{padding:18px;box-shadow:inset 0 0 0 1.5px #F0C074,0 8px 24px -16px rgba(17,26,43,.18);}
+  .chg-k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.02em;}
+  .cmpt{display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;gap:6px;margin-top:14px;padding:12px;border-radius:14px;background:#F6F8FB;}
+  .cmpt .c{display:flex;flex-direction:column;}
+  .cmpt .c span{font-size:12px;color:var(--ink3);font-weight:600;}
+  .cmpt .c b{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+  .cmpt .c.was b{color:var(--ink3);text-decoration:line-through;text-decoration-thickness:2px;}
+  .cmpt .c small{font-size:12.5px;color:var(--ink2);}
+  .cmpt .ar{color:var(--ink3);display:flex;justify-content:center;}
+  .aff{margin-top:12px;font-size:14px;color:var(--ink2);}
+  .aff b{color:var(--ink);font-weight:600;}
+  .res{display:flex;gap:10px;align-items:center;margin-top:14px;padding:12px;border-radius:14px;font-size:14px;font-weight:600;}
+  .res.g{background:var(--green-t);color:var(--green);}
+  .res.a{background:var(--amber-t);color:var(--amber);}
+  /* ---- Emergencia ---- */
+  .sos{display:flex;align-items:center;gap:12px;margin-top:12px;padding:14px;border-radius:18px;background:var(--ink);color:#fff;}
+  .sos .t{flex:1;min-width:0;font-size:13px;color:rgba(255,255,255,.72);}
+  .sos .t b{display:block;color:#fff;font-size:15px;font-weight:600;}
+  .sos button{height:38px;border:none;border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-size:13.5px;font-weight:700;padding:0 14px;cursor:pointer;}
+  /* ---- Pantalla completa ---- */
+  .fs{position:fixed;inset:0;z-index:75;display:flex;flex-direction:column;transition:opacity .22s var(--ease);}
+  .fs.hide{opacity:0;pointer-events:none;}
+  .fs.fs-code{background:#fff;color:var(--ink);}
+  .fs.fs-pass{background:#0B111D;color:#fff;}
+  .fs-top{display:flex;justify-content:space-between;align-items:center;padding:16px;}
+  .fs-x{width:44px;height:44px;border-radius:50%;border:none;background:rgba(127,137,153,.16);color:inherit;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .big{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 20px 80px;}
+  .big > span{font-size:15px;color:var(--ink2);font-weight:600;}
+  .big b{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:64px;letter-spacing:.1em;line-height:1.1;margin:10px 0 14px;}
+  .big em{font-style:normal;font-size:18px;font-weight:700;letter-spacing:.04em;}
+  .bp{margin:0 16px;background:#fff;color:var(--ink);border-radius:22px;overflow:hidden;}
+  .bp-h{background:#00A650;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:700;}
+  .bp-b{padding:16px 18px;}
+  .bp-n{font-size:18px;font-weight:700;letter-spacing:.03em;}
+  .bp-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .bp-g div > span{display:block;font-size:11.5px;color:var(--ink3);font-weight:600;}
+  .bp-g b{font-size:17px;font-weight:700;}
+  .qr{display:flex;justify-content:center;padding:16px 0 4px;border-top:2px dashed #E3E8EF;margin-top:16px;}
+  .fs-nav{display:flex;justify-content:space-between;align-items:center;padding:16px;font-size:14px;color:rgba(255,255,255,.72);}
+  .fs-note{text-align:center;font-size:13px;color:rgba(255,255,255,.6);margin-top:12px;}
+  .pin{display:flex;gap:8px;justify-content:center;margin-top:16px;}
+  .pin input{width:52px;height:56px;border:none;border-radius:14px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px #E3E8EF;text-align:center;font:inherit;font-size:22px;font-weight:700;}
+  .pin input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--blue);background:#fff;}
+  .wa-b{background:#1FA855;}
+  .wa-b:hover{background:#178A45;}
+  .tray .back{width:50px;height:50px;color:#1FA855;}
+</style>
+<style>.svc .help{width:calc(100% + 28px);margin:16px -14px -16px;} .hero + .hero,.chg + .hero{margin-top:12px;}</style>
+<style>
+  .bpl{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .bpl-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .bpl-h > b{font-weight:700;font-size:16px;}
+  .sw{display:inline-flex;background:#EEF1F5;border-radius:999px;padding:3px;}
+  .sw button{height:32px;padding:0 14px;border:none;border-radius:999px;background:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;}
+  .sw button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(17,26,43,.12);}
+  .bpr{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);}
+  .bpr:first-of-type{border-top:none;}
+  .bpr-m{flex:1;min-width:0;display:flex;align-items:center;gap:12px;border:none;background:none;padding:4px 0;font:inherit;color:inherit;text-align:left;cursor:pointer;}
+  .bpr-m .doc-ic{background:var(--blue-t);box-shadow:none;}
+  .rbtn.sm{width:40px;height:40px;background:#F2F4F8;box-shadow:none;color:var(--ink2);}
+  .bpl-e{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:14px;background:#F6F8FB;font-size:14px;color:var(--ink2);}
+  .bpl-e svg{margin-top:3px;color:var(--ink3);}
+  .otp{font-size:24px !important;letter-spacing:.4em;text-align:center;height:56px !important;font-weight:700;}
+  .fs-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 16px 0;}
+  .fs-act button{height:48px;border:none;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
+  .shares{margin:0 0 6px 12px;padding-left:14px;border-left:2px solid var(--line);}
+  .shr{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .av{width:30px;height:30px;border-radius:50%;background:#EEF1F5;color:var(--ink2);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .av.me{background:var(--blue-t);color:var(--blue-d);}
+  .shr-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .shr-t b{font-weight:600;font-size:14px;}
+  .shr-t > span{font-size:12.5px;color:var(--ink3);}
+</style>
+<style>
+  .more{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 0 12px;border:none;background:none;font:inherit;font-size:14.5px;font-weight:600;color:var(--blue-d);cursor:pointer;}
+  .more .chev{color:var(--blue-d);}
+  .thumb{width:64px;height:64px;border-radius:16px;flex-shrink:0;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 58%,#EADCC2 58.5%);}
+  .al-logo.park{font-size:11px;letter-spacing:0;text-align:center;line-height:1.1;padding:4px;}
+  .folio{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:12.5px;color:var(--ink3);font-weight:600;}
+  .folio b{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:14.5px;letter-spacing:.06em;color:var(--ink);margin-left:4px;}
+  .docs-entry{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:14px;border:none;border-radius:22px;background:#fff;font:inherit;color:inherit;text-align:left;cursor:pointer;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -16px rgba(17,26,43,.18);}
+  .docs-entry .doc-ic{background:var(--blue-t);box-shadow:none;}
+  .off-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--green);white-space:nowrap;}
+</style>
+<style>
+  .paid-sum{display:flex;align-items:center;gap:12px;}
+  .paid-sum .ck{width:40px;height:40px;border-radius:50%;background:var(--green-t);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .paid-sum .t{display:flex;flex-direction:column;}
+  .paid-sum .t b{font-weight:700;font-size:16px;}
+  .paid-sum .t > span{font-size:13px;color:var(--ink2);}
+  .paid-sum + .more{margin-top:6px;border-top:1px solid var(--line);}
+</style>
+
+<style>
+  /* ===== Pulido del lado del cliente: quitar los patrones de plantilla ===== */
+  :root{--line:#E6E9EE;}
+  /* 1. Sin la primera letra en azul */
+  .sec-t::first-letter,.wz-t::first-letter,.grp-t::first-letter{color:inherit;}
+  /* 2. Encabezado plano: azul de marca sólido, título más sobrio */
+  .band{background:#1463F6;}
+  .band-t{font-size:40px;letter-spacing:-.025em;}
+  /* 3. Tarjetas: menos redondas, sin sombra flotante, borde fino */
+  .card{border-radius:14px;box-shadow:none;border:1px solid var(--line);}
+  /* 4. El azul solo para lo que se toca: etiquetas secundarias en tinta */
+  .plan,.term,.leg-h b{color:var(--ink2);}
+  .svc-t{color:var(--ink);}
+  .ic,.svc-ic,.step b,.idx-n{background:#F2F4F7;color:var(--ink2);}
+  /* 5. Chips: información, no botones */
+  .chip{background:transparent;color:var(--ink2);height:auto;padding:0;border-radius:0;font-weight:500;font-size:13px;}
+  .chips{gap:4px 14px;}
+  .chip svg{color:var(--ink3);}
+  /* 6. Líneas continuas en vez de punteadas */
+  .dash{background:#D5DBE4;height:1px;}
+  .hop i{background:#D5DBE4;width:1px;}
+  /* 8. Total y pie: sin degradado */
+  .inv-tot{background:var(--ink);}
+  .foot{background:#fff;color:var(--ink);border-top:1px solid var(--line);}
+  .foot div,.foot p{color:var(--ink2) !important;}
+  .foot > div:first-child{color:var(--ink) !important;}
+  .foot .link{color:var(--blue-d) !important;}
+  .foot .btn{background:var(--blue);color:#fff;}
+  /* 9. Insignias más discretas */
+  .b-blue{background:#EEF1F5;color:var(--ink2);}
+</style>
+
+</helmet>
+
+<div style="width:100%;min-height:100vh;background:#E3E8EF;">
+<div style="max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;">
+  <div class="toast {{toastCls}}" role="status">{{toastMsg}}</div>
+
+  <header class="band sm">
+    <div class="row" style="justify-content:space-between;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 656.05 223.51" role="img" aria-label="Airoo" style="width:120px;height:auto;display:block;"><g><path fill="#fff" d="M359.51,79.65h21.17v82.05h-21.17v-9.68c-6.35,7.99-15.26,11.98-26.75,11.98s-20.32-4.18-28.14-12.55c-7.82-8.37-11.73-18.63-11.73-30.77s3.91-22.4,11.73-30.77c7.82-8.37,17.2-12.55,28.14-12.55,11.49,0,20.4,4,26.75,11.98v-9.68ZM320.45,137.34c4.27,4.32,9.68,6.48,16.25,6.48s12.01-2.16,16.33-6.48c4.32-4.32,6.48-9.87,6.48-16.66s-2.16-12.33-6.48-16.66c-4.32-4.32-9.76-6.48-16.33-6.48s-11.98,2.16-16.25,6.48c-4.27,4.32-6.4,9.87-6.4,16.66s2.13,12.34,6.4,16.66Z"/><path fill="#fff" d="M405.46,69.81c-3.5,0-6.54-1.28-9.11-3.86-2.57-2.57-3.86-5.61-3.86-9.11s1.28-6.56,3.86-9.19c2.57-2.63,5.61-3.94,9.11-3.94s6.7,1.31,9.27,3.94c2.57,2.63,3.86,5.69,3.86,9.19s-1.29,6.54-3.86,9.11-5.66,3.86-9.27,3.86ZM394.95,161.71v-82.05h21.17v82.05h-21.17Z"/><path fill="#fff" d="M451.73,93.77c1.97-5.25,5.22-9.19,9.76-11.82.64-.37,1.73-.99,3.77-1.83.89-.37,4.42-1.82,7.84-2.51,6.35-1.28,12.57,0,15.15.65-3.33,1.94-8.69,5.67-13.2,12.12-3,4.29-4.67,8.41-5.63,11.47-1.06.1-2.48.32-4.09.81,0,0-3.22,1.09-5.98,2.93-5.09,3.39-7.63,9.03-7.63,16.9v39.22h-21.17v-82.06h21.17v14.11Z"/><path fill="#fff" d="M550.85,151.45c-8.43,8.37-18.71,12.55-30.85,12.55s-22.4-4.18-30.77-12.55c-8.37-8.37-12.55-18.63-12.55-30.77s4.18-22.4,12.55-30.77c8.37-8.37,18.63-12.55,30.77-12.55s22.43,4.18,30.85,12.55c8.42,8.37,12.64,18.63,12.64,30.77s-4.21,22.4-12.64,30.77ZM504.16,136.93c4.21,4.27,9.49,6.4,15.84,6.4s11.65-2.13,15.92-6.4c4.27-4.27,6.4-9.68,6.4-16.25s-2.13-11.98-6.4-16.25c-4.27-4.27-9.57-6.4-15.92-6.4s-11.63,2.13-15.84,6.4c-4.21,4.27-6.32,9.68-6.32,16.25s2.11,11.98,6.32,16.25Z"/><path fill="#fff" d="M643.41,151.45c-8.43,8.37-18.71,12.55-30.85,12.55s-22.4-4.18-30.77-12.55c-8.37-8.37-12.55-18.63-12.55-30.77s4.18-22.4,12.55-30.77c8.37-8.37,18.63-12.55,30.77-12.55s22.43,4.18,30.85,12.55c8.42,8.37,12.64,18.63,12.64,30.77s-4.21,22.4-12.64,30.77ZM596.72,136.93c4.21,4.27,9.49,6.4,15.84,6.4s11.65-2.13,15.92-6.4c4.27-4.27,6.4-9.68,6.4-16.25s-2.13-11.98-6.4-16.25c-4.27-4.27-9.57-6.4-15.92-6.4s-11.63,2.13-15.84,6.4c-4.21,4.27-6.32,9.68-6.32,16.25s2.11,11.98,6.32,16.25Z"/><path fill="#fff" d="M249.22,95.18c-14.45,4.8-29.18,8.81-43.85,12.92-4.06,1.14-6.71,3.02-8.85,6.93-15.63,28.68-31.74,57.1-47.31,85.81-3.46,6.38-7.83,10.25-14.96,11.48-4.5.78-8.87,2.33-15.04,4.01,8.3-30.61,16.15-59.57,24.34-89.79-3.77,1.03-6.79,1.79-9.76,2.68-22.62,6.76-45.65,10.02-69.3,8.5-4.45-.29-8.31-1.3-11.67-3.34-16.4,23.62-35.19,46.4-51.13,70.21-4.78,7.77,1.23,18.63,10.3,18.89h181.2s23.72,0,23.72,0c17.26-1.21,30.26-13.53,32.49-30.6l-.1-97.74s-.04.02-.06.02Z"/><path fill="#fff" d="M54.82,92.12c3.36,4.65,7.86,8.37,13.08,10.76.03.01.05.02.08.04,3.05,1.39,7.28,1.98,10.43,1.07,15.59-4.51,31.18-9.05,46.76-13.6-1.13-.16-2.26-.55-2.95-1.12-13.97-11.48-27.79-23.13-41.57-34.8-.96-.81-1.33-2.23-2.51-4.31,14.75-3.92,27.49-11.67,43.6-1.91,16.26,9.85,34.03,17.51,51.13,26.14.73.37,1.44.79,2.33,1.32,16.26-4.79,32.53-9.59,48.78-14.4,8.6-2.54,17.04-3.05,25.28-1.52l-.03-30.32c-2.1-15.43-13.69-27.06-29.07-29.42h-25.39s-183.43-.03-183.43-.03C2.16.7-3.23,11.43,2.13,19.11l52.69,73.01Z"/></g></svg>
+      <span class="num" style="font-size:13px;color:rgba(255,255,255,.8);">AIR-2458</span>
+    </div>
+    <div style="font-size:14px;color:rgba(255,255,255,.8);margin-top:30px;">Cancún · 21–27 oct · 6 viajeros</div>
+    <h1 class="band-t">{{h1}}</h1>
+  </header>
+
+  <div style="padding:0 16px;margin-top:-40px;position:relative;">
+    <sc-if value="{{showLead}}" hint-placeholder-val="{{ true }}">
+    <div class="card pad">
+      <div class="steps" aria-label="Estado de tu viaje">
+        <sc-for list="{{steps}}" as="sp" hint-placeholder-count="4"><div class="stp done"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i><span>{{sp.l}}</span></div></sc-for>
+      </div>
+      <div class="lead">{{lead}}</div>
+      <div class="lead-s">{{leadS}}</div>
+    </div>
+    </sc-if>
+    <!-- Aviso de cambio de horario -->
+    <sc-if value="{{isChg}}" hint-placeholder-val="{{ false }}">
+      <div class="card chg" >
+        <div class="chg-k"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Cambio de la aerolínea</div>
+        <div class="hero-t">Viva cambió la hora de tu vuelo de regreso</div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">Mar 27 oct · VB 2125 · Cancún → Guadalajara</div>
+        <div class="cmpt num">
+          <div class="c was"><span>Antes</span><b>6:13 PM</b><small>Llegaba 7:45 PM</small></div>
+          <div class="ar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>
+          <div class="c"><span>Ahora</span><b>8:40 PM</b><small>Llega 10:12 PM</small></div>
+        </div>
+        <div class="aff"><b>Sale 2 h 27 min más tarde.</b> Tu hotel no cambia. El traslado al aeropuerto lo coordinamos con el nuevo horario y te mandamos los datos el Lun 26 oct.</div>
+        <sc-if value="{{chgOpen}}" hint-placeholder-val="{{ true }}">
+          <div class="row" style="gap:8px;margin-top:14px;">
+            <button class="btn" style="flex:1;padding:0 12px;" onClick="{{chgOk}}">Aceptar el cambio</button>
+            <button class="btn2" style="flex:1;" onClick="{{chgOther}}">Necesito otra opción</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{chgDone}}" hint-placeholder-val="{{ false }}"><div class="res g"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>Aceptaste el nuevo horario. Ya actualizamos tu viaje.</span></div></sc-if>
+        <sc-if value="{{chgAsk}}" hint-placeholder-val="{{ false }}"><div class="res a"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Estamos revisando opciones con Viva. Te escribimos por WhatsApp.</span></div></sc-if>
+      </div>
+    </sc-if>
+
+    <!-- Próximo: vuelo (día del vuelo) -->
+    <sc-if value="{{heroFlight}}" hint-placeholder-val="{{ false }}">
+      <div class="card hero" >
+        <div class="hero-k">Próximo · Vuelo de ida</div>
+        <div class="leg-r num" style="margin-top:12px;">
+          <div class="lp"><div class="tm">4:55 <small>PM</small></div><div class="term">Terminal 1</div><div class="city">Guadalajara</div></div>
+          <div class="mid"><span class="dur">2 h 31 min</span><div class="dash"></div><span class="dir">VB 2124</span></div>
+          <div class="lp r"><div class="tm">7:26 <small>PM</small></div><div class="term">Terminal 2</div><div class="city">Cancún</div></div>
+        </div>
+        <div class="code">
+          <div class="code-t"><span>Clave de reservación</span><b class="code-v">K7M2QX</b></div>
+          <div class="code-a"><button class="cp" onClick="{{copyFlight}}">Copiar</button><button class="cp" onClick="{{bigFlight}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg><span style="margin-left:5px;">Mostrar</span></button></div>
+        </div>
+        <div class="call"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><b>Lo ideal es estar en el aeropuerto a las 2:55 PM.</b> Es vuelo nacional: lo recomendable es llegar 2 horas antes. En el mostrador piden la INE de cada adulto.</span></div>
+        <button class="btn" style="width:100%;margin-top:14px;" onClick="{{openPasses}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>Ver pases de abordar (6)</button>
+        <button class="link" style="margin:14px auto 0;display:flex;font-size:14px;" onClick="{{flightStatus}}">Ver estado del vuelo en Viva <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg></button>
+      </div>
+    </sc-if>
+
+    <!-- Hoy: actividad (durante el viaje) -->
+    <sc-if value="{{heroAct}}" hint-placeholder-val="{{ false }}">
+      <div class="card hero" >
+        <div class="hero-k">Hoy · Jue 22 oct</div>
+        <div class="hero-t">Xel-Há · Todo incluido</div>
+        <div class="pick" style="margin-top:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><div><b>Recogida 8:10 AM</b> <span>· Lobby de Seadust. Conviene estar 10 minutos antes.</span></div></div>
+        <div class="call"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.2"/><path d="M5 16.5c.6-1.3 1.7-2 3-2s2.4.7 3 2M14 10h5M14 14h3"/></svg><span><b>En la entrada del parque piden identificación.</b> Es tarifa para mexicanos: INE de cada adulto y CURP o credencial escolar de los menores.</span></div>
+        <button class="btn" style="width:100%;margin-top:14px;" onClick="{{openXelha}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>Ver bono de Xel-Há</button>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <nav class="tabs" aria-label="Secciones" style="margin-top:14px;">
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="7"><button class="tab {{tb.c}}" id="tab-{{tb.id}}" onClick="{{tb.go}}">{{tb.l}}</button></sc-for>
+  </nav>
+
+  <div style="padding:0 16px;">
+
+  <!-- ================= LO QUE SIGUE / HOY ================= -->
+  <section class="sec" id="prox" style="margin-top:14px;">
+    <div class="sec-h"><div><h2 class="sec-t">{{proxT}}</h2><div class="sec-s">{{proxS}}</div></div></div>
+
+    <div class="card pad">
+      <sc-for list="{{next}}" as="nx" hint-placeholder-count="5">
+        <div class="nx {{nx.cls}}">
+          <div class="nx-d num"><b>{{nx.d1}}</b><span>{{nx.d2}}</span></div>
+          <div class="nx-b">
+            <div class="nx-t">{{nx.t}}</div>
+            <div class="nx-s">{{nx.s}}</div>
+            <sc-if value="{{nx.hasFoot}}" hint-placeholder-val="{{ true }}">
+              <div class="nx-f">
+                <sc-if value="{{nx.hasChip}}" hint-placeholder-val="{{ true }}"><span class="badge {{nx.chipCls}}">{{nx.chip}}</span></sc-if>
+                <sc-if value="{{nx.hasAct}}" hint-placeholder-val="{{ false }}"><button class="mini" onClick="{{nx.go}}">{{nx.act}}</button></sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{nextMore}}" hint-placeholder-val="{{ true }}"><button class="more" style="margin-top:4px;" onClick="{{nextTog}}" aria-expanded="{{nextAria}}"><span>{{nextLbl}}</span><span class="chev {{nextChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button></sc-if>
+    </div>
+
+    <button class="docs-entry" onClick="{{openDocs}}">
+      <span class="doc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
+      <span class="doc-t"><b>Tus documentos</b><span>{{docsSum}}</span></span>
+      <span class="off-chip"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Sin internet</span>
+      <span style="color:var(--ink3);display:inline-flex;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+    </button>
+
+    <sc-if value="{{showSos}}" hint-placeholder-val="{{ false }}">
+      <div class="sos">
+        <div class="t"><b>¿Una emergencia?</b>Asistencia de tu seguro, 24 horas.</div>
+        <button onClick="{{callAssist}}">Llamar</button>
+      </div>
+    </sc-if>
+  </section>
+
+  <!-- ================= HOSPEDAJE ================= -->
+  <section class="sec" id="hospedaje">
+    <div class="sec-h"><div><h2 class="sec-t">Hospedaje</h2><div class="sec-s">6 noches · 2 habitaciones</div></div></div>
+    <div class="card" style="overflow:hidden;">
+      <div class="pad">
+        <div class="svc-top">
+          <div class="thumb" role="img" aria-label="Foto del hotel"></div>
+          <div style="flex:1;min-width:0;">
+            <div class="hn">Seadust Cancún Family Resort</div>
+            <div class="muted" style="font-size:13.5px;margin-top:2px;">Blvd. Kukulcán km 16.5, Zona Hotelera, Cancún</div>
+          </div>
+        </div>
+        <div class="row" style="gap:16px;margin-top:8px;"><button class="link" style="font-size:14px;" onClick="{{mapHotel}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>Cómo llegar</button><button class="link" style="font-size:14px;" onClick="{{callHotel}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Llamar al hotel</button></div>
+        <div class="verif"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.7 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.5 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12l2 2 4-4"/></svg><span>Verificamos tu reservación por teléfono con el hotel · Jue 1 oct</span></div>
+        <div class="dts num">
+          <div class="dt"><div class="dt-k">Llegada</div><div class="dt-v">21 oct</div><div class="dt-s">Mié · desde 3:00 PM</div></div>
+          <div class="dt"><div class="dt-k">Salida</div><div class="dt-v">27 oct</div><div class="dt-s">Mar · antes de 12:00 PM</div></div>
+        </div>
+        <div style="margin-top:6px;">
+          <sc-for list="{{rooms}}" as="rm" hint-placeholder-count="2">
+            <div class="rm">
+              <div class="rm-t">{{rm.n}} · {{rm.t}}</div>
+              <div class="rm-s">A nombre de <b style="color:var(--ink);font-weight:600;">{{rm.who}}</b> · {{rm.g}}</div>
+              <div class="rm-c num"><div><span>Clave del hotel</span><b>{{rm.code}}</b></div><button class="cp" onClick="{{rm.copy}}">Copiar</button></div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="note-box" style="margin:4px 0 0;">En recepción basta con el <b>nombre del titular</b> de cada habitación. Si te la piden, aquí tienes la clave.</div>
+        <button class="more" onClick="{{dhTog}}" aria-expanded="{{dhAria}}"><span>{{dhLbl}}</span><span class="chev {{dhChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+        <div class="clp" style="grid-template-rows:{{dhRows}};opacity:{{dhOp}};"><div>
+        <div class="inset" style="margin-top:4px;">Pedimos que las dos habitaciones queden juntas. El hotel lo confirma al registrarse.</div>
+        <div class="kvs" style="margin-top:10px;">
+          <div class="kv"><span>Plan</span><span>Todo incluido</span></div>
+          <div class="kv"><span>Cancelación</span><span class="{{cancelCls}}">{{cancelTxt}}</span></div>
+          <div class="kv" style="align-items:center;"><span>Cargos en el hotel</span><button class="link" style="font-size:15px;" onClick="{{goPagos}}">Ver en Pagos</button></div>
+        </div>
+        </div></div>
+        <button class="help" onClick="{{helpHotel}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Ayuda con el hotel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= VUELOS ================= -->
+  <section class="sec" id="vuelos">
+    <div class="sec-h"><div><h2 class="sec-t">Vuelos</h2><div class="sec-s">Redondo y directo · 6 pasajeros</div></div></div>
+    <div class="card svc">
+      <div class="svc-top">
+        <div class="al-logo"><span>VB</span></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-h"><div class="svc-t">Viva Aerobus</div></div>
+          <div class="svc-d">Tarifa Switch · directo en ambos sentidos</div>
+        </div>
+      </div>
+      <div class="code">
+        <div class="code-t"><span>Clave de reservación</span><b class="code-v">K7M2QX</b></div>
+        <div class="code-a"><button class="cp" onClick="{{copyFlight}}">Copiar</button><button class="cp" onClick="{{bigFlight}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg><span style="margin-left:5px;">Mostrar</span></button></div>
+      </div>
+
+      <sc-for list="{{legs}}" as="lg" hint-placeholder-count="2">
+        <div class="leg">
+          <div class="leg-h num"><b>{{lg.name}}</b> · {{lg.date}} · <strong>{{lg.code}}</strong><sc-if value="{{lg.chg}}" hint-placeholder-val="{{ false }}"> <span class="badge b-amber" style="height:22px;margin-left:4px;">Nuevo horario</span></sc-if></div>
+          <div class="leg-r num">
+            <div class="lp {{lg.newCls}}"><div class="tm">{{lg.t1}} <small>{{lg.p1}}</small></div><sc-if value="{{lg.chg}}" hint-placeholder-val="{{ false }}"><div class="old">{{lg.old1}}</div></sc-if><div class="term">{{lg.term1}}</div><div class="city">{{lg.c1}}</div></div>
+            <div class="mid"><span class="dur">{{lg.dur}}</span><div class="dash"></div><span class="dir">Directo</span></div>
+            <div class="lp r {{lg.newCls}}"><div class="tm">{{lg.t2}} <small>{{lg.p2}}</small></div><sc-if value="{{lg.chg}}" hint-placeholder-val="{{ false }}"><div class="old">{{lg.old2}}</div></sc-if><div class="term">{{lg.term2}}</div><div class="city">{{lg.c2}}</div></div>
+          </div>
+          <div class="ckl {{lg.ckCls}}"><sc-if value="{{lg.isOk}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></sc-if><sc-if value="{{lg.notOk}}" hint-placeholder-val="{{ true }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></sc-if><span class="grow">{{lg.ck}}</span><sc-if value="{{lg.hasPass}}" hint-placeholder-val="{{ false }}"><button class="mini" onClick="{{lg.openPass}}">Ver pases</button></sc-if></div>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{showCkBox}}" hint-placeholder-val="{{ true }}">
+        <div class="ckbox">
+          <sc-if value="{{ckAsk}}" hint-placeholder-val="{{ true }}">
+            <div class="ckbox-t">¿Hacemos tu check-in?</div>
+            <p>Sin costo. Lo hacemos en cuanto Viva abre el check-in de cada vuelo y subimos aquí los pases de los 6 pasajeros. Tú solo llegas al aeropuerto.</p>
+            <button class="btn" style="width:100%;margin-top:14px;" onClick="{{ckYes}}">Sí, háganlo por mí</button>
+            <button class="btn2" style="margin-top:8px;background:#fff;" onClick="{{ckDiy}}">Prefiero hacerlo yo</button>
+          </sc-if>
+          <sc-if value="{{ckIsYes}}" hint-placeholder-val="{{ false }}">
+            <div class="ckbox-t" style="color:var(--green);">Listo, nosotros hacemos tu check-in</div>
+            <p>Te avisamos por WhatsApp cuando los pases estén aquí. Si quieren sentarse juntos o tienen otra preferencia, conviene avisarnos antes del Dom 18 oct; elegir asiento puede tener costo con la aerolínea.</p>
+            <button class="link" style="margin-top:10px;font-size:14px;" onClick="{{ckReset}}">Cambiar mi elección</button>
+          </sc-if>
+          <sc-if value="{{ckIsDiy}}" hint-placeholder-val="{{ false }}">
+            <div class="ckbox-t">Lo haces tú</div>
+            <p>El check-in abre el <b>Dom 18 oct a las 4:55 PM</b>. Se puede hacer en la app de Viva o por su WhatsApp con la clave K7M2QX y el apellido. Te lo recordamos ese día.</p>
+            <button class="link" style="margin-top:10px;font-size:14px;" onClick="{{ckYes}}">Mejor háganlo ustedes</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{showBpl}}" hint-placeholder-val="{{ false }}">
+      <div class="bpl">
+        <div class="bpl-h"><b>Pases de abordar</b>
+          <div class="sw" role="tablist"><button class="{{bplIdaCls}}" onClick="{{bplIda}}" role="tab" aria-selected="{{bplIdaAria}}">Ida</button><button class="{{bplRegCls}}" onClick="{{bplReg}}" role="tab" aria-selected="{{bplRegAria}}">Regreso</button></div>
+        </div>
+        <sc-if value="{{bplReady}}" hint-placeholder-val="{{ true }}">
+          <div class="muted" style="font-size:13px;margin:2px 0 4px;">{{bplSub}}</div>
+          <sc-for list="{{bplRows}}" as="bp" hint-placeholder-count="6">
+            <div class="bpr">
+              <button class="bpr-m" onClick="{{bp.view}}"><span class="doc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg></span><span class="doc-t"><b>{{bp.n}}</b><span>{{bp.s}}</span></span></button>
+              <button class="rbtn sm" onClick="{{bp.send}}" aria-label="{{bp.sendL}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
+              <button class="rbtn sm" onClick="{{bp.dl}}" aria-label="{{bp.dlL}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg></button>
+            </div>
+          </sc-for>
+          <button class="btn2" style="margin-top:12px;" onClick="{{dlPasses}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>Descargar los 6 pases</button>
+        </sc-if>
+        <sc-if value="{{bplEmpty}}" hint-placeholder-val="{{ false }}"><div class="bpl-e"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>{{bplEmptyTxt}}</span></div></sc-if>
+      </div>
+      </sc-if>
+
+      <div style="margin-top:14px;border-top:1px solid var(--line);">
+        <button class="more" onClick="{{dvTog}}" aria-expanded="{{dvAria}}"><span>{{dvLbl}}</span><span class="chev {{dvChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+        <div class="clp" style="grid-template-rows:{{dvRows}};opacity:{{dvOp}};"><div>
+          <div class="kvs">
+            <div class="kv"><span>Equipaje por persona</span><span>15 kg y artículo personal</span></div>
+            <div class="kv"><span>Clave</span><span class="n">La misma para ida y regreso</span></div>
+          </div>
+          <div class="muted" style="font-size:13px;margin:10px 0 4px;">Pasajeros, así quedaron en los boletos:</div>
+          <sc-for list="{{pax}}" as="px" hint-placeholder-count="6"><div class="pxr"><b>{{px.n}}</b><span>{{px.t}}</span></div></sc-for>
+          <button class="link" style="font-size:14px;margin:6px 0 4px;" onClick="{{helpName}}">¿Algún nombre no coincide? Avísanos</button>
+        </div></div>
+      </div>
+      <button class="help" onClick="{{helpFlight}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Ayuda con los vuelos</button>
+    </div>
+  </section>
+
+  <!-- ================= ACTIVIDADES ================= -->
+  <section class="sec" id="actividades">
+    <div class="sec-h"><div><h2 class="sec-t">Actividades y excursiones</h2><div class="sec-s">En la taquilla del parque te piden el bono, en el celular o impreso.</div></div></div>
+    <div class="call" style="margin:0 0 12px;background:#fff;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.2"/><path d="M5 16.5c.6-1.3 1.7-2 3-2s2.4.7 3 2M14 10h5M14 14h3"/></svg><span><b>En los dos parques</b> el bono en el celular es suficiente; una copia descargada ayuda si no hay señal. Como es tarifa para mexicanos, en la entrada piden INE de cada adulto y CURP o credencial escolar de los menores; sin ella, el parque cobra la diferencia.</span></div>
+    <sc-for list="{{acts}}" as="ac" hint-placeholder-count="2">
+      <div class="card act" style="overflow:hidden;">
+        <div class="pad">
+          <div class="svc-top">
+            <div class="al-logo park" style="background:{{ac.bg}};"><span>{{ac.name}}</span></div>
+            <div style="flex:1;min-width:0;">
+              <div class="svc-h"><div class="svc-t">{{ac.title}}</div><sc-if value="{{ac.hasBadge}}" hint-placeholder-val="{{ false }}"><span class="badge {{ac.bCls}}">{{ac.badge}}</span></sc-if></div>
+              <div class="svc-d num">{{ac.meta}}</div>
+            </div>
+          </div>
+          <div class="pick"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><div><b>{{ac.pick}}</b> <span>{{ac.pickS}}</span></div></div>
+          <div class="doc">
+            <div class="doc-h">
+              <div class="doc-ic {{ac.icCls}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg></div>
+              <div class="doc-t"><b>Bono del parque</b><span>{{ac.docS}}</span></div>
+              <span class="badge {{ac.dCls}}">{{ac.dState}}</span>
+            </div>
+            <sc-if value="{{ac.hasDocF}}" hint-placeholder-val="{{ false }}"><div class="doc-f">{{ac.docF}}</div></sc-if>
+            <div class="folio num"><span>Folio del parque <b>{{ac.folio}}</b></span><button class="cp" onClick="{{ac.copy}}">Copiar</button></div>
+            <sc-if value="{{ac.ready}}" hint-placeholder-val="{{ true }}">
+              <div class="doc-a"><button onClick="{{ac.view}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Ver</button><button onClick="{{ac.dl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>Descargar</button><button onClick="{{ac.share}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Enviar</button></div>
+            </sc-if>
+          </div>
+          <button class="help" onClick="{{ac.help}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg><span>Ayuda con {{ac.name}}</span></button>
+        </div>
+      </div>
+    </sc-for>
+  </section>
+
+  <!-- ================= SERVICIOS ================= -->
+  <section class="sec" id="servicios">
+    <div class="sec-h"><div><h2 class="sec-t">Servicios adicionales</h2><div class="sec-s">Traslados y seguro de viaje</div></div></div>
+    <div class="card svc">
+      <div class="svc-top">
+        <div class="svc-img"><img src="/_blob/9e0c8d34d353be744f266c89b0125540" alt="Van privada adaptada"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-h"><div class="svc-t">Traslado</div></div>
+          <div class="svc-d">Privado · Aeropuerto de Cancún ↔ Seadust, en van adaptada para 6.</div>
+        </div>
+      </div>
+      <sc-for list="{{trs}}" as="tr" hint-placeholder-count="2">
+        <div class="tr">
+          <div class="tr-h"><b>{{tr.n}}</b><span class="badge {{tr.bCls}}">{{tr.badge}}</span></div>
+          <div class="tr-b">{{tr.txt}}</div>
+          <sc-if value="{{tr.full}}" hint-placeholder-val="{{ false }}">
+            <div class="drv">
+              <div class="drv-a">RC</div>
+              <div class="drv-t"><b>Ramón Chan</b>Van blanca · placas UUK-482-A</div>
+              <button class="rbtn" onClick="{{callDriver}}" aria-label="Llamar al chofer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></button>
+            </div>
+            <div class="tr-b" style="font-size:13px;">Si pasan 15 minutos y no ves a tu chofer, puedes escribirnos y lo localizamos.</div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <button class="help" style="margin-top:4px;" onClick="{{helpTr}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Ayuda con el traslado</button>
+    </div>
+
+    <div class="card svc" style="margin-top:12px;">
+      <div class="svc-top">
+        <div class="svc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.7 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.5 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-h"><div class="svc-t">Seguro de viaje Plus</div></div>
+          <div class="svc-d num">Los 6 viajeros, del 21 al 27 oct.</div>
+        </div>
+      </div>
+      <div class="drv">
+        <div class="drv-a" style="background:#FCE9E9;color:#9A2C2C;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></div>
+        <div class="drv-t"><b>Asistencia 24 horas</b>Para emergencias médicas durante el viaje.</div>
+        <button class="rbtn" onClick="{{callAssist}}" aria-label="Llamar a la asistencia"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></button>
+      </div>
+      <div class="doc">
+        <div class="doc-h"><div class="doc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div><div class="doc-t"><b>Póliza del seguro</b><span>PDF · la aseguradora la pide si la usas</span></div></div>
+        <div class="folio num"><span>Póliza <b>AS-448120</b></span><button class="cp" onClick="{{copyPol}}">Copiar</button></div>
+        <div class="doc-a"><button onClick="{{viewPol}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Ver</button><button onClick="{{dlPol}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>Descargar</button><button onClick="{{sharePol}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg>Enviar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PAGOS ================= -->
+  <section class="sec" id="pagos">
+    <div class="sec-h"><div><h2 class="sec-t">Pagos</h2><div class="sec-s">{{paySub}}</div></div></div>
+    <div class="card pad">
+      <sc-if value="{{allPaid}}" hint-placeholder-val="{{ false }}">
+        <div class="paid-sum num"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="t"><b>Pagado completo</b><span>{{totalTxt}} · último pago Lun 12 oct</span></span></div>
+        <button class="more" onClick="{{dpTog}}" aria-expanded="{{dpAria}}"><span>Ver pagos y comprobantes</span><span class="chev {{dpChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+      </sc-if>
+      <div class="clp" style="grid-template-rows:{{payListRows}};opacity:{{payListOp}};"><div>
+      <sc-for list="{{pays}}" as="py" hint-placeholder-count="3">
+        <div class="py">
+          <div class="py-t"><b>{{py.n}}</b><span>{{py.d}}</span></div>
+          <div class="py-v num"><span>{{py.v}}</span><span class="badge {{py.bCls}}">{{py.badge}}</span></div>
+        </div>
+        <sc-if value="{{py.hasShares}}" hint-placeholder-val="{{ false }}">
+          <div class="shares">
+            <sc-for list="{{py.shares}}" as="sh" hint-placeholder-count="3">
+              <div class="shr">
+                <span class="av {{sh.avCls}}">{{sh.ini}}</span>
+                <span class="shr-t"><b>{{sh.n}}</b><span>{{sh.s}}</span></span>
+                <sc-if value="{{sh.canRemind}}" hint-placeholder-val="{{ false }}"><button class="mini ghost" onClick="{{sh.remind}}">Recordar</button></sc-if>
+                <sc-if value="{{sh.hasBadge}}" hint-placeholder-val="{{ true }}"><span class="badge {{sh.bCls}}">{{sh.badge}}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </sc-for>
+      <sc-if value="{{hasDue}}" hint-placeholder-val="{{ true }}">
+      <div class="prog" aria-hidden="true"><i style="width:{{progW}};"></i></div>
+      <div class="prog-l num"><span>Pagado <b>{{paidTxt}}</b></span><span>Total {{totalTxt}}</span></div>
+      </sc-if>
+      <sc-if value="{{hasDue}}" hint-placeholder-val="{{ true }}">
+        <button class="btn" style="width:100%;margin-top:16px;" onClick="{{openPay}}">{{payBtn}}</button>
+        <button class="link" style="margin:12px auto 0;display:flex;font-size:14px;" onClick="{{openPayAll}}">Adelantar todo el saldo</button>
+        <div class="muted" style="font-size:13px;margin-top:10px;text-align:center;">Te recordamos por WhatsApp 3 días antes y el mismo día.</div>
+      </sc-if>
+      <button class="link" style="margin:14px 0 4px;font-size:14px;" onClick="{{receipts}}">Ver comprobantes de pago</button>
+      </div></div>
+      <div class="hotelpay">
+        <b>Pagas directamente en el hotel</b>
+        <ul>
+          <li>Derecho de saneamiento ambiental de Cancún, por habitación y noche.</li>
+          <li>Depósito o tarjeta en garantía para consumos extra, como minibar o spa.</li>
+        </ul>
+        <div style="margin-top:6px;font-size:13px;">Derecho de saneamiento: $69 por habitación por noche. El depósito te lo indica el hotel al registrarte.</div>
+      </div>
+    </div>
+    <p class="fine">Precios sin IVA. Si necesitas factura, puedes pedirla por WhatsApp y se agrega el IVA. El anticipo no es reembolsable porque cubre servicios que ya se pagaron a los proveedores.</p>
+  </section>
+
+  </div>
+
+  <!-- ================= PIE ================= -->
+  <footer class="foot">
+    <div style="font-size:22px;font-weight:700;">¿Dudas sobre tu viaje?</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.8);margin-top:6px;">Te respondemos por WhatsApp de 8:00 AM a 10:00 PM, antes y durante tu viaje.</div>
+    <button class="btn wa" onClick="{{helpGen}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Escribir a Airoo</button>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:18px;line-height:1.5;">La agencia actúa como intermediaria entre el cliente y los prestadores de servicio. <u>Términos y condiciones</u> · <u>Aviso de privacidad</u></div>
+  </footer>
+
+  <!-- ================= BARRA + HOJAS ================= -->
+  <div class="scrim {{scrimCls}}" onClick="{{close}}"></div>
+  <div class="tray" role="{{trayRole}}" aria-label="Acciones" style="transform:translateX(-50%);">
+    <div class="clp" style="grid-template-rows:{{minRows}};opacity:{{minOp}};"><div>
+      <div class="row" style="gap:10px;padding:12px 12px 12px 12px;">
+        <button class="back" onClick="{{helpGen}}" aria-label="Escribir a Airoo por WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg></button>
+        <div class="tray-tot" style="cursor:default;"><span class="bar-cap">{{barCap}}</span><span class="num" style="font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{barVal}}</span></div>
+        <button class="btn" onClick="{{barGo}}">{{barBtn}}</button>
+      </div>
+    </div></div>
+
+    <!-- Documentos -->
+    <div class="clp" style="grid-template-rows:{{docsRows}};opacity:{{docsOp}};"><div>
+      <div style="padding:16px 18px 18px;max-height:78vh;overflow:auto;">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px;"><h3 style="font-size:20px;">Tus documentos</h3><button class="link" onClick="{{close}}">Cerrar</button></div>
+      <div class="off-row on">
+        <div class="doc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8M8 17l4 4 4-4"/><path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/></svg></div>
+        <div class="t"><b>Disponible sin internet en este celular</b>Se guarda solo y se actualiza cuando tienes señal.</div>
+      </div>
+      <sc-for list="{{docs}}" as="dc" hint-placeholder-count="5">
+        <div class="dl">
+          <div class="doc-ic {{dc.icCls}}"><sc-if value="{{dc.isFile}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></sc-if><sc-if value="{{dc.isTicket}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg></sc-if></div>
+          <div class="doc-t"><b>{{dc.n}}</b><span>{{dc.s}}</span></div>
+          <sc-if value="{{dc.ready}}" hint-placeholder-val="{{ true }}"><button class="mini" onClick="{{dc.view}}">Ver</button></sc-if>
+          <sc-if value="{{dc.wait}}" hint-placeholder-val="{{ false }}"><span class="badge b-gray">{{dc.state}}</span></sc-if>
+        </div>
+      </sc-for>
+      <div class="two">
+        <button class="btn2" onClick="{{dlSummary}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>Resumen PDF</button>
+        <button class="btn2" onClick="{{addCal}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Al calendario</button>
+      </div>
+      <div class="muted" style="font-size:12.5px;margin-top:10px;">En iPhone, si agregas este enlace a tu pantalla de inicio, lo guardado no se borra.</div>
+      </div>
+    </div></div>
+
+    <!-- Ayuda -->
+    <div class="clp" style="grid-template-rows:{{helpRows}};opacity:{{helpOp}};"><div>
+      <div style="padding:16px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">Mensaje para Airoo</h3><button class="link" onClick="{{close}}">Cerrar</button></div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">Sobre: <b style="color:var(--ink);">{{helpCtx}}</b></div>
+        <div class="topics">
+          <sc-for list="{{helpTopics}}" as="ht" hint-placeholder-count="3"><button class="topic {{ht.c}}" onClick="{{ht.pick}}">{{ht.l}}</button></sc-for>
+        </div>
+        <div class="msg">{{helpMsg}}</div>
+        <button class="btn wa-b" style="width:100%;margin-top:14px;" onClick="{{helpSend}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Abrir WhatsApp</button>
+        <div class="muted" style="font-size:12.5px;margin-top:10px;text-align:center;">El mensaje ya incluye tu viaje y el servicio; solo falta agregar los detalles.</div>
+      </div>
+    </div></div>
+
+    <!-- Compartir documento -->
+    <div class="clp" style="grid-template-rows:{{shareRows}};opacity:{{shareOp}};"><div>
+      <div style="padding:16px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">{{shareT}}</h3><button class="link" onClick="{{close}}">Cerrar</button></div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">{{shareNote}}</div>
+        <div class="msg">{{shareMsg}}</div>
+        <button class="btn wa-b" style="width:100%;margin-top:14px;" onClick="{{shareSend}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Enviar por WhatsApp</button>
+        <button class="btn2" style="margin-top:10px;" onClick="{{shareCopy}}">Copiar enlace</button>
+      </div>
+    </div></div>
+
+    <!-- Verificar -->
+    <div class="clp" style="grid-template-rows:{{verRows}};opacity:{{verOp}};"><div>
+      <div style="padding:16px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">Verificación por celular</h3><button class="link" onClick="{{close}}">Cerrar</button></div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">Hola, Nataly. Los pases y bonos llevan códigos que dan acceso, así que los protegemos. Te mandamos un código por WhatsApp al número que termina en <b style="color:var(--ink);">48 21</b>.</div>
+        <label class="fld" style="margin-top:16px;"><span>Código de 6 dígitos</span><input class="otp num" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{otp}}" onChange="{{setOtp}}" placeholder="000000"></label>
+        <div class="muted" style="font-size:12.5px;margin-top:8px;">También puedes tocar el botón del mensaje de WhatsApp y se verifica solo.</div>
+        <button class="btn {{verBtnCls}}" style="width:100%;margin-top:16px;" onClick="{{verify}}" aria-disabled="{{verDis}}">Verificar</button>
+        <div class="muted" style="font-size:12.5px;margin-top:10px;text-align:center;">No te lo volvemos a pedir en este celular en 30 días.</div>
+      </div>
+    </div></div>
+
+    <!-- Pago -->
+    <div class="clp" style="grid-template-rows:{{payRows}};opacity:{{payOp}};"><div>
+      <div style="padding:16px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">{{payTitle}}</h3><button class="link" onClick="{{close}}">Cerrar</button></div>
+        <div class="seg" role="radiogroup" style="margin-top:12px;"><button class="{{pmSpei}}" onClick="{{setSpei}}" role="radio">Transferencia</button><button class="{{pmCard}}" onClick="{{setCard}}" role="radio">Tarjeta</button></div>
+        <sc-if value="{{isSpei}}" hint-placeholder-val="{{ true }}">
+          <div class="bank num">
+            <div class="kv" style="border-top:none;"><span>Monto</span><span>{{payAmt}}</span></div>
+            <div class="kv"><span>Banco</span><span>[Banco]</span></div>
+            <div class="kv" style="align-items:center;"><span>CLABE</span><span class="row" style="gap:8px;">[000 000 0000000000 0]<button class="cp" onClick="{{copyClabe}}">Copiar</button></span></div>
+            <div class="kv"><span>Referencia</span><span>AIR2458</span></div>
+          </div>
+          <button class="btn" style="width:100%;margin-top:14px;" onClick="{{payDone}}">Ya hice la transferencia</button>
+          <div class="muted" style="font-size:12.5px;margin-top:10px;text-align:center;">Si nos compartes tu comprobante por WhatsApp, lo registramos aquí.</div>
+        </sc-if>
+        <sc-if value="{{isCard}}" hint-placeholder-val="{{ false }}">
+          <div class="bank" style="height:130px;display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:13px;">[Formulario seguro de la pasarela de pago]</div>
+          <button class="btn" style="width:100%;margin-top:14px;" onClick="{{payDone}}">Pagar {{payAmt}}</button>
+        </sc-if>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ================= PANTALLA COMPLETA ================= -->
+  <div class="fs fs-code {{fsCodeCls}}" role="dialog" aria-label="Clave en grande">
+    <div class="fs-top"><span style="font-weight:700;">Viva Aerobus</span><button class="fs-x" onClick="{{fsClose}}" aria-label="Cerrar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="big num"><span>Clave de reservación</span><b>K7M2QX</b><em>CERVANTES RUIZ / NATALY</em><span style="margin-top:14px;font-weight:500;">VB 2124 · Mié 21 oct · Guadalajara → Cancún</span></div>
+  </div>
+  <div class="fs fs-pass {{fsPassCls}}" role="dialog" aria-label="Pase de abordar">
+    <div class="fs-top"><span style="font-weight:700;">Pase de abordar</span><button class="fs-x" onClick="{{fsClose}}" aria-label="Cerrar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="bp num">
+      <div class="bp-h"><span>viva</span><span>{{bpFlight}}</span></div>
+      <div class="bp-b">
+        <div class="bp-n">{{bpName}}</div>
+        <div class="bp-g">
+          <div><span>De</span><b>{{bpFrom}}</b></div><div><span>A</span><b>{{bpTo}}</b></div><div><span>Fecha</span><b>{{bpDate}}</b></div>
+          <div><span>Abordaje</span><b>{{bpBoard}}</b></div><div><span>Asiento</span><b>{{bpSeat}}</b></div><div><span>Grupo</span><b>B</b></div>
+        </div>
+        <div class="qr"><svg width="150" height="150" viewBox="0 0 150 150" aria-label="Código QR del pase"><g fill="#111A2B"><rect x="48" y="0" width="6" height="6"/><rect x="54" y="0" width="6" height="6"/><rect x="66" y="0" width="6" height="6"/><rect x="78" y="0" width="6" height="6"/><rect x="84" y="0" width="6" height="6"/><rect x="96" y="0" width="6" height="6"/><rect x="48" y="6" width="6" height="6"/><rect x="54" y="6" width="6" height="6"/><rect x="60" y="6" width="6" height="6"/><rect x="66" y="6" width="6" height="6"/><rect x="78" y="6" width="6" height="6"/><rect x="84" y="6" width="6" height="6"/><rect x="54" y="12" width="6" height="6"/><rect x="66" y="12" width="6" height="6"/><rect x="78" y="12" width="6" height="6"/><rect x="84" y="12" width="6" height="6"/><rect x="90" y="12" width="6" height="6"/><rect x="96" y="12" width="6" height="6"/><rect x="54" y="18" width="6" height="6"/><rect x="72" y="18" width="6" height="6"/><rect x="84" y="18" width="6" height="6"/><rect x="90" y="18" width="6" height="6"/><rect x="96" y="18" width="6" height="6"/><rect x="54" y="24" width="6" height="6"/><rect x="60" y="24" width="6" height="6"/><rect x="72" y="24" width="6" height="6"/><rect x="78" y="24" width="6" height="6"/><rect x="96" y="24" width="6" height="6"/><rect x="72" y="30" width="6" height="6"/><rect x="84" y="30" width="6" height="6"/><rect x="90" y="30" width="6" height="6"/><rect x="48" y="36" width="6" height="6"/><rect x="60" y="36" width="6" height="6"/><rect x="90" y="36" width="6" height="6"/><rect x="60" y="42" width="6" height="6"/><rect x="78" y="42" width="6" height="6"/><rect x="90" y="42" width="6" height="6"/><rect x="18" y="48" width="6" height="6"/><rect x="24" y="48" width="6" height="6"/><rect x="36" y="48" width="6" height="6"/><rect x="42" y="48" width="6" height="6"/><rect x="48" y="48" width="6" height="6"/><rect x="54" y="48" width="6" height="6"/><rect x="60" y="48" width="6" height="6"/><rect x="72" y="48" width="6" height="6"/><rect x="78" y="48" width="6" height="6"/><rect x="84" y="48" width="6" height="6"/><rect x="96" y="48" width="6" height="6"/><rect x="102" y="48" width="6" height="6"/><rect x="132" y="48" width="6" height="6"/><rect x="138" y="48" width="6" height="6"/><rect x="144" y="48" width="6" height="6"/><rect x="12" y="54" width="6" height="6"/><rect x="18" y="54" width="6" height="6"/><rect x="24" y="54" width="6" height="6"/><rect x="30" y="54" width="6" height="6"/><rect x="48" y="54" width="6" height="6"/><rect x="54" y="54" width="6" height="6"/><rect x="60" y="54" width="6" height="6"/><rect x="66" y="54" width="6" height="6"/><rect x="108" y="54" width="6" height="6"/><rect x="138" y="54" width="6" height="6"/><rect x="144" y="54" width="6" height="6"/><rect x="0" y="60" width="6" height="6"/><rect x="12" y="60" width="6" height="6"/><rect x="18" y="60" width="6" height="6"/><rect x="24" y="60" width="6" height="6"/><rect x="30" y="60" width="6" height="6"/><rect x="36" y="60" width="6" height="6"/><rect x="42" y="60" width="6" height="6"/><rect x="48" y="60" width="6" height="6"/><rect x="54" y="60" width="6" height="6"/><rect x="60" y="60" width="6" height="6"/><rect x="66" y="60" width="6" height="6"/><rect x="72" y="60" width="6" height="6"/><rect x="90" y="60" width="6" height="6"/><rect x="96" y="60" width="6" height="6"/><rect x="102" y="60" width="6" height="6"/><rect x="108" y="60" width="6" height="6"/><rect x="114" y="60" width="6" height="6"/><rect x="132" y="60" width="6" height="6"/><rect x="144" y="60" width="6" height="6"/><rect x="0" y="66" width="6" height="6"/><rect x="6" y="66" width="6" height="6"/><rect x="12" y="66" width="6" height="6"/><rect x="24" y="66" width="6" height="6"/><rect x="30" y="66" width="6" height="6"/><rect x="48" y="66" width="6" height="6"/><rect x="60" y="66" width="6" height="6"/><rect x="90" y="66" width="6" height="6"/><rect x="96" y="66" width="6" height="6"/><rect x="102" y="66" width="6" height="6"/><rect x="126" y="66" width="6" height="6"/><rect x="132" y="66" width="6" height="6"/><rect x="24" y="72" width="6" height="6"/><rect x="36" y="72" width="6" height="6"/><rect x="42" y="72" width="6" height="6"/><rect x="48" y="72" width="6" height="6"/><rect x="54" y="72" width="6" height="6"/><rect x="60" y="72" width="6" height="6"/><rect x="78" y="72" width="6" height="6"/><rect x="102" y="72" width="6" height="6"/><rect x="108" y="72" width="6" height="6"/><rect x="114" y="72" width="6" height="6"/><rect x="120" y="72" width="6" height="6"/><rect x="126" y="72" width="6" height="6"/><rect x="0" y="78" width="6" height="6"/><rect x="18" y="78" width="6" height="6"/><rect x="48" y="78" width="6" height="6"/><rect x="54" y="78" width="6" height="6"/><rect x="66" y="78" width="6" height="6"/><rect x="84" y="78" width="6" height="6"/><rect x="90" y="78" width="6" height="6"/><rect x="108" y="78" width="6" height="6"/><rect x="114" y="78" width="6" height="6"/><rect x="120" y="78" width="6" height="6"/><rect x="138" y="78" width="6" height="6"/><rect x="12" y="84" width="6" height="6"/><rect x="24" y="84" width="6" height="6"/><rect x="30" y="84" width="6" height="6"/><rect x="60" y="84" width="6" height="6"/><rect x="78" y="84" width="6" height="6"/><rect x="84" y="84" width="6" height="6"/><rect x="90" y="84" width="6" height="6"/><rect x="96" y="84" width="6" height="6"/><rect x="108" y="84" width="6" height="6"/><rect x="114" y="84" width="6" height="6"/><rect x="120" y="84" width="6" height="6"/><rect x="132" y="84" width="6" height="6"/><rect x="138" y="84" width="6" height="6"/><rect x="6" y="90" width="6" height="6"/><rect x="36" y="90" width="6" height="6"/><rect x="42" y="90" width="6" height="6"/><rect x="48" y="90" width="6" height="6"/><rect x="54" y="90" width="6" height="6"/><rect x="66" y="90" width="6" height="6"/><rect x="72" y="90" width="6" height="6"/><rect x="90" y="90" width="6" height="6"/><rect x="114" y="90" width="6" height="6"/><rect x="126" y="90" width="6" height="6"/><rect x="132" y="90" width="6" height="6"/><rect x="18" y="96" width="6" height="6"/><rect x="48" y="96" width="6" height="6"/><rect x="60" y="96" width="6" height="6"/><rect x="90" y="96" width="6" height="6"/><rect x="114" y="96" width="6" height="6"/><rect x="120" y="96" width="6" height="6"/><rect x="126" y="96" width="6" height="6"/><rect x="132" y="96" width="6" height="6"/><rect x="138" y="96" width="6" height="6"/><rect x="144" y="96" width="6" height="6"/><rect x="66" y="102" width="6" height="6"/><rect x="84" y="102" width="6" height="6"/><rect x="102" y="102" width="6" height="6"/><rect x="114" y="102" width="6" height="6"/><rect x="138" y="102" width="6" height="6"/><rect x="144" y="102" width="6" height="6"/><rect x="54" y="108" width="6" height="6"/><rect x="60" y="108" width="6" height="6"/><rect x="66" y="108" width="6" height="6"/><rect x="78" y="108" width="6" height="6"/><rect x="90" y="108" width="6" height="6"/><rect x="96" y="108" width="6" height="6"/><rect x="102" y="108" width="6" height="6"/><rect x="120" y="108" width="6" height="6"/><rect x="144" y="108" width="6" height="6"/><rect x="48" y="114" width="6" height="6"/><rect x="54" y="114" width="6" height="6"/><rect x="66" y="114" width="6" height="6"/><rect x="72" y="114" width="6" height="6"/><rect x="78" y="114" width="6" height="6"/><rect x="96" y="114" width="6" height="6"/><rect x="102" y="114" width="6" height="6"/><rect x="126" y="114" width="6" height="6"/><rect x="132" y="114" width="6" height="6"/><rect x="144" y="114" width="6" height="6"/><rect x="48" y="120" width="6" height="6"/><rect x="72" y="120" width="6" height="6"/><rect x="84" y="120" width="6" height="6"/><rect x="96" y="120" width="6" height="6"/><rect x="102" y="120" width="6" height="6"/><rect x="120" y="120" width="6" height="6"/><rect x="126" y="120" width="6" height="6"/><rect x="138" y="120" width="6" height="6"/><rect x="144" y="120" width="6" height="6"/><rect x="48" y="126" width="6" height="6"/><rect x="54" y="126" width="6" height="6"/><rect x="60" y="126" width="6" height="6"/><rect x="66" y="126" width="6" height="6"/><rect x="72" y="126" width="6" height="6"/><rect x="84" y="126" width="6" height="6"/><rect x="96" y="126" width="6" height="6"/><rect x="102" y="126" width="6" height="6"/><rect x="108" y="126" width="6" height="6"/><rect x="114" y="126" width="6" height="6"/><rect x="120" y="126" width="6" height="6"/><rect x="138" y="126" width="6" height="6"/><rect x="144" y="126" width="6" height="6"/><rect x="54" y="132" width="6" height="6"/><rect x="66" y="132" width="6" height="6"/><rect x="84" y="132" width="6" height="6"/><rect x="108" y="132" width="6" height="6"/><rect x="132" y="132" width="6" height="6"/><rect x="138" y="132" width="6" height="6"/><rect x="144" y="132" width="6" height="6"/><rect x="48" y="138" width="6" height="6"/><rect x="54" y="138" width="6" height="6"/><rect x="66" y="138" width="6" height="6"/><rect x="72" y="138" width="6" height="6"/><rect x="78" y="138" width="6" height="6"/><rect x="102" y="138" width="6" height="6"/><rect x="108" y="138" width="6" height="6"/><rect x="114" y="138" width="6" height="6"/><rect x="120" y="138" width="6" height="6"/><rect x="126" y="138" width="6" height="6"/><rect x="132" y="138" width="6" height="6"/><rect x="138" y="138" width="6" height="6"/><rect x="60" y="144" width="6" height="6"/><rect x="72" y="144" width="6" height="6"/><rect x="78" y="144" width="6" height="6"/><rect x="84" y="144" width="6" height="6"/><rect x="90" y="144" width="6" height="6"/><rect x="96" y="144" width="6" height="6"/><rect x="108" y="144" width="6" height="6"/><rect x="120" y="144" width="6" height="6"/><rect x="126" y="144" width="6" height="6"/><rect x="132" y="144" width="6" height="6"/><rect x="138" y="144" width="6" height="6"/><rect x="144" y="144" width="6" height="6"/></g><rect x="0" y="0" width="42" height="42" fill="#111A2B"/><rect x="6" y="6" width="30" height="30" fill="#fff"/><rect x="12" y="12" width="18" height="18" fill="#111A2B"/><rect x="108" y="0" width="42" height="42" fill="#111A2B"/><rect x="114" y="6" width="30" height="30" fill="#fff"/><rect x="120" y="12" width="18" height="18" fill="#111A2B"/><rect x="0" y="108" width="42" height="42" fill="#111A2B"/><rect x="6" y="114" width="30" height="30" fill="#fff"/><rect x="12" y="120" width="18" height="18" fill="#111A2B"/></svg></div>
+      </div>
+    </div>
+    <div class="fs-act"><button onClick="{{bpDl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></svg>Descargar</button><button onClick="{{bpSend}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg><span>Enviar a {{bpFirst}}</span></button></div>
+    <div class="fs-note">Con el brillo alto se escanea más rápido.</div>
+    <div class="fs-nav">
+      <button class="fs-x" style="color:#fff;" onClick="{{bpPrev}}" aria-label="Pase anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <span>{{bpIdx}}</span>
+      <button class="fs-x" style="color:#fff;" onClick="{{bpNext}}" aria-label="Pase siguiente"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"momento":{"editor":"enum","options":["Recién confirmado","Día del vuelo","Durante el viaje","Cambio de horario"],"default":"Recién confirmado"},"pagos":{"editor":"enum","options":["Una persona","Divididos"],"default":"Una persona"},"$preview":{"width":390,"height":5937}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ck: '', ver: {}, off: {}, chg: '', paid2: false,
+      sheet: '', fs: '', bp: 0, helpCtx: '', topic: 0, shareT: '', shareMsg: '',
+      otp: '', bl: {}, det: {}, nextAll: false, paxOpen: false, shareNote: '', payWhat: 'second', pm: 'spei',
+      tab: 'prox', toast: '', toastOn: false
+    };
+    this.timers = {};
+    this.pending = null;
+    this.onScroll = this.onScroll.bind(this);
+  }
+  componentDidMount() { try { window.addEventListener('scroll', this.onScroll, { passive: true }); } catch (e) {} }
+  componentWillUnmount() { try { window.removeEventListener('scroll', this.onScroll); } catch (e) {} Object.values(this.timers).forEach(clearTimeout); }
+
+  key() { return ({ 'Recién confirmado': 'rc', 'Día del vuelo': 'df', 'Durante el viaje': 'dv', 'Cambio de horario': 'cb' })[this.props.momento ?? 'Recién confirmado'] || 'rc'; }
+  sections() { return ['prox', 'hospedaje', 'vuelos', 'actividades', 'servicios', 'pagos']; }
+  onScroll() {
+    try {
+      let cur = 'prox';
+      this.sections().forEach((id) => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 110) cur = id; });
+      if (cur !== this.state.tab) {
+        this.setState({ tab: cur });
+        const t = document.getElementById('tab-' + cur);
+        if (t) t.parentElement.scrollTo({ left: Math.max(0, t.offsetLeft - 16), behavior: 'smooth' });
+      }
+    } catch (e) {}
+  }
+  go(id) { this.setState({ sheet: '' }); try { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  toast(msg) {
+    clearTimeout(this.timers.toast);
+    this.setState({ toast: msg, toastOn: true });
+    this.timers.toast = setTimeout(() => this.setState({ toastOn: false }), 2400);
+  }
+  copy(text, label) { try { navigator.clipboard.writeText(text); } catch (e) {} this.toast(label + ' copiada'); }
+  verified() { const k = this.key(); return this.state.ver[k] ?? (k !== 'rc'); }
+  // Los documentos con código de acceso (pases, bonos, póliza) piden verificar una vez por celular.
+  gate(fn) {
+    if (this.verified()) { fn(); return; }
+    this.pending = fn;
+    this.setState({ sheet: 'ver', fs: '', otp: '' });
+  }
+  help(ctx, topic) { this.setState({ sheet: 'help', helpCtx: ctx, topic: topic || 0, fs: '' }); }
+  share(t, msg, note) { this.setState({ sheet: 'share', shareT: t, shareMsg: msg, shareNote: note || 'Recibe solo este documento, sin tus pagos ni los datos de los demás.', fs: '' }); }
+
+  renderVals() {
+    const s = this.state, k = this.key(), rc = k === 'rc', df = k === 'df', dv = k === 'dv', cb = k === 'cb';
+    const ver = this.verified(), off = s.off[k] ?? (k !== 'rc');
+    const ck = rc ? s.ck : 'yes';
+    const chg = cb ? s.chg : '';
+    const openPasses = () => this.gate(() => this.setState({ fs: 'pass', bp: 0, sheet: '' }));
+    const bono = (n) => () => this.gate(() => this.toast('Abriendo el bono de ' + n + ' (PDF del parque)'));
+
+    // ---------- Pasajeros tal como quedaron en los boletos ----------
+    const P = [
+      ['NATALY CERVANTES RUIZ', 'CERVANTES RUIZ / NATALY', 'Adulto', '14A', 'Nataly', false],
+      ['LUIS PEREZ GOMEZ', 'PEREZ GOMEZ / LUIS', 'Adulto', '14B', 'Luis', false],
+      ['ANA CERVANTES RUIZ', 'CERVANTES RUIZ / ANA', 'Adulto', '14C', 'Ana', false],
+      ['JORGE MENDEZ SOTO', 'MENDEZ SOTO / JORGE', 'Adulto', '15A', 'Jorge', false],
+      ['SOFIA PEREZ CERVANTES', 'PEREZ CERVANTES / SOFIA', 'Menor', '15B', 'Sofía', true],
+      ['MATEO MENDEZ CERVANTES', 'MENDEZ CERVANTES / MATEO', 'Menor', '15C', 'Mateo', true]
+    ];
+    const NM = ['Nataly Cervantes Ruiz', 'Luis Pérez Gómez', 'Ana Cervantes Ruiz', 'Jorge Méndez Soto', 'Sofía Pérez Cervantes', 'Mateo Méndez Cervantes'];
+    const sendPass = (p, i) => this.gate(() => this.share('Enviar pase de ' + p[4], passMsg(p, i)));
+    const passMsg = (p, i) => (p[5] ? 'Pase de abordar de ' + p[4] : 'Hola ' + p[4] + ', aquí está tu pase de abordar') + ' · VB 2124, Mié 21 oct, 4:55 PM, Guadalajara → Cancún. Asiento ' + p[3] + ': airoo.mx/p/K7M2-' + (i + 1);
+
+    // ---------- Encabezado ----------
+    const head = {
+      rc: ['Confirmado', 'Tu viaje está confirmado. Faltan 20 días.', 'Reservamos todo y lo revisamos con cada proveedor. Lo que falta llega aquí solo y te avisamos por WhatsApp.'],
+      df: ['Hoy vuelas', 'Sales a las 4:55 PM de Guadalajara.', 'Tus 6 pases de abordar ya están aquí. Lo ideal es estar en el aeropuerto a las 2:55 PM.'],
+      dv: ['Día 2', 'Hoy toca Xel-Há.', 'Te recogen a las 8:10 AM en el lobby de Seadust.'],
+      cb: ['Faltan 2 días', 'Todo sigue confirmado.', chg === 'ok' ? 'Ya actualizamos tu vuelo de regreso con el nuevo horario.' : 'Solo cambió la hora de tu vuelo de regreso; abajo está el detalle.']
+    }[k];
+
+    // ---------- Lo que sigue / Hoy ----------
+    const N = (d1, d2, t, sub, chip, chipCls, act, go, cls) => ({ d1: d1, d2: d2, t: t, s: sub, chip: chip || '', chipCls: chipCls || '', hasChip: !!chip, act: act || '', hasAct: !!act, hasFoot: !!(chip || act), go: go || (() => {}), cls: cls || '' });
+    let next;
+    if (rc) {
+      const ckRow = ck === 'yes' ? N('18 oct', 'Dom', 'Check-in del vuelo de ida', 'Lo hacemos en cuanto Viva lo abre, a las 4:55 PM.', 'Lo hacemos por ti', 'b-green')
+        : ck === 'diy' ? N('18 oct', 'Dom', 'Check-in del vuelo de ida', 'Viva lo abre a las 4:55 PM. Te lo recordamos ese día.', 'Lo haces tú', 'b-gray')
+        : N('18 oct', 'Dom', 'Check-in del vuelo de ida', 'Podemos hacerlo por ti, sin costo.', 'Por decidir', 'b-amber', 'Decidir', () => this.go('vuelos'));
+      next = [
+        s.paid2 ? N('5 oct', 'Lun', 'Segundo pago', 'Recibimos tu aviso. Lo confirmamos en cuanto se refleje.', 'Verificando', 'b-gray')
+          : N('5 oct', 'Lun', 'Segundo pago', 'Te recordamos por WhatsApp 3 días antes.', 'Próximo', 'b-blue', 'Pagar', () => this.setState({ sheet: 'pay', payWhat: 'second' })),
+        N('12 oct', 'Lun', 'Pago final', 'Con este pago queda liquidado tu hotel.', s.paid2 === 'all' ? 'Verificando' : 'Programado', 'b-gray'),
+        N('16 oct', 'Vie', 'Bono de Xcaret Plus', 'Lo subimos aquí en cuanto el parque lo emita.', 'Por llegar', 'b-gray'),
+        ckRow,
+        N('20 oct', 'Mar', 'Datos de tu traslado', 'Hora de recogida y quién te espera en el aeropuerto.', 'Por llegar', 'b-gray'),
+        N('21 oct', 'Mié', 'Sale tu vuelo', 'VB 2124 · 4:55 PM · Terminal 1 de Guadalajara')
+      ];
+    } else if (df) {
+      next = [
+        N('4:15', 'PM', 'Empieza el abordaje', 'La sala viene en tu pase. Al abordar piden la INE.'),
+        N('7:26', 'PM', 'Aterrizas en Cancún', 'Tu chofer te espera al salir de la Terminal 2.', '', '', 'Ver traslado', () => this.go('servicios')),
+        N('≈ 8:15', 'PM', 'Llegas a Seadust', 'Registro a nombre de Nataly y Ana Cervantes Ruiz.', '', '', 'Ver hotel', () => this.go('hospedaje')),
+        N('22 oct', 'Jue', 'Xel-Há', 'Recogida 8:10 AM en el lobby. Tu bono ya está aquí.', 'Mañana', 'b-gray')
+      ];
+    } else if (dv) {
+      next = [
+        N('Todo', 'el día', 'Xel-Há', 'Comidas y bebidas incluidas.'),
+        N('≈ 5:30', 'PM', 'Regreso al hotel', 'La hora exacta te la dan en el parque.'),
+        N('24 oct', 'Sáb', 'Xcaret Plus', 'Recogida 7:40 AM en el lobby.', 'Bono listo', 'b-green', 'Ver bono', bono('Xcaret')),
+        N('24 oct', 'Sáb', 'Check-in de tu regreso', 'Lo hacemos por ti a las 6:13 PM.', 'Lo hacemos por ti', 'b-green')
+      ];
+    } else {
+      next = [
+        N('20 oct', 'Mar', 'Datos de tu traslado de llegada', 'Hora de recogida y quién te espera.', 'Por llegar', 'b-gray'),
+        N('21 oct', 'Mié', 'Sale tu vuelo de ida', 'VB 2124 · 4:55 PM · check-in hecho.', 'Pases listos', 'b-green', 'Ver pases', openPasses),
+        N('24 oct', 'Sáb', 'Check-in de tu regreso', chg === 'ask' ? 'Lo programamos cuando definamos tu vuelo.' : 'Lo hacemos por ti con el nuevo horario, 8:40 PM.', chg === 'ask' ? 'En pausa' : 'Lo hacemos por ti', chg === 'ask' ? 'b-gray' : 'b-green'),
+        N('26 oct', 'Lun', 'Datos del traslado al aeropuerto', 'Ajustado al nuevo horario del vuelo.', 'Por llegar', 'b-gray')
+      ];
+    }
+
+    // ---------- Vuelos ----------
+    const ida = { name: 'Ida', date: 'Mié 21 oct', code: 'VB 2124', t1: '4:55', p1: 'PM', term1: 'Terminal 1', c1: 'Guadalajara', t2: '7:26', p2: 'PM', term2: 'Terminal 2', c2: 'Cancún', dur: '2 h 31 min', chg: false, old1: '', old2: '', newCls: '' };
+    const reg = cb
+      ? { name: 'Regreso', date: 'Mar 27 oct', code: 'VB 2125', t1: '8:40', p1: 'PM', term1: 'Terminal 2', c1: 'Cancún', t2: '10:12', p2: 'PM', term2: 'Terminal 1', c2: 'Guadalajara', dur: '1 h 32 min', chg: true, old1: 'Antes 6:13 PM', old2: 'Antes 7:45 PM', newCls: 'newt' }
+      : { name: 'Regreso', date: 'Mar 27 oct', code: 'VB 2125', t1: '6:13', p1: 'PM', term1: 'Terminal 2', c1: 'Cancún', t2: '7:45', p2: 'PM', term2: 'Terminal 1', c2: 'Guadalajara', dur: '1 h 32 min', chg: false, old1: '', old2: '', newCls: '' };
+    const ckState = (txt, ok, pass, cls) => ({ ck: txt, isOk: !!ok, notOk: !ok, hasPass: false, ckCls: cls || '', openPass: openPasses });
+    let ckI, ckR;
+    if (rc) {
+      ckI = ck === 'yes' ? ckState('Lo hacemos por ti el Dom 18 oct, 4:55 PM') : ckState('Check-in abre el Dom 18 oct, 4:55 PM');
+      ckR = ck === 'yes' ? ckState('Lo hacemos por ti el Sáb 24 oct, 6:13 PM') : ckState('Check-in abre el Sáb 24 oct, 6:13 PM');
+    } else if (dv) {
+      ckI = ckState('Vuelo completado', true, false, '');
+      ckR = ckState('Lo hacemos por ti el Sáb 24 oct, 6:13 PM');
+    } else {
+      ckI = ckState('Check-in hecho · 6 pases listos', true, true, 'ckok');
+      ckR = cb ? ckState(chg === 'ask' ? 'Check-in en pausa mientras definimos tu vuelo' : 'Lo hacemos por ti el Sáb 24 oct, 8:40 PM') : ckState('Lo hacemos por ti el Sáb 24 oct, 6:13 PM');
+    }
+    const legs = [Object.assign(ida, ckI), Object.assign(reg, ckR)];
+
+    // ---------- Actividades ----------
+    const actBase = [
+      { name: 'Xel-Há', title: 'Xel-Há · Todo incluido', bg: '#1463F6', meta: 'Jue 22 oct · Todo el día · 6 personas', folio: 'XH-8821374', ctx: 'Xel-Há · Jue 22 oct' },
+      { name: 'Xcaret', title: 'Xcaret Plus', bg: '#0F8A4A', meta: 'Sáb 24 oct · Todo el día · 6 personas', folio: 'XC-4410962', ctx: 'Xcaret Plus · Sáb 24 oct' }
+    ];
+    const acts = actBase.map((a, i) => {
+      const pending = rc && i === 1;
+      const today = dv && i === 0;
+      return Object.assign({}, a, {
+        hasBadge: today, badge: 'Hoy', bCls: 'b-blue',
+        pick: pending ? 'Recogida por confirmar' : (i === 0 ? 'Recogida 8:10 AM' : 'Recogida 7:40 AM'),
+        pickS: pending ? '· La hora viene en tu bono.' : '· Lobby de Seadust',
+        ready: !pending, icCls: pending ? 'off' : '',
+        dState: pending ? 'Por llegar' : 'Listo', dCls: pending ? 'b-gray' : 'b-green',
+        docS: pending ? 'Llega antes del Vie 16 oct' : '1 bono para las 6 personas',
+        docF: 'Lo subimos aquí en cuanto el parque lo emita y te avisamos por WhatsApp.', hasDocF: pending,
+        bring: 'Es tarifa para mexicanos: en la entrada piden INE de cada adulto y CURP o credencial escolar de los menores. Sin identificación, el parque cobra la diferencia.',
+        view: bono(a.name), dl: () => this.gate(() => this.toast('Bono de ' + a.name + ' guardado en tu celular')),
+        share: () => this.gate(() => this.share('Enviar bono de ' + a.name, 'Bono de ' + a.title + ' · ' + a.meta.split(' · ')[0] + ' · para las 6 personas. Se presenta en la taquilla: airoo.mx/b/' + a.folio, 'Recibe solo el bono del parque, sin tus pagos ni el resto del viaje.')),
+        copy: () => this.copy(a.folio, 'Folio'), help: () => this.help(a.ctx)
+      });
+    });
+
+    // ---------- Traslados ----------
+    const T = (n, badge, bCls, txt, full) => ({ n: n, badge: badge, bCls: bCls, txt: txt, full: !!full });
+    const trs = {
+      rc: [T('Llegada · Mié 21 oct', 'Por llegar', 'b-gray', 'El Mar 20 oct te mandamos la hora, el punto de encuentro y quién te recoge.'), T('Salida · Mar 27 oct', 'Por llegar', 'b-gray', 'El Lun 26 oct te mandamos la hora de recogida en el hotel.')],
+      df: [T('Llegada · hoy, 7:26 PM', 'Listo', 'b-green', 'Al salir de la Terminal 2, tu chofer te espera con un letrero «Airoo · Cervantes».', true), T('Salida · Mar 27 oct', 'Por llegar', 'b-gray', 'El Lun 26 oct te mandamos la hora de recogida en el hotel.')],
+      dv: [T('Llegada · Mié 21 oct', 'Completado', 'b-gray', 'Te recogimos en la Terminal 2.'), T('Salida · Mar 27 oct', 'Por llegar', 'b-gray', 'El Lun 26 oct te mandamos la hora de recogida en el hotel.')],
+      cb: [T('Llegada · Mié 21 oct', 'Por llegar', 'b-gray', 'Mañana, Mar 20 oct, te mandamos la hora, el punto de encuentro y quién te recoge.'), T('Salida · Mar 27 oct', 'Por llegar', 'b-gray', 'La coordinamos con el nuevo horario de tu vuelo (8:40 PM). Te mandamos la hora el Lun 26 oct.')]
+    }[k];
+
+    // ---------- Documentos ----------
+    const D = (n, sub, ready, state, isFile, view) => ({ n: n, s: sub, ready: !!ready, wait: !ready, state: state || '', isFile: !!isFile, isTicket: !isFile, icCls: ready ? '' : 'off', view: view || (() => {}) });
+    const docs = [
+      rc ? D('Pases de abordar · Ida', ck === 'yes' ? 'Los subimos al hacer tu check-in' : ck === 'diy' ? 'Los obtienes al hacer tu check-in' : 'Disponibles al abrir el check-in', false, 'Dom 18 oct')
+        : dv ? D('Pases de abordar · Ida', 'Vuelo del Mié 21 oct', false, 'Usados') : D('Pases de abordar · Ida', '6 pasajeros · VB 2124', true, '', false, openPasses),
+      D('Pases de abordar · Regreso', cb && chg === 'ask' ? 'En pausa mientras definimos tu vuelo' : '6 pasajeros · VB 2125', false, 'Sáb 24 oct'),
+      D('Bono de Xel-Há', dv ? 'Para hoy · 6 personas' : 'Jue 22 oct · 6 personas', true, '', false, bono('Xel-Há')),
+      rc ? D('Bono de Xcaret Plus', 'Sáb 24 oct · 6 personas', false, 'Vie 16 oct') : D('Bono de Xcaret Plus', 'Sáb 24 oct · 6 personas', true, '', false, bono('Xcaret')),
+      D('Póliza del seguro', 'Seguro de viaje Plus · 6 viajeros', true, '', true, () => this.gate(() => this.toast('Abriendo la póliza (PDF)')))
+    ];
+
+    // ---------- Pagos ----------
+    const Y = (n, d, v, badge, bCls) => ({ n: n, d: d, v: v, badge: badge, bCls: bCls, hasShares: false, shares: [] });
+    const split = (this.props.pagos ?? 'Una persona') === 'Divididos';
+    const remind = (n, i) => () => this.share('Recordar a ' + n, 'Hola ' + n + ', tu parte del segundo pago del viaje a Cancún es de $4,033.33 y vence el Lun 5 oct. Puedes pagarla aquí: airoo.mx/pago/AIR2458-' + i, 'Recibe solo su parte y cómo pagarla. No ve el resto del viaje ni tus pagos.');
+    const SH = (ini, n, sub, badge, bCls, me, rem) => ({ ini: ini, n: n, s: sub, badge: badge || '', bCls: bCls || '', hasBadge: !!badge, avCls: me ? 'me' : '', canRemind: !!rem, remind: rem || (() => {}) });
+    let pays;
+    if (rc && split) {
+      const mine = s.paid2 ? ['Verificando', 'b-gray'] : ['Tu parte', 'b-blue'];
+      pays = [Y('Anticipo', 'Pagado Mié 30 sep · lo pagaste tú', '$18,048.48', 'Pagado', 'b-green'),
+        Object.assign(Y('Segundo pago', 'Vence Lun 5 oct · dividido entre 3', '$12,100.00', (s.paid2 ? 2 : 1) + ' de 3', 'b-blue'), { hasShares: true, shares: [
+          SH('N', 'Nataly (tú)', '$4,033.33', mine[0], mine[1], true),
+          SH('L', 'Luis Pérez', '$4,033.33 · pagó Jue 1 oct', 'Pagado', 'b-green'),
+          SH('A', 'Ana Cervantes', '$4,033.33 · pendiente', '', '', false, remind('Ana', 3))] }),
+        Object.assign(Y('Pago final', 'Vence Lun 12 oct · dividido entre 3', '$12,100.00', 'Programado', 'b-gray'), { hasShares: false, shares: [] })];
+    } else if (rc) {
+      pays = [Y('Anticipo', 'Pagado Mié 30 sep · vuelos, actividades, servicios y cargo por servicio', '$18,048.48', 'Pagado', 'b-green'),
+        Y('Segundo pago', 'Vence Lun 5 oct · primera mitad del hotel', '$12,100.00', s.paid2 ? 'Verificando' : 'Próximo', s.paid2 ? 'b-gray' : 'b-blue'),
+        Y('Pago final', 'Vence Lun 12 oct · segunda mitad del hotel', '$12,100.00', s.paid2 === 'all' ? 'Verificando' : 'Programado', 'b-gray')];
+    } else {
+      const sp = split ? ' · dividido entre Nataly, Luis y Ana' : '';
+      pays = [Y('Anticipo', 'Pagado Mié 30 sep', '$18,048.48', 'Pagado', 'b-green'), Y('Segundo pago', 'Pagado Vie 2 oct' + sp, '$12,100.00', 'Pagado', 'b-green'), Y('Pago final', 'Pagado Lun 12 oct' + sp, '$12,100.00', 'Pagado', 'b-green')];
+    }
+    pays.forEach((x) => { if (!x.shares) { x.shares = []; x.hasShares = false; } });
+    const payAll = s.payWhat === 'all';
+
+    // ---------- Barra fija: una sola acción, la que toca ahora ----------
+    let bar;
+    if (rc) bar = s.paid2 ? ['Próximo · Dom 18 oct', 'Check-in del vuelo', 'Ver vuelo', () => this.go('vuelos')] : [split ? 'Próximo · Lun 5 oct · tu parte' : 'Próximo · Lun 5 oct', 'Segundo pago', 'Pagar', () => this.setState({ sheet: 'pay', payWhat: 'second' })];
+    else if (df) bar = ['VB 2124 · sale 4:55 PM', '6 pases listos', 'Ver pases', openPasses];
+    else if (dv) bar = ['Hoy · Xel-Há', 'Recogida 8:10 AM', 'Ver bono', bono('Xel-Há')];
+    else bar = chg ? ['Próximo · Mié 21 oct', 'Vuelo VB 2124', 'Ver pases', openPasses] : ['Viva cambió tu regreso', 'Ahora sale 8:40 PM', 'Revisar', () => this.go('prox')];
+
+    const sh = (name) => (s.sheet === name ? '1fr' : '0fr');
+    const shO = (name) => (s.sheet === name ? 1 : 0);
+    const topics = ['Tengo una duda', 'Algo no coincide', 'Es urgente'];
+    const topicTxt = ['Tengo una duda: ', 'Algo no coincide: ', 'Es urgente: '];
+    const otpOk = /^\d{6}$/.test(s.otp);
+    const cur = P[s.bp];
+    const det = {};
+    ['dh', 'dv', 'dp'].forEach((id) => {
+      const o = !!s.det[id];
+      det[id + 'Tog'] = () => this.setState({ det: Object.assign({}, this.state.det, { [id]: !o }) });
+      det[id + 'Aria'] = o ? 'true' : 'false'; det[id + 'Chev'] = o ? 'open' : ''; det[id + 'Rows'] = o ? '1fr' : '0fr'; det[id + 'Op'] = o ? 1 : 0;
+    });
+
+    return Object.assign(det, {
+      toastCls: s.toastOn ? 'show' : '', toastMsg: s.toast,
+      h1: head[0], lead: head[1], leadS: head[2], showLead: rc,
+      steps: ['Propuesta', 'Datos y pago', 'Reservando', 'Confirmado'].map((l) => ({ l: l })),
+      tabs: this.sections().map((id, i) => ({ id: id, l: i === 0 ? ((df || dv) ? 'Hoy' : 'Agenda') : ['', 'Hospedaje', 'Vuelos', 'Actividades', 'Servicios', 'Pagos'][i], c: s.tab === id ? 'on' : '', go: () => this.go(id) })),
+      proxT: (df || dv) ? 'Hoy' : 'Agenda', proxS: { rc: 'Pagos, documentos y fechas de tu viaje.', df: 'Mié 21 oct', dv: 'Jue 22 oct · día 2 de 7', cb: 'Lun 19 oct · un cambio por revisar' }[k],
+      isChg: cb, chgOpen: cb && !chg, chgDone: chg === 'ok', chgAsk: chg === 'ask',
+      chgOk: () => { this.setState({ chg: 'ok' }); this.toast('Nuevo horario aceptado'); },
+      chgOther: () => { this.setState({ chg: 'ask' }); this.help('el cambio de horario del vuelo VB 2125, Mar 27 oct', 0); },
+      heroFlight: df, heroAct: dv, showSos: dv,
+      next: s.nextAll ? next : next.slice(0, 3), nextMore: next.length > 3,
+      nextLbl: s.nextAll ? 'Ver menos' : 'Ver toda la agenda (' + next.length + ')', nextChev: s.nextAll ? 'open' : '', nextAria: s.nextAll ? 'true' : 'false',
+      nextTog: () => this.setState({ nextAll: !s.nextAll }),
+      docsSum: (() => { const r = docs.filter((d) => d.ready).length, w = docs.length - r; return r + (r === 1 ? ' listo' : ' listos') + (w ? ' · ' + w + ' por llegar' : ''); })(),
+      openDocs: () => this.setState({ sheet: 'docs' }), docsRows: sh('docs'), docsOp: shO('docs'),
+      dhLbl: 'Plan, cancelación y cargos', dvLbl: 'Equipaje y pasajeros',
+      payListRows: rc || s.det.dp ? '1fr' : '0fr', payListOp: rc || s.det.dp ? 1 : 0,
+      copyFlight: () => this.copy('K7M2QX', 'Clave'), bigFlight: () => this.setState({ fs: 'code' }),
+      openPasses: openPasses, openXelha: bono('Xel-Há'),
+      flightStatus: () => this.toast('Abriendo el estado del vuelo en Viva'),
+      callAssist: () => this.toast('Llamando a la asistencia del seguro'),
+      // Hospedaje
+      mapHotel: () => this.toast('Abriendo la ruta en Maps'), callHotel: () => this.toast('Llamando a Seadust'),
+      rooms: [['Habitación 1', 'Suite Deluxe, 2 camas dobles', 'Nataly Cervantes Ruiz', '2 adultos + 1 menor', '5521884'], ['Habitación 2', 'Suite Deluxe, 2 camas dobles', 'Ana Cervantes Ruiz', '2 adultos + 1 menor', '5521885']]
+        .map((r) => ({ n: r[0], t: r[1], who: r[2], g: r[3], code: r[4], copy: () => this.copy(r[4], 'Clave') })),
+      cancelTxt: rc ? 'Sin costo hasta Mié 14 oct' : 'Sin reembolso desde el Jue 15 oct', cancelCls: rc ? 'g' : 'n',
+      goPagos: () => this.go('pagos'), helpHotel: () => this.help('el hotel Seadust, 21–27 oct'),
+      // Vuelos
+      legs: legs, showCkBox: rc, ckAsk: rc && !ck, ckIsYes: rc && ck === 'yes', ckIsDiy: rc && ck === 'diy',
+      ckYes: () => { this.setState({ ck: 'yes' }); this.toast('Listo, hacemos tu check-in'); }, ckDiy: () => this.setState({ ck: 'diy' }), ckReset: () => this.setState({ ck: '' }),
+      showBpl: !(rc && ck !== 'yes'),
+      showPxl: rc, showBplFix: !rc,
+      bplIdaCls: (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'ida' ? 'on' : '', bplRegCls: (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'reg' ? 'on' : '',
+      bplIdaAria: (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'ida' ? 'true' : 'false', bplRegAria: (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'reg' ? 'true' : 'false',
+      bplIda: () => this.setState({ bl: Object.assign({}, s.bl, { [k]: 'ida' }) }), bplReg: () => this.setState({ bl: Object.assign({}, s.bl, { [k]: 'reg' }) }),
+      bplReady: !rc && (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'ida', bplEmpty: rc || (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'reg',
+      bplEmptyTxt: (s.bl[k] ?? (dv ? 'reg' : 'ida')) === 'ida' ? 'Aparecen aquí el Dom 18 oct, en cuanto hagamos tu check-in. Te avisamos por WhatsApp.'
+        : (cb && chg === 'ask' ? 'En pausa mientras definimos tu vuelo de regreso.' : 'Aparecen aquí el Sáb 24 oct, en cuanto hagamos el check-in del regreso' + (cb ? ' con el nuevo horario.' : '.')),
+      bplSub: dv ? 'Vuelo del Mié 21 oct · ya usados' : 'VB 2124 · Mié 21 oct · al tocar un nombre se abre su pase',
+      bplRows: P.map((p, i) => ({ n: NM[i], s: 'Asiento ' + p[3] + ' · ' + p[2], view: () => this.gate(() => this.setState({ fs: 'pass', bp: i, sheet: '' })), send: () => sendPass(p, i), dl: () => this.gate(() => this.toast('Pase de ' + p[4] + ' descargado')), sendL: 'Enviar pase de ' + p[4], dlL: 'Descargar pase de ' + p[4] })),
+      pax: P.map((p) => ({ n: p[0], t: p[2] + (df || cb ? ' · ' + p[3] : '') })),
+      togglePax: () => this.setState({ paxOpen: !s.paxOpen }), paxAria: s.paxOpen ? 'true' : 'false', paxChev: s.paxOpen ? 'open' : '', paxRows: s.paxOpen ? '1fr' : '0fr', paxOp: s.paxOpen ? 1 : 0,
+      helpName: () => this.help('los nombres en los boletos, clave K7M2QX', 1), helpFlight: () => this.help('los vuelos VB 2124 y VB 2125, clave K7M2QX'),
+      // Actividades y servicios
+      acts: acts, trs: trs, callDriver: () => this.toast('Llamando a Ramón'), helpTr: () => this.help('el traslado aeropuerto ↔ Seadust'),
+      copyPol: () => this.copy('AS-448120', 'Póliza'),
+      viewPol: () => this.gate(() => this.toast('Abriendo la póliza (PDF)')), dlPol: () => this.gate(() => this.toast('Póliza guardada en tu celular')),
+      sharePol: () => this.gate(() => this.share('Enviar póliza del seguro', 'Póliza del seguro de viaje Plus (AS-448120), del 21 al 27 oct. Asistencia 24 h en el PDF: airoo.mx/s/AS448120', 'Recibe solo la póliza, sin tus pagos ni el resto del viaje.')),
+      // Documentos
+      offCls: off ? 'on' : '', offOn: off, offBtn: !off,
+      offT: off ? 'Guardado en este celular' : 'Guárdalo para verlo sin internet', offS: off ? 'Se actualiza solo cuando tienes señal.' : 'Claves, pases y bonos, aunque no tengas datos.',
+      saveOff: () => { this.setState({ off: Object.assign({}, s.off, { [k]: true }) }); this.toast('Guardado para verlo sin internet'); },
+      docs: docs, dlSummary: () => this.toast('Resumen del viaje descargado'), addCal: () => this.toast('Agregamos tu viaje a tu calendario'),
+      // Pagos
+      paySub: rc ? (s.paid2 ? 'Verificando tu pago' : 'Pagado 1 de 3') : 'Pagado completo', pays: pays,
+      progW: rc ? (split ? '52%' : '43%') : '100%', paidTxt: rc ? (split ? '$22,081.81' : '$18,048.48') : '$42,248.48', totalTxt: '$42,248.48',
+      payBtn: split ? 'Pagar tu parte · $4,033.33' : 'Pagar segundo pago · $12,100.00',
+      hasDue: rc && !s.paid2, allPaid: !rc,
+      openPay: () => this.setState({ sheet: 'pay', payWhat: 'second' }), openPayAll: () => this.setState({ sheet: 'pay', payWhat: 'all' }),
+      receipts: () => this.toast('Abriendo tus comprobantes'),
+      // Barra
+      barCap: bar[0], barVal: bar[1], barBtn: bar[2], barGo: bar[3],
+      helpGen: () => this.help('mi viaje'),
+      scrimCls: s.sheet ? '' : 'hide', trayRole: s.sheet ? 'dialog' : 'region', close: () => { this.pending = null; this.setState({ sheet: '' }); },
+      minRows: s.sheet ? '0fr' : '1fr', minOp: s.sheet ? 0 : 1,
+      helpRows: sh('help'), helpOp: shO('help'), shareRows: sh('share'), shareOp: shO('share'),
+      verRows: sh('ver'), verOp: shO('ver'), payRows: sh('pay'), payOp: shO('pay'),
+      dlPasses: () => this.gate(() => this.toast('6 pases guardados en tu celular')),
+      helpCtx: s.helpCtx, helpTopics: topics.map((l, i) => ({ l: l, c: s.topic === i ? 'on' : '', pick: () => this.setState({ topic: i }) })),
+      helpMsg: 'Hola Airoo, soy Nataly (viaje AIR-2458). Sobre ' + s.helpCtx + '. ' + topicTxt[s.topic],
+      helpSend: () => { this.setState({ sheet: '' }); this.toast('Abriendo WhatsApp'); },
+      shareT: s.shareT, shareMsg: s.shareMsg, shareNote: s.shareNote,
+      shareSend: () => { this.setState({ sheet: '' }); this.toast('Abriendo WhatsApp'); }, shareCopy: () => { this.setState({ sheet: '' }); this.toast('Enlace copiado'); },
+      otp: s.otp, setOtp: (e) => this.setState({ otp: (e.target.value || '').replace(/\D/g, '').slice(0, 6) }),
+      verBtnCls: otpOk ? '' : 'dis', verDis: otpOk ? 'false' : 'true',
+      verify: () => {
+        if (!otpOk) return;
+        const fn = this.pending; this.pending = null;
+        this.setState({ ver: Object.assign({}, s.ver, { [k]: true }), sheet: '' });
+        this.toast('Listo. Este celular ya puede ver tus documentos');
+        if (fn) this.timers.pend = setTimeout(fn, 320);
+      },
+      payTitle: payAll ? (split ? 'Adelantar tu parte del saldo' : 'Adelantar todo el saldo') : (split ? 'Tu parte del segundo pago' : 'Segundo pago · Lun 5 oct'), payAmt: payAll ? (split ? '$8,066.66' : '$24,200.00') : (split ? '$4,033.33' : '$12,100.00'),
+      pmSpei: s.pm === 'spei' ? 'on' : '', pmCard: s.pm === 'card' ? 'on' : '', setSpei: () => this.setState({ pm: 'spei' }), setCard: () => this.setState({ pm: 'card' }),
+      isSpei: s.pm === 'spei', isCard: s.pm === 'card', copyClabe: () => this.copy('000000000000000000', 'CLABE'),
+      payDone: () => { this.setState({ paid2: payAll ? 'all' : true, sheet: '' }); this.toast('Gracias. Te confirmamos por WhatsApp'); },
+      // Pantalla completa
+      fsCodeCls: s.fs === 'code' ? '' : 'hide', fsPassCls: s.fs === 'pass' ? '' : 'hide', fsClose: () => this.setState({ fs: '' }),
+      bpName: cur[1], bpSeat: cur[3], bpIdx: (s.bp + 1) + ' de 6 · ' + cur[4], bpFirst: cur[4],
+      bpFlight: 'VB 2124', bpFrom: 'GDL', bpTo: 'CUN', bpDate: '21 OCT', bpBoard: '4:15 PM',
+      bpDl: () => this.toast('Pase de ' + cur[4] + ' descargado'), bpSend: () => sendPass(cur, s.bp),
+      bpPrev: () => this.setState({ bp: (s.bp + 5) % 6 }), bpNext: () => this.setState({ bp: (s.bp + 1) % 6 })
+    });
+  }
+}
+
+</script>
+</body>
+</html>

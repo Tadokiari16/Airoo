@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta — reglas del sistema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.45;}
+  .wrap{width:1100px;padding:56px 56px 64px;}
+  h1{font-size:40px;font-weight:700;letter-spacing:-.025em;margin:0;}
+  h1::first-letter,h2::first-letter{color:var(--blue);}
+  h2{font-size:24px;font-weight:700;letter-spacing:-.015em;margin:0 0 4px;}
+  .lead{font-size:17px;color:var(--ink2);margin:8px 0 0;max-width:62ch;}
+  .sec{margin-top:44px;}
+  .sub{font-size:15px;color:var(--ink2);margin:0 0 18px;max-width:70ch;}
+  .card{background:#fff;border-radius:22px;padding:22px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -16px rgba(17,26,43,.18);}
+  .grid{display:grid;gap:14px;}
+  .g3{grid-template-columns:repeat(3,1fr);} .g2{grid-template-columns:repeat(2,1fr);} .g5{grid-template-columns:repeat(5,1fr);}
+  .sw{height:64px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;}
+  .k{font-weight:700;font-size:16px;}
+  .d{font-size:14px;color:var(--ink2);margin-top:4px;}
+  .ex{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);} .b-green{background:var(--green-t);color:var(--green);} .b-amber{background:var(--amber-t);color:var(--amber);} .b-gray{background:#EEF1F5;color:var(--ink2);}
+  .chip{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 9px;border-radius:10px;background:var(--blue-t);color:var(--blue-d);font-size:12.5px;font-weight:600;}
+  table{width:100%;border-collapse:collapse;font-size:15px;}
+  th{font-size:12.5px;color:var(--ink3);font-weight:500;text-align:left;padding:0 12px 10px 0;}
+  td{padding:14px 12px 14px 0;border-top:1px solid var(--line);vertical-align:top;}
+  td.f{font-weight:700;font-size:17px;white-space:nowrap;}
+  .num{font-variant-numeric:tabular-nums;}
+  .no{color:#A23B3B;font-weight:600;font-size:13px;} .yes{color:var(--green);font-weight:600;font-size:13px;}
+  .inset{padding:4px 0 4px 14px;border-left:3px solid var(--blue);font-size:15px;line-height:1.5;color:#2E3950;font-style:italic;}
+  .plan{font-size:13px;font-weight:600;color:var(--blue);}
+  .hn{font-size:19px;font-weight:700;}
+  .ta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--ink2);}
+  .ta b{color:var(--ink);font-size:14px;}
+  .ta-logo{width:20px;height:20px;border-radius:50%;background:#E3E8EF;box-shadow:inset 0 0 0 1.5px #C9D1DD;}
+  .bub{display:inline-flex;gap:2px;} .bub i{width:9px;height:9px;border-radius:50%;background:#8A93A3;} .bub i.h{background:linear-gradient(90deg,#8A93A3 50%,#fff 50%);box-shadow:inset 0 0 0 1.5px #8A93A3;}
+  .anno{font-size:12.5px;color:var(--blue-d);font-weight:600;display:flex;align-items:center;gap:8px;}
+  .anno::before{content:'';width:18px;height:1.5px;background:var(--blue);}
+  ul{margin:8px 0 0;padding-left:18px;color:var(--ink2);font-size:14px;} li{margin:4px 0;}
+  .mini{border:1px solid var(--line);border-radius:16px;padding:16px;}
+  .mini .t{font-weight:700;}
+</style>
+</helmet>
+<div class="wrap">
+  <h1>Propuesta del cliente — reglas del sistema</h1>
+  <p class="lead">Lo que cada color, fecha, etiqueta y estilo significa. Si un elemento no cumple una regla de aquí, no entra en la propuesta.</p>
+
+  <!-- COLOR -->
+  <div class="sec">
+    <h2>Color = significado</h2>
+    <p class="sub">Cada color dice una sola cosa. Nunca se usa un color solo para decorar ni se le cambia el significado entre secciones.</p>
+    <div class="grid g5">
+      <div class="card"><div class="sw" style="background:var(--blue);color:#fff;">#1463F6</div><div class="k">Azul Airoo</div><div class="d">Identidad y acción: botones, enlaces, régimen, títulos de servicio, selección.</div><div class="ex"><span class="badge b-blue">Recomendado</span></div></div>
+      <div class="card"><div class="sw" style="background:var(--blue-t);color:var(--blue-d);">#EAF0FE</div><div class="k">Azul claro</div><div class="d">Atributos de un servicio: datos que describen, no que alertan.</div><div class="ex"><span class="chip">6 pasajeros</span></div></div>
+      <div class="card"><div class="sw" style="background:var(--green-t);color:var(--green);">Verde</div><div class="k">A favor del cliente</div><div class="d">Ahorro, reembolsable, lo incluido, confirmado.</div><div class="ex"><span class="badge b-green">Más económica</span></div></div>
+      <div class="card"><div class="sw" style="background:var(--amber-t);color:var(--amber);">Ámbar</div><div class="k">Requiere atención</div><div class="d">Algo con condición o fecha: no reembolsable, vigencia.</div><div class="ex"><span class="badge b-amber">No reembolsable</span></div></div>
+      <div class="card"><div class="sw" style="background:#EEF1F5;color:var(--ink2);">Gris</div><div class="k">Neutral</div><div class="d">Dato informativo sin carga: duración, cantidad, "más caro".</div><div class="ex"><span class="badge b-gray">Directo</span></div></div>
+    </div>
+    <p class="sub" style="margin-top:14px;">El rojo queda reservado para errores del sistema; no aparece en una propuesta.</p>
+  </div>
+
+  <!-- FECHAS -->
+  <div class="sec">
+    <h2>Fechas y horas</h2>
+    <p class="sub">Un formato principal y dos variantes para espacios donde no cabe. El año solo aparece una vez, en la portada.</p>
+    <div class="card">
+      <table class="num">
+        <tr><th style="width:210px;">Formato</th><th style="width:230px;">Ejemplo</th><th>Dónde se usa</th></tr>
+        <tr><td>Estándar</td><td class="f">Mié 21 oct</td><td>Por defecto en todo: encabezados de vuelo, actividades, traslados entre hoteles.</td></tr>
+        <tr><td>Destacada (variante)</td><td class="f">21 oct <span style="font-size:13px;font-weight:500;color:var(--ink2);">/ Miércoles</span></td><td>Cuando la fecha es protagonista en dos líneas: portada, check-in y check-out.</td></tr>
+        <tr><td>Rango (variante)</td><td class="f">21–27 oct</td><td>Estancias en listas: índice de hoteles, descripción del seguro.</td></tr>
+        <tr><td>Con año</td><td class="f">Octubre 2026</td><td>Solo en la portada.</td></tr>
+        <tr><td>Hora</td><td class="f">4:55 PM</td><td>Siempre formato de 12 horas; "PM" pequeño cuando la hora es grande.</td></tr>
+        <tr><td>Fecha límite</td><td class="f">Fecha límite: Lun 5 oct</td><td>Pagos y vencimientos.</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:14px;color:var(--ink2);"><span class="no">Evitar</span> "Miércoles 21 de octubre", "21/10/2026", "Antes del 5 de octubre", "Dom 27 oct" (verificar siempre el día de la semana).</div>
+    </div>
+  </div>
+
+  <!-- ETIQUETAS -->
+  <div class="sec">
+    <h2>Etiquetas</h2>
+    <p class="sub">Dos tipos, con forma distinta para que no se confundan.</p>
+    <div class="grid g2">
+      <div class="card"><div class="k">Pastilla de atributo</div><div class="d">Esquinas de 10 px, azul claro, con ícono. Describe el servicio. Solo con datos que el cotizador captura.</div><div class="ex"><span class="chip">6</span><span class="chip">15 kg</span><span class="chip">Adaptada</span><span class="chip">30–40 min</span></div></div>
+      <div class="card"><div class="k">Insignia de estado</div><div class="d">Redonda, color según significado. Dice algo sobre la decisión o el pago.</div><div class="ex"><span class="badge b-blue">Recomendado</span><span class="badge b-green">Reembolsable antes de liquidar al hotel</span><span class="badge b-amber">Válida hasta Mié 14 oct</span></div></div>
+    </div>
+  </div>
+
+  <!-- CURSIVAS -->
+  <div class="sec">
+    <h2>Cursivas</h2>
+    <p class="sub">Solo para la voz de la asesora: una nota por sección como máximo, con barra azul. Todo lo demás va en texto normal.</p>
+    <div class="grid g2">
+      <div class="card"><div class="yes">Sí</div><div class="inset" style="margin-top:10px;">Lo elegimos por el Kids Club y el parque acuático: los niños tienen actividades todo el día sin salir del hotel.</div></div>
+      <div class="card"><div class="no">No</div><div style="margin-top:10px;font-size:15px;color:var(--ink2);"><i>Los horarios de recogida se coordinan con tus vuelos.</i> → va en texto normal: es información operativa, no una recomendación.</div></div>
+    </div>
+  </div>
+
+  <!-- COSTOS -->
+  <div class="sec">
+    <h2>Costos solo en Inversión</h2>
+    <p class="sub">Regla de negocio: ninguna sección muestra precios, etiquetas de precio ni comparaciones de costo. Primero se ve lo que preparamos; el dinero se ve junto, en Inversión.</p>
+    <div class="grid g3">
+      <div class="mini"><div class="t">Antes de Inversión</div><div class="d">La barra fija muestra "Tu selección" y el botón <b>Ver inversión</b>. Sin cifras.</div></div>
+      <div class="mini"><div class="t">En Inversión</div><div class="d">La barra cambia a "Total · 6 personas" y el botón a <b>Confirmar selección</b> (o <b>Confirmar propuesta</b> si no hay opciones).</div></div>
+      <div class="mini"><div class="t">Confirmar ≠ preguntar</div><div class="d">Confirmar envía la selección a la asesora para verificar y reservar. Las dudas van por el formulario "Escribir a mi asesora".</div></div>
+    </div>
+  </div>
+
+  <!-- HOTEL + TRIPADVISOR -->
+  <div class="sec">
+    <h2>Encabezado de hotel</h2>
+    <p class="sub">Tres líneas, siempre en este orden. Sin amenidades ni ubicación inventadas: solo lo que viene del cotizador o del catálogo.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="anno">Régimen (del cotizador)</div>
+        <div class="plan" style="margin:4px 0 10px;">Todo incluido</div>
+        <div class="anno">Nombre de la propiedad</div>
+        <div class="hn" style="margin:4px 0 10px;">Seadust Cancún Family Resort</div>
+        <div class="anno">Calificación de Tripadvisor (API)</div>
+        <div class="ta num"><span class="ta-logo"></span><b>4.5</b><span class="bub"><i></i><i></i><i></i><i></i><i class="h"></i></span><span>3,106 opiniones</span></div>
+      </div>
+      <div class="card">
+        <div class="k">Reglas de la API de Tripadvisor</div>
+        <ul>
+          <li>El logo y las burbujas deben ser <b>las imágenes que entrega la API</b>; aquí van marcadores grises. Logo de 20 px de alto como mínimo.</li>
+          <li>No se puede guardar la calificación: se consulta cada vez que se abre la propuesta. Solo el <b>ID de ubicación</b> del hotel puede guardarse en el catálogo.</li>
+          <li>La consulta se hace desde el servidor, nunca desde el navegador del cliente.</li>
+          <li>Si la API falla o el hotel no tiene ID, la línea se oculta; la tarjeta no se rompe.</li>
+          <li>Las primeras 5,000 consultas al mes son gratuitas.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOSPEDAJE -->
+  <div class="sec">
+    <h2>Tres formas de hospedaje</h2>
+    <p class="sub">El componente se elige solo, según lo que trae la cotización.</p>
+    <div class="grid g3">
+      <div class="mini"><div class="t">Opciones</div><div class="d">Varias alternativas para las mismas fechas. Carrusel y comparador sin precios; en Inversión, el selector "Tu hotel" muestra el total con cada opción.</div></div>
+      <div class="mini"><div class="t">Una estancia</div><div class="d">Un solo hotel. Tarjeta completa con foto, check-in y check-out, descripción y habitaciones. Sin selección.</div></div>
+      <div class="mini"><div class="t">Varias estancias</div><div class="d">Hoteles en fechas distintas. Índice ligero (nombre y fechas) y tarjetas en orden, unidas por el traslado.</div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":2910}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

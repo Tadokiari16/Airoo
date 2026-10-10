@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* Gilroy se aplica en un contenedor (no en <html>), así que la utilidad lee la variable ahí mismo. */
+@theme inline {
+  --font-cliente: var(--fuente-cliente), system-ui, sans-serif;
+}
+
+/* Colores y medidas tomados de los prototipos (disenos/html). */
+@theme {
+  --font-panel: var(--fuente-panel), system-ui, sans-serif;
+
+  --color-fondo: #f2f4f8;
+  --color-tarjeta: #ffffff;
+  --color-linea: #e8ebf0;
+  --color-suave: #f4f6fa;
+  --color-gris: #e3e8f0;
+
+  --color-tinta: #111a2b;
+  --color-tinta-2: #566175;
+  --color-tinta-3: #68707f;
+
+  --color-azul: #1463f6;
+  --color-azul-oscuro: #0050bb;
+  --color-azul-tenue: #eaf0fe;
+  --color-azul-tenue-2: #d3e0fd;
+
+  --color-verde: #16784a;
+  --color-verde-tenue: #e4f5eb;
+  --color-ambar: #94580a;
+  --color-ambar-tenue: #fff3df;
+  --color-rojo: #a23b3b;
+  --color-rojo-tenue: #fce9e9;
+  --color-morado: #5b3fa0;
+  --color-morado-tenue: #efe9fb;
+
+  --radius-campo: 12px;
+  --radius-tarjeta: 18px;
+
+  --shadow-tarjeta: 0 1px 2px rgba(17, 26, 43, 0.04), 0 8px 24px -18px rgba(17, 26, 43, 0.2);
+  --shadow-menu: 0 0 0 1px rgba(17, 26, 43, 0.06), 0 18px 40px -12px rgba(17, 26, 43, 0.3);
+  --shadow-borde: inset 0 0 0 1px var(--color-linea);
+
+  --ease-airoo: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-panel);
+  color: var(--color-tinta);
+  background: var(--color-fondo);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-azul);
+  outline-offset: 2px;
+}
