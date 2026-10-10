@@ -16,22 +16,30 @@ import postgres from "postgres";
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("Falta DATABASE_URL.");
+  // Una conexión sostiene el candado; la otra migra y cuenta.
+  const candado = postgres(url, { prepare: false, max: 1, onnotice: () => {} });
   const conexion = postgres(url, { prepare: false, max: 1, onnotice: () => {} });
-  const db = drizzle(conexion);
 
-  await migrate(db, { migrationsFolder: "supabase/migrations" });
-  console.log("Migraciones al día.");
+  // Vercel puede construir dos deploys a la vez (producción y vista previa);
+  // el candado hace que uno espere a que el otro termine de migrar y sembrar.
+  await candado.begin(async (tx) => {
+    await tx`select pg_advisory_xact_lock(7240001)`;
 
-  const [{ n }] = await conexion<{ n: number }[]>`select count(*)::int as n from public.usuarios`;
-  await conexion.end();
-  if (n > 0) {
-    console.log("La base ya tiene equipo; no se siembra nada.");
-    return;
-  }
+    await migrate(drizzle(conexion), { migrationsFolder: "supabase/migrations" });
+    console.log("Migraciones al día.");
 
-  console.log("Primer arranque: se siembra la base.");
-  const r = spawnSync("npx", ["tsx", "scripts/semilla.ts", "--forzar", "--produccion"], { stdio: "inherit" });
-  if (r.status !== 0) throw new Error("La semilla no terminó.");
+    const [{ n }] = await conexion<{ n: number }[]>`select count(*)::int as n from public.usuarios`;
+    if (n > 0) {
+      console.log("La base ya tiene equipo; no se siembra nada.");
+      return;
+    }
+    console.log("Primer arranque: se siembra la base.");
+    const r = spawnSync("npx", ["tsx", "scripts/semilla.ts", "--forzar", "--produccion"], {
+      stdio: "inherit",
+    });
+    if (r.status !== 0) throw new Error("La semilla no terminó.");
+  });
+  await Promise.all([conexion.end(), candado.end()]);
 }
 
 main().catch((e) => {
