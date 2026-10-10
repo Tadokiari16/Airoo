@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { viajesPorRegistro } from "@/lib/catalogos";
 import { historialDe, type Cambio } from "@/lib/bitacora";
 import type { Encuadre } from "@/lib/fotos";
 import { urlFoto } from "@/lib/imagenes";
@@ -106,6 +107,7 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
   if (filas.length === 0) return [];
   const ids = filas.map((f) => f.h.id);
 
+  const usadoEnViajes = await viajesPorRegistro("hotelId");
   const [fotos, habitaciones, nombres, cargos, donde] = await Promise.all([
     db
       .select()
@@ -244,8 +246,7 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
       dondeReservar: susDonde,
       revision,
       minima: !portada && galeria.length === 0 && !x.descripcion && habs.length === 0,
-      // Los viajes llegan en la Fase 2 (partidas de las cotizaciones).
-      viajes: 0,
+      viajes: usadoEnViajes.get(x.id) ?? 0,
       desde: formatoMesAnio(x.creadoEn),
       editada: `${editor ?? "El equipo"} · ${formatoFechaCorta(x.actualizadoEn)}`,
       busqueda: normalizar(

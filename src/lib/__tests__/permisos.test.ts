@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { puede, puedeVerCostos } from "../permisos";
+import { puede, puedeEditarViaje, puedeVerCostos } from "../permisos";
 
 describe("matriz de permisos", () => {
   it("Dueño puede todo", () => {
@@ -71,5 +71,22 @@ describe("catálogos (Fase 1)", () => {
   it("El Contador ve Proveedores pero no los demás catálogos", () => {
     expect(puede("contador", "ver_proveedores")).toBe(true);
     expect(puede("contador", "ver_catalogos")).toBe(false);
+  });
+});
+
+describe("viajes (Fase 2)", () => {
+  it("los tres roles ven la lista de viajes", () => {
+    for (const r of ["dueno", "asesora", "contador"] as const) expect(puede(r, "ver_viajes")).toBe(true);
+  });
+  it("la asesora arma y envía solo sus viajes; el Dueño, todos; el Contador, ninguno", () => {
+    expect(puedeEditarViaje("asesora", "a1", "a1")).toBe(true);
+    expect(puedeEditarViaje("asesora", "a1", "a2")).toBe(false);
+    expect(puedeEditarViaje("dueno", "d", "a2")).toBe(true);
+    expect(puedeEditarViaje("contador", "c", "c")).toBe(false);
+  });
+  it("solo el Dueño captura el tipo de cambio a mano", () => {
+    expect(puede("dueno", "capturar_tipo_cambio")).toBe(true);
+    expect(puede("asesora", "capturar_tipo_cambio")).toBe(false);
+    expect(puede("contador", "capturar_tipo_cambio")).toBe(false);
   });
 });

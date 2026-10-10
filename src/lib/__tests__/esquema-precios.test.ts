@@ -7,7 +7,13 @@ import * as schema from "../db/schema";
 const PERMITIDAS = new Set(["hotel_cargos"]);
 // Tablas fuera de los catálogos que sí llevan dinero (viajes, cobros, pagos).
 // Llegan desde la Fase 2; cada una se agrega aquí a propósito.
-const FUERA_DE_CATALOGOS = new Set<string>([]);
+const FUERA_DE_CATALOGOS = new Set<string>([
+  // Fase 2: la cotización de cada viaje, capturada a mano en el armador.
+  "cotizaciones",
+  "partidas",
+  "partida_habitaciones",
+  "partida_renglones",
+]);
 
 const PARECE_DINERO = /precio|monto|costo|importe|centavos|tarifa_neta|neto|venta|utilidad|comision/;
 

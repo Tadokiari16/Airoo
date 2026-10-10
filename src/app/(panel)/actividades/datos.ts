@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { viajesPorRegistro } from "@/lib/catalogos";
 import { historialDe } from "@/lib/bitacora";
 import type { Encuadre } from "@/lib/fotos";
 import { urlFoto } from "@/lib/imagenes";
@@ -110,6 +111,7 @@ export async function cargarActividades(soloId?: string): Promise<Actividad[]> {
   if (filas.length === 0) return [];
   const ids = filas.map((f) => f.a.id);
 
+  const usadoEnViajes = await viajesPorRegistro("actividadId");
   const [fotos, planes, boletos, salidas, ligas, contactos] = await Promise.all([
     db
       .select()
@@ -259,7 +261,7 @@ export async function cargarActividades(soloId?: string): Promise<Actividad[]> {
       minima: !portada && galeria.length === 0 && !x.descripcion,
       archivado: !!x.archivadoEn,
       motivoArchivo: x.motivoArchivo,
-      viajes: 0,
+      viajes: usadoEnViajes.get(x.id) ?? 0,
       desde: formatoMesAnio(x.creadoEn),
       editada: `${editor ?? "El equipo"} · ${formatoFechaCorta(x.actualizadoEn)}`,
       busqueda: normalizar(

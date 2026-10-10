@@ -18,11 +18,16 @@ export function ElegirCiudad({
   agregaCiudades,
   valor: ciudadId,
   alCambiar: setCiudadId,
+  etiqueta = "Ciudad",
+  nombre = "ciudadId",
 }: {
   ciudades: OpcionCiudad[];
   agregaCiudades: boolean;
   valor: string;
   alCambiar: (id: string) => void;
+  etiqueta?: string;
+  /** Nombre del campo oculto que manda el formulario. */
+  nombre?: string;
 }) {
   const [ciudades, setCiudades] = useState(iniciales);
   const [busqueda, setBusqueda] = useState("");
@@ -36,10 +41,10 @@ export function ElegirCiudad({
 
   return (
     <>
-      <input type="hidden" name="ciudadId" value={ciudadId} />
+      <input type="hidden" name={nombre} value={ciudadId} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="buscar-ciudad" className="text-[13px] font-semibold">
-          Ciudad
+        <label htmlFor={`buscar-${nombre}`} className="text-[13px] font-semibold">
+          {etiqueta}
         </label>
         {ciudad ? (
           <div className="flex h-10 items-center gap-2 rounded-campo bg-azul-tenue px-3 text-sm shadow-[inset_0_0_0_1.5px_var(--color-azul)]">
@@ -59,7 +64,7 @@ export function ElegirCiudad({
         ) : (
           <>
             <input
-              id="buscar-ciudad"
+              id={`buscar-${nombre}`}
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar en la lista de ciudades"

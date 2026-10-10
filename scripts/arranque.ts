@@ -3,6 +3,8 @@
 //   2. Si la base no tiene a nadie todavía (primer arranque), corre la semilla
 //      en modo producción: el Dueño de DUENO_CORREO, ciudades, ajustes y
 //      catálogos de ejemplo.
+//   3. Con equipo ya, agrega los viajes de ejemplo de la Fase 2 si nunca se
+//      sembraron ni se borraron desde Configuración.
 // Las dos cosas se pueden repetir sin riesgo: lo ya aplicado no se toca.
 
 import { config } from "dotenv";
@@ -30,7 +32,9 @@ async function main() {
 
     const [{ n }] = await conexion<{ n: number }[]>`select count(*)::int as n from public.usuarios`;
     if (n > 0) {
-      console.log("La base ya tiene equipo; no se siembra nada.");
+      console.log("La base ya tiene equipo; solo se revisan los viajes de ejemplo.");
+      const r = spawnSync("npx", ["tsx", "scripts/semilla-viajes.ts", "--forzar"], { stdio: "inherit" });
+      if (r.status !== 0) throw new Error("La semilla de viajes no terminó.");
       return;
     }
     console.log("Primer arranque: se siembra la base.");

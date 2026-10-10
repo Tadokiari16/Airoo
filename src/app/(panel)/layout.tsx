@@ -48,10 +48,24 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
   ];
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="flex min-h-dvh flex-col lg:flex-row">
+      {/* En celular la navegación se abre desde la barra de arriba. */}
+      <details className="group sticky top-0 z-40 border-b border-linea bg-tarjeta lg:hidden">
+        <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-2.5 [&::-webkit-details-marker]:hidden">
+          <Image src="/marca/airoo-icono.svg" alt="" width={26} height={26} className="size-[26px]" />
+          <b className="text-[17px] font-bold tracking-[-0.02em]">airoo</b>
+          <span className="ml-auto rounded-lg px-2.5 py-1 text-[13px] font-semibold shadow-borde">
+            <span className="group-open:hidden">Menú</span>
+            <span className="hidden group-open:inline">Cerrar</span>
+          </span>
+        </summary>
+        <div className="max-h-[70dvh] overflow-auto px-3.5 pb-4">
+          <Navegacion grupos={grupos.filter((g) => g.items.length > 0)} />
+        </div>
+      </details>
       <aside
         aria-label="Navegación"
-        className="sticky top-0 flex h-dvh w-[232px] self-start shrink-0 flex-col gap-[22px] border-r border-linea bg-tarjeta px-3.5 py-5"
+        className="sticky top-0 hidden h-dvh lg:flex w-[232px] self-start shrink-0 flex-col gap-[22px] border-r border-linea bg-tarjeta px-3.5 py-5"
       >
         <div className="flex items-center gap-2.5 px-2 py-1">
           <Image
@@ -86,7 +100,7 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
           </form>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 px-8 pt-6 pb-10">
+      <main className="min-w-0 flex-1 px-4 pt-4 pb-10 lg:px-8 lg:pt-6">
         <div className="flex items-center gap-3.5">
           <Buscador />
         </div>

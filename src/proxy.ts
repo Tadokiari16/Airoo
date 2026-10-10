@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Rutas que se abren sin sesión.
-const PUBLICAS = ["/entrar", "/recuperar", "/auth/confirmar"];
+const PUBLICAS = ["/entrar", "/recuperar", "/auth/confirmar", "/api/tareas"];
 
 // Renueva la sesión de Supabase en cada petición y manda a «Entrar» a quien
 // no tiene sesión. Los permisos por rol se revisan en cada página y acción.

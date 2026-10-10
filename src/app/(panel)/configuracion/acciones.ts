@@ -9,7 +9,9 @@ import { anotar } from "@/lib/bitacora";
 import { cifrar } from "@/lib/cifrado";
 import { errorNumeroCuenta, soloDigitos } from "@/lib/cuentas";
 import { activaDesde, ESQUEMAS, textoBitacora, type ClaveEditable } from "@/lib/configuracion";
-import { formatoFechaHora } from "@/lib/fechas";
+import { formatoDia, formatoFechaHora, hoyEnCancun } from "@/lib/fechas";
+import { textoTipoCambio } from "@/lib/cotizacion";
+import { guardarTipoCambio } from "@/lib/tipo-cambio";
 import { usuarioCon } from "@/lib/sesion";
 import { limpiar } from "@/lib/texto";
 
@@ -220,5 +222,65 @@ export async function activarFormaPago(id: string, activa: boolean): Promise<Res
     entidadId: id,
   });
   revalidatePath("/configuracion/pagos-proveedores");
+  return { ok: true };
+}
+
+// ---- Tipo de cambio a mano ----
+
+/** Cuando Banxico no llega (sin token o sin servicio), el Dueño captura el de hoy. */
+export async function guardarTipoCambioManual(moneda: "USD" | "EUR", diezmilesimos: number): Promise<Resultado> {
+  const yo = await usuarioCon("capturar_tipo_cambio");
+  if (!yo) return { error: "Solo el dueño captura el tipo de cambio." };
+  if (!Number.isInteger(diezmilesimos) || diezmilesimos < 1_0000 || diezmilesimos > 100_0000)
+    return { error: "El tipo de cambio va en pesos, por ejemplo 18.42." };
+  const fecha = hoyEnCancun();
+  await guardarTipoCambio({ moneda, fecha, diezmilesimos }, "manual", yo.id);
+  await anotar({
+    quien: yo.id,
+    texto: `Tipo de cambio capturado a mano: ${moneda === "USD" ? "dólar" : "euro"} ${textoTipoCambio(diezmilesimos)} (${formatoDia(fecha)})`,
+    entidad: "tipos_cambio",
+  });
+  revalidatePath("/configuracion/precios");
+  return { ok: true };
+}
+
+// ---- Viajes de ejemplo ----
+
+/** Clave que recuerda que se borraron: la semilla ya no los vuelve a crear. */
+const CLAVE_VIAJES_EJEMPLO = "viajes_ejemplo";
+
+export async function contarViajesEjemplo(): Promise<number> {
+  const [r] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.viajes)
+    .where(eq(schema.viajes.ejemplo, true));
+  return r?.n ?? 0;
+}
+
+/** Borra los viajes y clientes de ejemplo. Los catálogos no cambian. */
+export async function borrarViajesEjemplo(): Promise<Resultado> {
+  const yo = await usuarioCon("configuracion");
+  if (!yo) return { error: SIN_PERMISO };
+  const n = await contarViajesEjemplo();
+  await db.transaction(async (tx) => {
+    await tx.delete(schema.viajes).where(eq(schema.viajes.ejemplo, true));
+    await tx
+      .delete(schema.clientes)
+      .where(
+        and(
+          eq(schema.clientes.ejemplo, true),
+          sql`not exists (select 1 from ${schema.viajes} where ${schema.viajes.clienteId} = ${schema.clientes.id})`,
+        ),
+      );
+    await tx
+      .insert(schema.configuracion)
+      .values({ clave: CLAVE_VIAJES_EJEMPLO, valor: { borrados: true }, actualizadoPor: yo.id })
+      .onConflictDoNothing();
+    await anotar(
+      { quien: yo.id, texto: `Se borraron los viajes de ejemplo (${n})`, entidad: "configuracion" },
+      tx,
+    );
+  });
+  revalidatePath("/", "layout");
   return { ok: true };
 }

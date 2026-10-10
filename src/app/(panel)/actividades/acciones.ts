@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
+import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
 import {
   CLAVES_BLOQUE,
@@ -418,10 +419,7 @@ export async function archivarActividad(
 }
 
 /** Viajes que usan la actividad. Las partidas de cotización llegan en la Fase 2. */
-async function viajesDeActividad(id: string): Promise<number> {
-  void id;
-  return 0;
-}
+const viajesDeActividad = (id: string) => viajesQueUsan("actividadId", id);
 
 export async function eliminarActividad(id: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("eliminar_catalogos");

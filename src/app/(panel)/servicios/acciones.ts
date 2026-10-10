@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
+import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
 import { MODELO_SUGERIDO, VALORES_MODELO, VALORES_TIPO } from "@/lib/servicios";
 import { usuarioCon } from "@/lib/sesion";
@@ -355,10 +356,7 @@ export async function archivarServicio(
 }
 
 /** Viajes que usan el servicio. Las partidas de cotización llegan en la Fase 2. */
-async function viajesDeServicio(id: string): Promise<number> {
-  void id;
-  return 0;
-}
+const viajesDeServicio = (id: string) => viajesQueUsan("servicioId", id);
 
 export async function eliminarServicio(id: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("eliminar_catalogos");

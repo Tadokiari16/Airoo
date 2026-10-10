@@ -16,6 +16,7 @@ import {
   integer,
   jsonb,
   pgEnum,
+  pgSequence,
   pgTable,
   text,
   time,
@@ -580,6 +581,19 @@ export const aerolineasIata = pgTable("aerolineas_iata", {
   pais: text(),
 }).enableRLS();
 
+// Aeropuertos con clave IATA y su zona horaria, para calcular la duración real
+// de cada vuelo. Fuente y licencia en scripts/aeropuertos-iata.mjs.
+export const aeropuertos = pgTable("aeropuertos", {
+  iata: text().primaryKey(),
+  nombre: text().notNull(),
+  ciudad: text().notNull(),
+  pais: text().notNull(),
+  paisCodigo: text().notNull(),
+  zonaHoraria: text().notNull(),
+  // Clave, ciudad (en español y en inglés) y nombre, sin acentos.
+  busqueda: text().notNull(),
+}).enableRLS();
+
 export const aerolineas = pgTable("aerolineas", {
   id: uuid().primaryKey().defaultRandom(),
   iata: text().notNull().unique(),
@@ -658,3 +672,296 @@ export const formasPagoAiroo = pgTable("formas_pago_airoo", {
   activa: boolean().notNull().default(true),
   ...autoria(),
 }).enableRLS();
+
+// ─── Fase 2 · Cotizar ────────────────────────────────────────────────────────
+// propuestas/Fase-2-propuesta.md. Los precios solo existen aquí, en las
+// partidas, capturados a mano en cada cotización. Montos en centavos;
+// porcentajes en puntos base (1000 = 10%); tipos de cambio en diezmilésimos
+// (184200 = 18.4200). Los totales no se guardan: se calculan con
+// src/lib/cotizacion.ts a partir de netos, tipo de cambio y utilidad.
+
+// FIX de Banxico por día (dólar) y tipo de cambio del euro. Lo llena la tarea
+// diaria o el Dueño a mano en Configuración › Precios.
+export const fuenteTipoCambio = pgEnum("fuente_tipo_cambio", ["banxico", "manual"]);
+
+export const tiposCambio = pgTable(
+  "tipos_cambio",
+  {
+    fecha: date({ mode: "string" }).notNull(),
+    moneda: moneda().notNull(),
+    diezmilesimos: integer().notNull(),
+    fuente: fuenteTipoCambio().notNull(),
+    capturadoPor: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    creadoEn: creadoEn(),
+  },
+  (t) => [uniqueIndex().on(t.fecha, t.moneda)],
+).enableRLS();
+
+// La ficha del cliente sigue pendiente de diseño; la tabla existe para ligar viajes.
+export const clientes = pgTable(
+  "clientes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    nombre: text().notNull(),
+    nombreBusqueda: text().notNull(),
+    whatsapp: text(),
+    correo: text(),
+    notaInterna: text(),
+    ejemplo: boolean().notNull().default(false),
+    ...autoria(),
+  },
+  (t) => [index().on(t.nombreBusqueda)],
+).enableRLS();
+
+export const etapaViaje = pgEnum("etapa_viaje", [
+  "cotizacion",
+  "aprobada",
+  "datos_y_pago",
+  "en_reservacion",
+  "reservada",
+  "en_viaje",
+  "finalizada",
+  "cancelada",
+]);
+
+// Los viajes reales empiezan en AIR-1001; los de ejemplo conservan sus folios.
+export const folioViaje = pgSequence("folio_viaje", { startWith: 1001 });
+
+// No hay tipos (cotización o itinerario): todo es un viaje con etapas.
+export const viajes = pgTable(
+  "viajes",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    folio: integer().notNull().unique(),
+    clienteId: uuid()
+      .notNull()
+      .references(() => clientes.id),
+    aCargo: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    ciudadDestinoId: uuid()
+      .notNull()
+      .references(() => ciudades.id),
+    ciudadSalidaId: uuid().references(() => ciudades.id),
+    inicio: date({ mode: "string" }).notNull(),
+    fin: date({ mode: "string" }).notNull(),
+    adultos: integer().notNull(),
+    menores: integer().notNull().default(0),
+    // Una edad por menor; si faltan, «Revisar y enviar» no deja enviar.
+    edadesMenores: integer()
+      .array()
+      .notNull()
+      .default(sql`'{}'::integer[]`),
+    etapa: etapaViaje().notNull().default("cotizacion"),
+    // Acceso del cliente: token aleatorio largo, nunca el folio. Es el mismo en
+    // todas las versiones de la cotización.
+    tokenCliente: text().notNull().unique(),
+    // Datos de ejemplo: se pueden borrar todos desde Configuración.
+    ejemplo: boolean().notNull().default(false),
+    ...autoria(),
+  },
+  (t) => [index().on(t.clienteId), index().on(t.inicio), check("viajes_fechas", sql`${t.fin} >= ${t.inicio}`)],
+).enableRLS();
+
+export const estadoCotizacion = pgEnum("estado_cotizacion", ["borrador", "enviada", "aceptada", "reemplazada"]);
+
+// Una por versión. Lo que se envía ya no cambia: editarla crea la versión siguiente.
+export const cotizaciones = pgTable(
+  "cotizaciones",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    viajeId: uuid()
+      .notNull()
+      .references(() => viajes.id, { onDelete: "cascade" }),
+    version: integer().notNull().default(1),
+    estado: estadoCotizacion().notNull().default("borrador"),
+    validaHasta: date({ mode: "string" }),
+    utilidadBasePb: integer().notNull(),
+    conIva: boolean().notNull().default(false),
+    ivaPb: integer().notNull().default(1600),
+    // Copiado de Configuración al crearla: cambiar el ajuste no mueve cotizaciones hechas.
+    cargoServicioCentavos: integer().notNull(),
+    colchonPb: integer().notNull(),
+    // FIX del día con su fecha; se fija al capturar la primera tarifa en esa moneda.
+    fixUsd: integer(),
+    fixEur: integer(),
+    fixFecha: date({ mode: "string" }),
+    // Una nota para el cliente por sección: hospedaje, vuelos, actividades, servicios.
+    notas: jsonb().$type<Partial<Record<"hospedaje" | "vuelos" | "actividades" | "servicios", string>>>(),
+    enviadaEn: momento(),
+    enviadaPor: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    aceptadaEn: momento(),
+    opcionElegidaId: uuid(),
+    ...autoria(),
+  },
+  (t) => [uniqueIndex().on(t.viajeId, t.version)],
+).enableRLS();
+
+// Opciones de hotel para las mismas fechas. Sin opciones, los hoteles son estancias.
+export const cotizacionOpciones = pgTable(
+  "cotizacion_opciones",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    cotizacionId: uuid()
+      .notNull()
+      .references(() => cotizaciones.id, { onDelete: "cascade" }),
+    orden: integer().notNull().default(0),
+    recomendada: boolean().notNull().default(false),
+  },
+  (t) => [index().on(t.cotizacionId)],
+).enableRLS();
+
+export const tipoPartida = pgEnum("tipo_partida", ["hotel", "vuelo", "actividad", "servicio"]);
+export const pagoProveedor = pgEnum("pago_proveedor", ["al_reservar", "anticipo", "en_el_lugar"]);
+
+// Cada servicio cotizado, con un solo costo neto total en la moneda de la
+// tarifa: lo que cobra el proveedor por todo el servicio.
+export const partidas = pgTable(
+  "partidas",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    cotizacionId: uuid()
+      .notNull()
+      .references(() => cotizaciones.id, { onDelete: "cascade" }),
+    // Con opción: es una opción de hotel. Sin opción: va igual en todas.
+    opcionId: uuid().references(() => cotizacionOpciones.id, { onDelete: "cascade" }),
+    tipo: tipoPartida().notNull(),
+    orden: integer().notNull().default(0),
+    hotelId: uuid().references(() => hoteles.id),
+    actividadId: uuid().references(() => actividades.id),
+    servicioId: uuid().references(() => servicios.id),
+    aerolineaId: uuid().references(() => aerolineas.id),
+    // Plan de la actividad, variante del servicio o tarifa del vuelo.
+    planId: uuid().references(() => actividadPlanes.id, { onDelete: "set null" }),
+    varianteId: uuid().references(() => servicioVariantes.id, { onDelete: "set null" }),
+    tarifaId: uuid().references(() => aerolineaTarifas.id, { onDelete: "set null" }),
+    // «Se reserva en». Sin proveedor: se paga en el lugar o se compra directo (vuelos).
+    proveedorId: uuid().references(() => proveedores.id),
+    regimen: text(),
+    fechaInicio: date({ mode: "string" }),
+    fechaFin: date({ mode: "string" }),
+    moneda: moneda().notNull().default("MXN"),
+    netoTotalCentavos: integer(),
+    tipoCambio: integer(),
+    utilidadPb: integer().notNull(),
+    // Falso: sigue la utilidad base de la cotización.
+    utilidadManual: boolean().notNull().default(false),
+    // Lo propio de cada tipo: duración, inclusiones, recolección, cobertura, TUA…
+    detalle: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+    // Acuerdo de esta reserva. El armador propone el último con ese proveedor.
+    pagoProveedor: pagoProveedor().notNull().default("al_reservar"),
+    anticipoProveedorPb: integer().notNull().default(0),
+    pagarAntes: date({ mode: "string" }),
+    cancelacionGratisHasta: date({ mode: "string" }),
+    cancelacionTexto: text(),
+    reembolsable: boolean().notNull().default(false),
+    ...autoria(),
+  },
+  (t) => [
+    index().on(t.cotizacionId),
+    index().on(t.hotelId),
+    index().on(t.actividadId),
+    index().on(t.servicioId),
+    index().on(t.aerolineaId),
+    index().on(t.proveedorId),
+  ],
+).enableRLS();
+
+export const partidaHabitaciones = pgTable(
+  "partida_habitaciones",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    partidaId: uuid()
+      .notNull()
+      .references(() => partidas.id, { onDelete: "cascade" }),
+    habitacionId: uuid()
+      .notNull()
+      .references(() => hotelHabitaciones.id),
+    // Lista fija de camas (src/lib/cotizacion.ts › CAMAS).
+    cama: text(),
+    adultos: integer().notNull().default(0),
+    menores: integer().notNull().default(0),
+    orden: integer().notNull().default(0),
+  },
+  (t) => [index().on(t.partidaId)],
+).enableRLS();
+
+// Boletos de una actividad: «Adulto × 4». Sin precio: el costo neto es el total de la partida.
+export const partidaRenglones = pgTable(
+  "partida_renglones",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    partidaId: uuid()
+      .notNull()
+      .references(() => partidas.id, { onDelete: "cascade" }),
+    concepto: text().notNull(),
+    boletoId: uuid().references(() => actividadBoletos.id, { onDelete: "set null" }),
+    cantidad: integer().notNull().default(1),
+    orden: integer().notNull().default(0),
+  },
+  (t) => [index().on(t.partidaId)],
+).enableRLS();
+
+export const sentidoTramo = pgEnum("sentido_tramo", ["ida", "regreso"]);
+
+// Sin API de vuelos: ruta y horario se capturan a mano. Cada tramo es un vuelo;
+// con escala, el sentido lleva varios tramos en orden.
+export const vueloTramos = pgTable(
+  "vuelo_tramos",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    partidaId: uuid()
+      .notNull()
+      .references(() => partidas.id, { onDelete: "cascade" }),
+    sentido: sentidoTramo().notNull(),
+    orden: integer().notNull().default(0),
+    numero: text(),
+    fecha: date({ mode: "string" }),
+    origen: text().references(() => aeropuertos.iata),
+    destino: text().references(() => aeropuertos.iata),
+    terminalSalida: text(),
+    terminalLlegada: text(),
+    sale: time(),
+    llega: time(),
+    // Días después de la salida en que llega, en hora local del destino: 0, +1 o +2.
+    llegaDias: integer().notNull().default(0),
+  },
+  (t) => [index().on(t.partidaId)],
+).enableRLS();
+
+// Trayectos de un traslado: aeropuerto → hotel, Cancún → Tulum…
+export const partidaTrayectos = pgTable(
+  "partida_trayectos",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    partidaId: uuid()
+      .notNull()
+      .references(() => partidas.id, { onDelete: "cascade" }),
+    orden: integer().notNull().default(0),
+    desde: text().notNull(),
+    hasta: text().notNull(),
+    fecha: date({ mode: "string" }),
+    hora: time(),
+    vueloTramoId: uuid().references(() => vueloTramos.id, { onDelete: "set null" }),
+  },
+  (t) => [index().on(t.partidaId)],
+).enableRLS();
+
+// Historial del viaje: lo que hizo el equipo y lo que hizo el cliente.
+export const viajeEventos = pgTable(
+  "viaje_eventos",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    viajeId: uuid()
+      .notNull()
+      .references(() => viajes.id, { onDelete: "cascade" }),
+    // nota, creado, cotizacion, envio, cliente…
+    tipo: text().notNull(),
+    texto: text().notNull(),
+    // «Clave de reservación», «2 opciones».
+    etiqueta: text(),
+    quien: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    deCliente: boolean().notNull().default(false),
+    visibleCliente: boolean().notNull().default(false),
+    creadoEn: creadoEn(),
+  },
+  (t) => [index().on(t.viajeId, t.creadoEn)],
+).enableRLS();

@@ -57,6 +57,34 @@
       "when": 1791644616473,
       "tag": "20261010150336_aerolineas_iata",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791654787928,
+      "tag": "20261010175307_fase2_viajes",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791670880587,
+      "tag": "20261010222120_fase2_costo_total_aeropuertos",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791670992485,
+      "tag": "20261010222312_aeropuertos_datos",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791671012447,
+      "tag": "20261010222332_fase2_tramos_iata",
+      "breakpoints": true
     }
   ]
 }

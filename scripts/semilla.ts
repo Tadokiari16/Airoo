@@ -18,6 +18,7 @@ import { sembrarHoteles } from "./semilla-hoteles";
 import { sembrarActividades } from "./semilla-actividades";
 import { sembrarServicios } from "./semilla-servicios";
 import { sembrarAerolineas } from "./semilla-aerolineas";
+import { sembrarViajes } from "./semilla-viajes";
 import { AJUSTES_INICIALES } from "../src/lib/configuracion";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -141,6 +142,7 @@ async function main() {
   await sembrarActividades(db, admin, yo!.id);
   await sembrarServicios(db, yo!.id);
   await sembrarAerolineas(db, yo!.id);
+  await sembrarViajes(db, yo!.id, { local: !PRODUCCION });
 
   const [hayCuenta] = await db
     .select({ id: schema.cuentasCobroAiroo.id })

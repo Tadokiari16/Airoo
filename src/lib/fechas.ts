@@ -86,3 +86,59 @@ export function formatoMesAnio(fecha: Date): string {
   const p = partesEnCancun(fecha);
   return `${MESES[p.mes]} ${p.anio}`;
 }
+
+// ─── Días sin hora (fechas de viaje, vencimientos) ──────────────────────────
+// Se guardan como «2026-10-21» y se leen en hora de Cancún.
+
+/** Mediodía en Cancún del día dado, para formatearlo sin brincar de día. */
+export function deDia(dia: string): Date {
+  return new Date(`${dia}T17:00:00Z`);
+}
+
+/** Hoy en Cancún: «2026-10-10». */
+export function hoyEnCancun(ahora = new Date()): string {
+  const p = partesEnCancun(ahora);
+  return `${p.anio}-${String(p.mes + 1).padStart(2, "0")}-${String(p.dia).padStart(2, "0")}`;
+}
+
+export function sumarDias(dia: string, n: number): string {
+  const d = new Date(`${dia}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Noches (o días de diferencia) entre dos días. */
+export function diasEntre(desde: string, hasta: string): number {
+  return Math.round((Date.parse(`${hasta}T12:00:00Z`) - Date.parse(`${desde}T12:00:00Z`)) / 86_400_000);
+}
+
+/** «Mié 21 oct» de un día guardado. */
+export const formatoDia = (dia: string) => formatoFecha(deDia(dia));
+
+/** «21–27 oct», «29 sep–3 oct», como en la lista de viajes. */
+export function rangoCorto(desde: string, hasta: string): string {
+  const a = partesEnCancun(deDia(desde));
+  const b = partesEnCancun(deDia(hasta));
+  if (a.mes === b.mes) return `${a.dia}–${b.dia} ${MESES[b.mes]}`;
+  return `${a.dia} ${MESES[a.mes]}–${b.dia} ${MESES[b.mes]}`;
+}
+
+/** «Mié 21 – Mar 27 oct», como en el encabezado del viaje. */
+export function rangoLargo(desde: string, hasta: string): string {
+  const a = partesEnCancun(deDia(desde));
+  const b = partesEnCancun(deDia(hasta));
+  const inicio = a.mes === b.mes ? `${DIAS[a.diaSemana]} ${a.dia}` : formatoDia(desde);
+  return `${inicio} – ${formatoDia(hasta)}`;
+}
+
+/** «Hace 12 min», «Ayer, 6:10 PM», «Lun 28 sep», como en «Última actividad». */
+export function haceCuanto(fecha: Date, ahora = new Date()): string {
+  const min = Math.floor((ahora.getTime() - fecha.getTime()) / 60_000);
+  if (min < 1) return "Hace un momento";
+  if (min < 60) return `Hace ${min} min`;
+  const hoy = hoyEnCancun(ahora);
+  const dia = hoyEnCancun(fecha);
+  if (dia === hoy) return `Hoy, ${formatoHora(fecha)}`;
+  if (dia === sumarDias(hoy, -1)) return `Ayer, ${formatoHora(fecha)}`;
+  return formatoFecha(fecha);
+}

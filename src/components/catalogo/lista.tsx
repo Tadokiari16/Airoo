@@ -217,14 +217,17 @@ export function Filtro({
   alCambiar,
   opciones,
   femenino = false,
+  sinFiltro,
 }: {
   etiqueta: string;
   valor: string;
   alCambiar: (v: string) => void;
   opciones: [string, string][];
   femenino?: boolean;
+  /** Cómo se llama la opción sin filtro, si no es «Todos». */
+  sinFiltro?: string;
 }) {
-  const todos = femenino ? "Todas" : "Todos";
+  const todos = sinFiltro ?? (femenino ? "Todas" : "Todos");
   const actual = opciones.find(([id]) => id === valor)?.[1] ?? todos;
   return (
     <label className="relative inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-tarjeta px-3 text-[13.5px] text-tinta-2 shadow-borde focus-within:shadow-[inset_0_0_0_1.5px_var(--color-azul)]">

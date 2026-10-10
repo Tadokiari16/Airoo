@@ -24,6 +24,32 @@ export async function usosDeProveedor(id: string): Promise<UsosProveedor> {
     hoteles: await cuenta(schema.hotelProveedores),
     actividades: await cuenta(schema.actividadProveedores),
     servicios: await cuenta(schema.servicioProveedores),
-    viajes: 0,
+    viajes: await viajesQueUsan("proveedorId", id),
   };
+}
+
+// ─── Viajes que usan un registro (Fase 2) ───────────────────────────────────
+
+type CampoPartida = "hotelId" | "actividadId" | "servicioId" | "aerolineaId" | "proveedorId";
+
+/** Viajes distintos con alguna partida que usa este registro, en cualquier versión. */
+export async function viajesQueUsan(campo: CampoPartida, id: string): Promise<number> {
+  const [f] = await db
+    .select({ n: sql<number>`count(distinct ${schema.cotizaciones.viajeId})::int` })
+    .from(schema.partidas)
+    .innerJoin(schema.cotizaciones, eq(schema.cotizaciones.id, schema.partidas.cotizacionId))
+    .where(eq(schema.partidas[campo], id));
+  return f?.n ?? 0;
+}
+
+/** Lo mismo para toda una lista: id del registro → número de viajes. */
+export async function viajesPorRegistro(campo: CampoPartida): Promise<Map<string, number>> {
+  const col = schema.partidas[campo];
+  const filas = await db
+    .select({ id: col, n: sql<number>`count(distinct ${schema.cotizaciones.viajeId})::int` })
+    .from(schema.partidas)
+    .innerJoin(schema.cotizaciones, eq(schema.cotizaciones.id, schema.partidas.cotizacionId))
+    .where(sql`${col} is not null`)
+    .groupBy(col);
+  return new Map(filas.map((f) => [f.id as string, f.n]));
 }
