@@ -9,14 +9,12 @@ import type { Habitacion, Hotel, OpcionProveedor } from "../datos";
 import {
   agregarHabitacion,
   agregarNombreProveedor,
-  ordenarFotos,
-  quitarFoto,
   quitarHabitacion,
   quitarNombreProveedor,
   renombrarHabitacion,
-  subirFotos,
 } from "../acciones";
-import { Bloque } from "./bloque";
+import { ordenarFotos, quitarFoto, subirFotos } from "../../fotos-acciones";
+import { Bloque } from "@/components/catalogo/bloque";
 
 type Correr = (f: () => Promise<{ error?: string }>, ok?: string) => void;
 
@@ -160,7 +158,7 @@ export function Habitaciones({
                 <CasillaSubir
                   etiqueta={`Subir fotos de ${habFotos.nombre}`}
                   alSubir={async (d) => {
-                    const r = await subirFotos(h.id, { habitacionId: habFotos.id }, d);
+                    const r = await subirFotos({ tipo: "hotel", id: h.id }, { habitacionId: habFotos.id }, d);
                     alAvisar(r.error ?? "Fotos agregadas a la habitación");
                   }}
                 />
@@ -290,7 +288,7 @@ function Fila({
             <BotonSubir
               etiqueta={`Subir fotos de ${r.nombre}`}
               alSubir={async (d) => {
-                const res = await subirFotos(hotelId, { habitacionId: r.id }, d);
+                const res = await subirFotos({ tipo: "hotel", id: hotelId }, { habitacionId: r.id }, d);
                 alAvisar(res.error ?? `Fotos agregadas a «${r.nombre}»`);
               }}
               className="inline-flex size-[26px] cursor-pointer items-center justify-center rounded-md text-tinta-2 shadow-borde hover:bg-suave"

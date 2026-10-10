@@ -8,6 +8,7 @@ export function Bloque({
   muestra,
   soloEquipo,
   descripcion,
+  extra,
   children,
 }: {
   id?: string;
@@ -16,6 +17,8 @@ export function Bloque({
   muestra?: string;
   soloEquipo?: boolean;
   descripcion?: ReactNode;
+  /** Algo a la derecha del título, como «8 de 8 encendidos». */
+  extra?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -31,6 +34,7 @@ export function Bloque({
             <IconoOjo tam={14} /> {muestra}
           </span>
         ) : null}
+        {extra ? <span className="ml-auto text-[12px] font-semibold text-tinta-3">{extra}</span> : null}
         {soloEquipo ? (
           <span className="ml-auto inline-flex items-center gap-1 text-[12px] font-semibold text-tinta-3">
             <IconoCandado tam={13} /> Solo el equipo

@@ -5,10 +5,10 @@ import { useState, useTransition } from "react";
 import { ligaTripadvisor, nombreRegimen } from "@/lib/hoteles";
 import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
-import { IconoCandado, IconoEtiqueta, IconoExterno, IconoFoto, IconoTelefono } from "@/components/iconos";
+import { IconoCandado, IconoEtiqueta, IconoExterno, IconoTelefono } from "@/components/iconos";
 import { Dato, PanelLateral, Seccion } from "@/components/catalogo/panel-lateral";
 import { ConfirmarArchivo, type Confirmacion } from "@/components/catalogo/archivo";
-import { MarcoPortada } from "@/components/catalogo/fotos";
+import { FotosPanel } from "@/components/catalogo/fotos-panel";
 import type { Hotel } from "./datos";
 import { Calificacion, plural, type PermisosHotel } from "./piezas";
 import { archivarHotel } from "./acciones";
@@ -38,7 +38,6 @@ export function PanelHotel({
   const [pendiente, iniciar] = useTransition();
   const telefono = h?.telefonoReservaciones ?? h?.telefonoPublico;
   const faltan = h?.revision.filter((r) => !r.ok) ?? [];
-  const fotos = h ? [h.portada, ...h.galeria].filter((f) => !!f) : [];
   const archivo = h ? textosArchivo(h) : null;
 
   const archivar = (motivo: string, a: boolean) =>
@@ -78,49 +77,7 @@ export function PanelHotel({
                 />
               </div>
             ) : null}
-            {fotos.length ? (
-              <div className="mt-3 grid h-[154px] grid-cols-[2fr_1fr] grid-rows-2 gap-1.5 overflow-hidden rounded-[14px]">
-                <div className="relative row-span-2 overflow-hidden">
-                  {h.portada ? (
-                    <MarcoPortada foto={h.portada} className="h-full" />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element -- miniatura del bucket
-                    <img src={fotos[0].url} alt="" className="size-full object-cover" />
-                  )}
-                  {h.portada ? (
-                    <span className="absolute top-2 left-2 rounded-md bg-tinta/75 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                      Portada
-                    </span>
-                  ) : null}
-                </div>
-                {[1, 2].map((i) =>
-                  fotos[i] ? (
-                    <div key={i} className="relative overflow-hidden bg-gris">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- miniatura del bucket */}
-                      <img src={fotos[i].miniatura} alt="" className="size-full object-cover" />
-                      {i === 2 && fotos.length > 3 ? (
-                        <Link
-                          href={`/hoteles/${h.id}#fotos`}
-                          className="absolute inset-0 flex items-center justify-center bg-tinta/45 text-[13px] font-bold text-white"
-                        >
-                          +{fotos.length - 3} fotos
-                        </Link>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <div key={i} className="bg-suave" />
-                  ),
-                )}
-              </div>
-            ) : (
-              <Link
-                href={`/hoteles/${h.id}#fotos`}
-                className="mt-3 flex h-[110px] flex-col items-center justify-center gap-1 rounded-[14px] border-[1.5px] border-dashed border-linea text-[13px] font-semibold text-tinta-2 hover:border-azul hover:text-azul-oscuro"
-              >
-                <IconoFoto tam={18} />
-                Sin fotos · se suben en la ficha
-              </Link>
-            )}
+            <FotosPanel portada={h.portada} galeria={h.galeria} href={`/hoteles/${h.id}#fotos`} />
           </>
         ) : null
       }

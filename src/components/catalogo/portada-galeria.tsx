@@ -11,28 +11,50 @@ import {
   FotosOrdenables,
   MarcoPortada,
 } from "@/components/catalogo/fotos";
-import type { Hotel } from "../datos";
-import { guardarEncuadre, ordenarFotos, quitarFoto, subirFotos, usarComoPortada } from "../acciones";
+import {
+  guardarEncuadre,
+  ordenarFotos,
+  quitarFoto,
+  subirFotos,
+  usarComoPortada,
+  type DuenoFotos,
+} from "@/app/(panel)/fotos-acciones";
 import { Bloque } from "./bloque";
+import type { FotoCatalogo } from "./fotos";
 
 const BOTON =
   "inline-flex h-[34px] cursor-pointer items-center gap-1.5 rounded-[10px] bg-tarjeta px-3 text-[13px] font-semibold text-tinta shadow-borde hover:bg-suave disabled:cursor-not-allowed disabled:opacity-50";
 
-export function FotosHotel({
-  hotel: h,
+/** Portada 16:9 y galería ordenable de una ficha (hotel o actividad). */
+export function PortadaGaleria({
+  dueno,
+  portada,
+  galeria,
   editable,
   alAvisar,
+  descripcion,
+  galeriaNota,
+  galeriaTitulo = "Galería",
+  pie,
 }: {
-  hotel: Hotel;
+  dueno: DuenoFotos;
+  portada: FotoCatalogo | null;
+  galeria: FotoCatalogo[];
   editable: boolean;
   alAvisar: (t: string) => void;
+  descripcion: string;
+  galeriaTitulo?: string;
+  /** «albercas, restaurantes, áreas comunes». */
+  galeriaNota: string;
+  pie: string;
 }) {
+  const h = { portada, galeria };
   const [encuadre, setEncuadre] = useState(false);
   const [, iniciar] = useTransition();
   const ev = h.portada ? evaluarPortada(h.portada.ancho, h.portada.alto) : null;
 
   const subir = (destino: "portada" | "galeria") => async (datos: FormData) => {
-    const r = await subirFotos(h.id, destino, datos);
+    const r = await subirFotos(dueno, destino, datos);
     if (r.error) return alAvisar(r.error);
     if (r.portada) {
       const e = evaluarPortada(r.portada.ancho, r.portada.alto);
@@ -47,12 +69,7 @@ export function FotosHotel({
     });
 
   return (
-    <Bloque
-      id="fotos"
-      titulo="Portada y galería"
-      muestra="En la propuesta"
-      descripcion="La portada va en la tarjeta del hotel y tiene un formato fijo. La galería es lo que se ve al abrir las fotos."
-    >
+    <Bloque id="fotos" titulo="Portada y galería" muestra="En la propuesta" descripcion={descripcion}>
       <div className="grid grid-cols-[1.25fr_1fr] gap-4">
         {h.portada ? (
           <MarcoPortada foto={h.portada} className="rounded-[14px]">
@@ -132,14 +149,13 @@ export function FotosHotel({
       </div>
 
       <p className="mt-5 mb-2 text-[13px] font-semibold">
-        Galería de la propiedad{" "}
+        {galeriaTitulo}{" "}
         <span className="font-medium text-tinta-3">
-          · {h.galeria.length} {h.galeria.length === 1 ? "foto" : "fotos"} · albercas, restaurantes, áreas
-          comunes
+          · {h.galeria.length} {h.galeria.length === 1 ? "foto" : "fotos"} · {galeriaNota}
         </span>
       </p>
       <FotosOrdenables
-        etiqueta="Galería de la propiedad"
+        etiqueta={galeriaTitulo}
         fotos={h.galeria}
         editable={editable}
         alOrdenar={(ids) => correr(() => ordenarFotos(ids), "Orden de la galería guardado")}
@@ -165,9 +181,7 @@ export function FotosHotel({
           editable ? <CasillaSubir alSubir={subir("galeria")} etiqueta="Subir fotos a la galería" /> : null
         }
       />
-      <p className="mt-2.5 text-[12.5px] text-tinta-3">
-        Se ordenan arrastrando. Las fotos de cada habitación van en su habitación, abajo.
-      </p>
+      <p className="mt-2.5 text-[12.5px] text-tinta-3">{pie}</p>
 
       {h.portada ? (
         <DialogoEncuadre

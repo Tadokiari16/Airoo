@@ -12,8 +12,9 @@ import { IconoAtras, IconoBasura, IconoMas, IconoOjo } from "@/components/iconos
 import type { Cambio, Hotel, OpcionCiudad, OpcionProveedor } from "../datos";
 import type { PermisosHotel } from "../piezas";
 import { guardarFicha, type ResultadoFicha } from "../acciones";
-import { Bloque, Subtitulo } from "./bloque";
-import { FotosHotel } from "./fotos-hotel";
+import { Bloque, Subtitulo } from "@/components/catalogo/bloque";
+import { PortadaGaleria } from "@/components/catalogo/portada-galeria";
+import { BarraCambios } from "@/components/catalogo/barra-cambios";
 import { Habitaciones } from "./habitaciones";
 import { ColumnaFicha } from "./columna";
 import { VistaPrevia } from "./vista-previa";
@@ -118,7 +119,7 @@ export function FichaHotel({
       </div>
 
       <VistaPrevia hotel={h} abierto={vista} alCerrar={() => setVista(false)} fuenteCliente={fuenteCliente} />
-      <AvisoFlotante texto={aviso} alCerrar={() => setAviso(null)} />
+      <AvisoFlotante texto={aviso} alCerrar={() => setAviso(null)} arriba={sucio} />
     </>
   );
 }
@@ -326,7 +327,17 @@ function Formulario({
         </Bloque>
       </fieldset>
 
-      <FotosHotel hotel={h} editable={editable} alAvisar={alAvisar} />
+      <PortadaGaleria
+        dueno={{ tipo: "hotel", id: h.id }}
+        portada={h.portada}
+        galeria={h.galeria}
+        editable={editable}
+        alAvisar={alAvisar}
+        descripcion="La portada va en la tarjeta del hotel y tiene un formato fijo. La galería es lo que se ve al abrir las fotos."
+        galeriaTitulo="Galería de la propiedad"
+        galeriaNota="albercas, restaurantes, áreas comunes"
+        pie="Se ordenan arrastrando. Las fotos de cada habitación van en su habitación, abajo."
+      />
       <Habitaciones hotel={h} proveedores={proveedores} editable={editable} alAvisar={alAvisar} />
 
       <fieldset disabled={!editable} className="contents">
@@ -634,39 +645,12 @@ function Formulario({
         </Bloque>
       </fieldset>
 
-      {sucio || (estado && "error" in estado) ? (
-        <div
-          role="region"
-          aria-label="Cambios sin guardar"
-          className="fixed bottom-5 left-1/2 z-40 flex w-[min(760px,calc(100vw-32px))] -translate-x-1/2 items-center gap-4 rounded-[16px] bg-tinta px-5 py-3 text-white shadow-menu"
-        >
-          <div className="min-w-0 flex-1">
-            <b className="block text-[14px] font-semibold">Cambios sin guardar</b>
-            <span
-              className={`text-[12.5px] ${estado && "error" in estado ? "text-[#ffb4a8]" : "text-white/70"}`}
-              role={estado && "error" in estado ? "alert" : undefined}
-            >
-              {estado && "error" in estado
-                ? estado.error
-                : "Las cotizaciones ya enviadas no cambian; las nuevas usan la ficha guardada."}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={alDescartar}
-            className="h-9 cursor-pointer rounded-[10px] px-3 text-[13.5px] font-semibold text-white/85 hover:bg-white/10"
-          >
-            Descartar
-          </button>
-          <button
-            type="submit"
-            disabled={pendiente}
-            className="h-9 cursor-pointer rounded-[10px] bg-azul px-4 text-[13.5px] font-semibold text-white hover:bg-azul-oscuro disabled:opacity-60"
-          >
-            {pendiente ? "Guardando…" : "Guardar"}
-          </button>
-        </div>
-      ) : null}
+      <BarraCambios
+        visible={sucio}
+        error={estado && "error" in estado ? estado.error : null}
+        pendiente={pendiente}
+        alDescartar={alDescartar}
+      />
     </form>
   );
 }

@@ -7,11 +7,12 @@ import { Boton } from "@/components/ui/boton";
 import { Tarjeta, Vacio } from "@/components/ui/tarjeta";
 import { Insignia } from "@/components/ui/insignia";
 import { AvisoFlotante } from "@/components/ui/aviso-flotante";
-import { IconoChevron, IconoMas } from "@/components/iconos";
+import { IconoMas } from "@/components/iconos";
 import {
   BuscadorLista,
   Celda,
   FilaCatalogo,
+  Filtro,
   Pestanas,
   SinResultados,
   Tabla,
@@ -22,7 +23,7 @@ import { plural, Regimenes, type PermisosHotel } from "./piezas";
 import { PanelHotel } from "./panel";
 import { NuevoHotel } from "./nuevo";
 
-type Filtro = "activos" | "incompletos" | "archivados";
+type Vista = "activos" | "incompletos" | "archivados";
 
 const incompleto = (h: Hotel) => h.revision.some((r) => !r.ok);
 
@@ -39,7 +40,7 @@ export function ListaHoteles({
   permisos: PermisosHotel;
   agregaCiudades: boolean;
 }) {
-  const [filtro, setFiltro] = useState<Filtro>(() =>
+  const [filtro, setFiltro] = useState<Vista>(() =>
     hoteles.find((h) => h.id === inicial)?.archivado ? "archivados" : "activos",
   );
   const [texto, setTexto] = useState("");
@@ -50,7 +51,7 @@ export function ListaHoteles({
   const [aviso, setAviso] = useState<string | null>(null);
 
   const pasa = useCallback(
-    (h: Hotel, f: Filtro) =>
+    (h: Hotel, f: Vista) =>
       f === "archivados" ? h.archivado : !h.archivado && (f === "activos" || incompleto(h)),
     [],
   );
@@ -102,7 +103,7 @@ export function ListaHoteles({
     [filas, pos],
   );
   const cerrar = useCallback(() => setSel(null), []);
-  const cuenta = (f: Filtro) => hoteles.filter((h) => pasa(h, f)).length;
+  const cuenta = (f: Vista) => hoteles.filter((h) => pasa(h, f)).length;
 
   return (
     <>
@@ -269,41 +270,5 @@ export function ListaHoteles({
       />
       <AvisoFlotante texto={aviso} alCerrar={() => setAviso(null)} />
     </>
-  );
-}
-
-function Filtro({
-  etiqueta,
-  valor,
-  alCambiar,
-  opciones,
-  femenino = false,
-}: {
-  etiqueta: string;
-  valor: string;
-  alCambiar: (v: string) => void;
-  opciones: [string, string][];
-  femenino?: boolean;
-}) {
-  const todos = femenino ? "Todas" : "Todos";
-  const actual = opciones.find(([id]) => id === valor)?.[1] ?? todos;
-  return (
-    <label className="relative inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-tarjeta px-3 text-[13.5px] text-tinta-2 shadow-borde focus-within:shadow-[inset_0_0_0_1.5px_var(--color-azul)]">
-      {etiqueta} <b className="max-w-40 truncate font-semibold text-tinta">{actual}</b>
-      <IconoChevron tam={15} />
-      <select
-        aria-label={etiqueta}
-        value={valor}
-        onChange={(e) => alCambiar(e.target.value)}
-        className="absolute inset-0 cursor-pointer opacity-0"
-      >
-        <option value="">{todos}</option>
-        {opciones.map(([id, nombre]) => (
-          <option key={id} value={id}>
-            {nombre}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

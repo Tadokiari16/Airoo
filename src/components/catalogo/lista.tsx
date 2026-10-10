@@ -5,7 +5,7 @@
 // que abren el panel lateral.
 
 import type { ReactNode, ThHTMLAttributes } from "react";
-import { IconoBuscar } from "@/components/iconos";
+import { IconoBuscar, IconoChevron } from "@/components/iconos";
 
 export type Pestana<T extends string> = { valor: T; etiqueta: string; n: number; oculta?: boolean };
 
@@ -207,5 +207,42 @@ export function Opciones<T extends string>({
         );
       })}
     </div>
+  );
+}
+
+/** Filtro de la lista: «Destino Todos ▾», con un select invisible encima. */
+export function Filtro({
+  etiqueta,
+  valor,
+  alCambiar,
+  opciones,
+  femenino = false,
+}: {
+  etiqueta: string;
+  valor: string;
+  alCambiar: (v: string) => void;
+  opciones: [string, string][];
+  femenino?: boolean;
+}) {
+  const todos = femenino ? "Todas" : "Todos";
+  const actual = opciones.find(([id]) => id === valor)?.[1] ?? todos;
+  return (
+    <label className="relative inline-flex h-9 items-center gap-1.5 rounded-[10px] bg-tarjeta px-3 text-[13.5px] text-tinta-2 shadow-borde focus-within:shadow-[inset_0_0_0_1.5px_var(--color-azul)]">
+      {etiqueta} <b className="max-w-40 truncate font-semibold text-tinta">{actual}</b>
+      <IconoChevron tam={15} />
+      <select
+        aria-label={etiqueta}
+        value={valor}
+        onChange={(e) => alCambiar(e.target.value)}
+        className="absolute inset-0 cursor-pointer opacity-0"
+      >
+        <option value="">{todos}</option>
+        {opciones.map(([id, nombre]) => (
+          <option key={id} value={id}>
+            {nombre}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

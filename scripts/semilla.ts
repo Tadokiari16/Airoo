@@ -1,6 +1,6 @@
 // Datos de ejemplo para trabajar en local: el equipo de los prototipos,
-// la lista de ciudades, los ajustes de CLAUDE.md y los proveedores y hoteles
-// de los prototipos. Los negocios llevan su nombre real; las personas de contacto,
+// la lista de ciudades, los ajustes de CLAUDE.md y los proveedores, hoteles
+// y actividades de los prototipos. Los negocios llevan su nombre real; las personas de contacto,
 // nombres genéricos y teléfonos ficticios.
 //   npm run semilla
 // Solo corre contra una base local, salvo que se pase --forzar.
@@ -15,6 +15,7 @@ import * as schema from "../src/lib/db/schema";
 import { iniciales, normalizar } from "../src/lib/texto";
 import { createCipheriv, randomBytes } from "node:crypto";
 import { sembrarHoteles } from "./semilla-hoteles";
+import { sembrarActividades } from "./semilla-actividades";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
@@ -36,6 +37,7 @@ const CIUDADES: [string, string, string][] = [
   ["Playa del Carmen", "Quintana Roo", "México"],
   ["Tulum", "Quintana Roo", "México"],
   ["Holbox", "Quintana Roo", "México"],
+  ["Cozumel", "Quintana Roo", "México"],
   ["Puerto Aventuras", "Quintana Roo", "México"],
   ["Bacalar", "Quintana Roo", "México"],
   ["Mérida", "Yucatán", "México"],
@@ -109,6 +111,7 @@ async function main() {
     );
   await sembrarProveedores(db, yo!.id);
   await sembrarHoteles(db, admin, yo!.id);
+  await sembrarActividades(db, admin, yo!.id);
 
   await conexion.end();
   console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);

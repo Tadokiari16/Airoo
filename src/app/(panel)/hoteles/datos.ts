@@ -1,6 +1,7 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { historialDe, type Cambio } from "@/lib/bitacora";
 import type { Encuadre } from "@/lib/fotos";
 import { urlFoto } from "@/lib/imagenes";
 import { horaCliente, revisarFicha, textoCargo, type Revision, type SeCobra } from "@/lib/hoteles";
@@ -266,7 +267,8 @@ export async function cargarHotel(id: string): Promise<Hotel | null> {
   return h ?? null;
 }
 
-export type OpcionCiudad = { id: string; nombre: string; detalle: string; busqueda: string };
+export type { OpcionCiudad } from "@/components/catalogo/elegir-ciudad";
+import type { OpcionCiudad } from "@/components/catalogo/elegir-ciudad";
 
 export async function opcionesCiudad(): Promise<OpcionCiudad[]> {
   const filas = await db
@@ -292,24 +294,10 @@ export async function opcionesProveedor(): Promise<OpcionProveedor[]> {
     .orderBy(asc(schema.proveedores.nombreBusqueda));
 }
 
-export type Cambio = { id: string; texto: string; quien: string; cuando: string };
+export type { Cambio };
 
 /** «Ver historial de cambios»: lo que la bitácora tiene de este hotel. */
-export async function historialHotel(id: string): Promise<Cambio[]> {
-  const filas = await db
-    .select({ b: schema.bitacora, quien: schema.usuarios.nombre })
-    .from(schema.bitacora)
-    .leftJoin(schema.usuarios, eq(schema.usuarios.id, schema.bitacora.quien))
-    .where(and(eq(schema.bitacora.entidad, "hoteles"), eq(schema.bitacora.entidadId, id)))
-    .orderBy(desc(schema.bitacora.cuando))
-    .limit(50);
-  return filas.map((f) => ({
-    id: f.b.id,
-    texto: f.b.texto,
-    quien: f.quien ?? "El sistema",
-    cuando: formatoFechaCorta(f.b.cuando),
-  }));
-}
+export const historialHotel = (id: string) => historialDe("hoteles", id);
 
 /** Para «Unir con otro hotel»: los demás hoteles que no se han unido. */
 export async function otrosHoteles(sinId: string) {

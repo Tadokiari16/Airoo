@@ -52,6 +52,8 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/components/catalogo`: piezas compartidas de los catálogos (pestañas, tabla, panel lateral, archivar y eliminar, fotos con encuadre 16:9).
 - `src/lib/fotos.ts`, `src/lib/imagenes.ts` y `src/lib/almacen.ts`: reglas de la portada, los dos tamaños webp de cada foto y dónde se guardan (carpeta `.almacen` en local, bucket público `fotos` de Supabase en producción, según `ALMACEN_FOTOS`).
 - `src/lib/hoteles.ts`: qué le falta a la ficha de un hotel (los 9 puntos), cargos y Tripadvisor.
+- `src/lib/actividades.ts`: tipos de actividad, los 8 bloques opcionales, qué bloques sugiere cada tipo (al cambiarlo no se apaga ninguno) y qué va a pedir el armador.
+- `src/app/(panel)/fotos-acciones.ts`: subir, ordenar, encuadrar y quitar fotos; las comparten hoteles y actividades.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.

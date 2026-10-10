@@ -50,7 +50,13 @@ async function guardar(admin: SupabaseClient, ruta: string, datos: Buffer) {
 }
 
 /** Igual que la subida del panel: webp grande (2400) y chica (600). */
-async function foto(admin: SupabaseClient, hotelId: string, escena: string, ancho: number, alto: number) {
+export async function foto(
+  admin: SupabaseClient,
+  carpeta: string,
+  escena: string,
+  ancho: number,
+  alto: number,
+) {
   const original = await ilustracion(escena, ancho, alto);
   const grande = await sharp(original)
     .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
@@ -60,7 +66,7 @@ async function foto(admin: SupabaseClient, hotelId: string, escena: string, anch
     .resize({ width: 600, height: 600, fit: "inside" })
     .webp({ quality: 78 })
     .toBuffer();
-  const archivo = `hoteles/${hotelId}/${randomUUID()}`;
+  const archivo = `${carpeta}/${randomUUID()}`;
   await guardar(admin, `${archivo}-g.webp`, grande.data);
   await guardar(admin, `${archivo}-c.webp`, chica);
   return { archivo, ancho: grande.info.width, alto: grande.info.height };
@@ -401,7 +407,7 @@ export async function sembrarHoteles(db: Db, admin: SupabaseClient, duenoId: str
     let orden = 0;
     if (s.portada) {
       const [esc, an, al] = s.portada;
-      const f = await foto(admin, h.id, esc, an, al);
+      const f = await foto(admin, `hoteles/${h.id}`, esc, an, al);
       await db.insert(schema.fotos).values({
         hotelId: h.id,
         ...f,
@@ -412,7 +418,7 @@ export async function sembrarHoteles(db: Db, admin: SupabaseClient, duenoId: str
       });
     }
     for (const esc of s.galeria ?? "") {
-      const f = await foto(admin, h.id, esc, 1600, 1200);
+      const f = await foto(admin, `hoteles/${h.id}`, esc, 1600, 1200);
       await db.insert(schema.fotos).values({ hotelId: h.id, ...f, orden: orden++, creadoPor: duenoId });
     }
     for (const [i, r] of (s.habitaciones ?? []).entries()) {
@@ -421,7 +427,7 @@ export async function sembrarHoteles(db: Db, admin: SupabaseClient, duenoId: str
         .values({ hotelId: h.id, nombreCliente: r.nombre, orden: i })
         .returning({ id: schema.hotelHabitaciones.id });
       for (const esc of r.fotos) {
-        const f = await foto(admin, h.id, esc, 1600, 1200);
+        const f = await foto(admin, `hoteles/${h.id}`, esc, 1600, 1200);
         await db
           .insert(schema.fotos)
           .values({ hotelId: h.id, habitacionId: hab.id, ...f, orden: orden++, creadoPor: duenoId });
