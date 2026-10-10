@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta del cliente v4 — app moderna</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;font-display:swap;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--blue-t2:#D3E0FD;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--card:#FFFFFF;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;--ease:cubic-bezier(.2,.8,.2,1);--safe:env(safe-area-inset-bottom,0px);}
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:'Gilroy','Figtree',system-ui,sans-serif;color:var(--ink);background:#E3E8EF;-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.45;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;color:inherit;font-size:15px;}
+  h1,h2,h3{margin:0;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .row{display:flex;align-items:center;}
+  .muted{color:var(--ink2);}
+  .cents{font-size:.6em;color:var(--ink3);font-weight:600;vertical-align:.5em;margin-left:1px;}
+  .card{background:var(--card);border-radius:22px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -16px rgba(17,26,43,.18);}
+  .pad{padding:18px;}
+  .ic{width:40px;height:40px;border-radius:12px;background:var(--blue-t);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);}
+  .b-green{background:var(--green-t);color:var(--green);}
+  .b-amber{background:var(--amber-t);color:var(--amber);}
+  .b-gray{background:#EEF1F5;color:var(--ink2);}
+  .sec{scroll-margin-top:64px;margin-top:28px;}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;}
+  .sec-t{font-size:22px;font-weight:700;letter-spacing:-.015em;}
+  .tabs{position:sticky;top:0;z-index:30;background:rgba(242,244,248,.9);backdrop-filter:blur(12px);padding:10px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent);}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tabs::after{content:'';flex:0 0 24px;}
+  .tab{height:36px;padding:0 14px;border-radius:999px;border:none;background:transparent;color:var(--ink2);font-weight:600;font-size:14px;white-space:nowrap;cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease);flex-shrink:0;}
+  .tab.on{background:var(--ink);color:#fff;}
+  .car{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 16px 8px;margin:0 -16px;scrollbar-width:none;}
+  .car::-webkit-scrollbar{display:none;}
+  .hc{scroll-snap-align:center;flex:0 0 84%;border:none;padding:0;text-align:left;cursor:pointer;border-radius:22px;background:#fff;overflow:hidden;box-shadow:0 0 0 1.5px transparent,0 8px 24px -16px rgba(17,26,43,.2);transition:box-shadow .2s var(--ease),transform .12s var(--ease);font:inherit;}
+  .hc:active{transform:scale(.985);}
+  .hc.on{box-shadow:0 0 0 2px var(--blue),0 12px 28px -16px rgba(20,99,246,.55);}
+  .ph{height:150px;position:relative;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 60%,#EADCC2 60.5%);}
+  .ph.g{background:linear-gradient(180deg,#CFE6D9,#86C3A1 58%,#EADCC2 58.5%);}
+  .ph .tag{position:absolute;left:12px;top:12px;}
+  .ph .sel{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;color:transparent;transition:background-color .2s var(--ease),color .2s var(--ease),transform .2s var(--ease);}
+  .hc.on .ph .sel{background:var(--blue);color:#fff;transform:scale(1.05);}
+  .ph .pt{position:absolute;right:10px;bottom:10px;font-size:11px;font-weight:500;color:#5A4A2E;background:rgba(255,255,255,.85);border-radius:6px;padding:2px 7px;}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px;}
+  .kv > span:first-child{color:var(--ink2);white-space:nowrap;}
+  .kv > span:last-child{font-weight:600;text-align:right;min-width:0;}
+  .link{border:none;background:none;padding:0;color:var(--blue);font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+  .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:#fff;box-shadow:0 1px 2px rgba(17,26,43,.08);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .clp{display:grid;transition:grid-template-rows .26s var(--ease),opacity .2s var(--ease);}
+  .clp > div{overflow:hidden;min-height:0;}
+  .chev{display:inline-flex;transition:transform .22s var(--ease);}
+  .chev.open{transform:rotate(180deg);}
+  .fl-t{position:relative;}
+  .dot{width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2.5px var(--blue);flex-shrink:0;}
+  .fa{animation:flA .7s var(--ease);} .fb{animation:flB .7s var(--ease);}
+  @keyframes flA{0%{background-color:var(--blue-t2);}100%{background-color:rgba(211,224,253,0);}}
+  @keyframes flB{0%{background-color:var(--blue-t2);}100%{background-color:rgba(211,224,253,0);}}
+  .mA{display:inline-block;animation:mA .32s var(--ease);} .mB{display:inline-block;animation:mB .32s var(--ease);}
+  @keyframes mA{0%{opacity:0;transform:translateY(6px);filter:blur(3px);}100%{opacity:1;transform:none;filter:none;}}
+  @keyframes mB{0%{opacity:0;transform:translateY(6px);filter:blur(3px);}100%{opacity:1;transform:none;filter:none;}}
+  .sched{display:flex;flex-direction:column;}
+  .sc-row{display:flex;gap:12px;}
+  .sc-rail{display:flex;flex-direction:column;align-items:center;width:14px;}
+  .sc-rail i{width:12px;height:12px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0;}
+  .sc-rail i.o{background:#fff;box-shadow:inset 0 0 0 2.5px #C3CBD7;}
+  .sc-rail b{flex:1;width:2px;background:var(--line);margin:4px 0;}
+  .scrim{position:fixed;inset:0;background:rgba(17,26,43,.4);z-index:40;transition:opacity .22s var(--ease);}
+  .scrim.hide{opacity:0;pointer-events:none;}
+  .tray{position:fixed;left:50%;bottom:calc(10px + var(--safe));width:calc(min(100%,430px) - 20px);background:#fff;border-radius:24px;box-shadow:0 0 0 1px rgba(17,26,43,.06),0 18px 40px -12px rgba(17,26,43,.35);z-index:50;overflow:hidden;touch-action:pan-x;}
+  .grab{display:flex;justify-content:center;padding:10px 0 0;cursor:grab;}
+  .grab i{width:40px;height:5px;border-radius:3px;background:#D5DAE2;display:block;}
+  .btn{height:50px;border:none;border-radius:16px;background:var(--blue);color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 22px;cursor:pointer;transition:background-color .15s var(--ease),transform .1s var(--ease);white-space:nowrap;}
+  .btn:hover{background:var(--blue-d);}
+  .btn:active{transform:scale(.97);}
+  .btn2{height:48px;border:none;border-radius:16px;background:#EEF1F5;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;width:100%;cursor:pointer;}
+  .cmp{display:grid;grid-template-columns:86px 1fr 1fr;font-size:14px;}
+  .cmp > div{padding:10px 8px;border-bottom:1px solid var(--line);}
+  .cmp .h{font-weight:700;font-size:15px;line-height:1.25;cursor:pointer;border-radius:14px 14px 0 0;border-bottom:none;padding-top:12px;}
+  .cmp .k{color:var(--ink2);padding-left:0;}
+  .cmp .on{background:var(--blue-t);}
+  .cmp .col{cursor:pointer;transition:background-color .18s var(--ease);}
+  .radio{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px #C3CBD7;display:inline-flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .radio i{width:10px;height:10px;border-radius:50%;background:var(--blue);transform:scale(0);transition:transform .18s var(--ease);}
+  .on .radio{box-shadow:inset 0 0 0 2px var(--blue);}
+  .on .radio i{transform:scale(1);}
+  .step{display:flex;gap:12px;align-items:flex-start;font-size:15px;}
+  .step b{width:24px;height:24px;border-radius:50%;background:var(--blue-t);color:var(--blue);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ok{width:56px;height:56px;border-radius:50%;background:var(--green-t);color:var(--green);display:flex;align-items:center;justify-content:center;animation:pop .35s var(--ease);}
+  @keyframes pop{0%{transform:scale(.6);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  .gal{position:fixed;inset:0;background:#0B111D;z-index:70;display:flex;flex-direction:column;transition:opacity .22s var(--ease);}
+  .gal.hide{opacity:0;pointer-events:none;}
+  .gal-img{flex:1;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 55%,#EADCC2 55.5%);display:flex;align-items:flex-end;padding:16px;color:#5A4A2E;font-size:12px;}
+  .gal-img.g{background:linear-gradient(180deg,#CFE6D9,#86C3A1 55%,#EADCC2 55.5%);}
+  .gbtn{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+  .toast{position:fixed;left:50%;top:18px;opacity:0;visibility:hidden;transform:translate(-50%,-140%);background:var(--ink);color:#fff;font-size:14px;font-weight:500;border-radius:999px;padding:10px 16px;z-index:80;transition:transform .22s var(--ease),opacity .22s var(--ease),visibility .22s;}
+  .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+  .svc{padding:16px 14px;}
+  .svc-top{display:flex;gap:14px;align-items:flex-start;}
+  .svc-ic{width:52px;height:52px;border-radius:16px;background:var(--blue-t);color:var(--blue-d);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .svc-t{font-size:17px;font-weight:700;color:var(--blue-d);}
+  .svc-d{font-size:14px;color:var(--ink2);margin-top:2px;line-height:1.4;}
+  .chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:14px;}
+  .chip{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 7px;border-radius:10px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:600;white-space:nowrap;}
+  .inv-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .inv-row:first-of-type{border-top:none;padding-top:2px;}
+  .inv-k{font-weight:600;}
+  .inv-d{font-size:13px;color:var(--ink3);margin-top:1px;}
+  .inv-v{font-weight:600;border-radius:4px;white-space:nowrap;}
+  .inv-tot{margin:4px -18px 0;padding:16px 18px;background:linear-gradient(150deg,#1463F6,#0050BB);color:#fff;}
+  .alt{display:flex;align-items:center;gap:12px;margin:0 -18px;padding:14px 18px;border-top:1px solid var(--line);background:#F6F8FB;}
+  .band{background:linear-gradient(150deg,#1463F6 0%,#1463F6 45%,#0050BB 100%);color:#fff;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 70px;}
+  .band-t{font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:6px;}
+  .glass{background:rgba(255,255,255,.16);color:#fff;box-shadow:none;}
+  .sec-t::first-letter{color:var(--blue);}
+  .sec-s{font-size:14px;color:var(--ink2);margin-top:2px;}
+  .sec-h{align-items:flex-end;}
+  .plan{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px;}
+  .dots{display:flex;justify-content:center;gap:6px;margin-top:4px;}
+  .dots i{width:6px;height:6px;border-radius:3px;background:#C9D1DD;transition:width .2s var(--ease),background-color .2s var(--ease);}
+  .dots i.on{width:18px;background:var(--blue);}
+  .desc{font-size:14.5px;color:var(--ink2);line-height:1.55;margin:12px 0 4px;}
+  .desc.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .rooms{margin-top:14px;border-top:1px solid var(--line);}
+  .rooms-h{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink3);font-weight:500;padding:10px 0 2px;}
+  .room{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;}
+  .room:last-child{border-bottom:none;}
+  .guests{font-size:13px;font-weight:600;white-space:nowrap;background:#F2F4F8;border-radius:8px;padding:4px 8px;}
+  .inset{margin-top:14px;padding:4px 0 4px 14px;border-left:3px solid var(--blue);font-size:14.5px;line-height:1.5;color:#2E3950;font-style:italic;}
+  .logo-band{height:112px;background:var(--blue);display:flex;align-items:center;justify-content:center;position:relative;color:#fff;}
+  .logo-band span{font-size:30px;font-weight:700;letter-spacing:-.02em;}
+  .logo-band em{position:absolute;right:10px;bottom:8px;font-size:11px;font-style:normal;background:rgba(255,255,255,.2);border-radius:6px;padding:2px 7px;}
+  .fine{font-size:13px;color:var(--ink2);line-height:1.5;margin:12px 4px 0;}
+  .fine b{color:var(--ink);font-weight:600;}
+  .foot{margin-top:32px;background:linear-gradient(150deg,#1463F6,#0050BB);color:#fff;padding:28px 20px calc(120px + var(--safe));}
+  .wa{margin-top:16px;background:#fff;color:var(--ink);width:100%;}
+  .wa:hover{background:#F2F4F8;}
+  .svc-img{width:92px;height:60px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .svc-img img{width:100%;height:auto;display:block;}
+  .al-logo{width:52px;height:52px;border-radius:16px;background:#00A650;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:17px;letter-spacing:-.02em;}
+  .leg{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .leg-h{font-size:14px;color:var(--ink2);}
+  .leg-h b{color:var(--blue);font-weight:600;}
+  .leg-h strong{color:var(--ink);font-weight:700;}
+  .leg-r{display:flex;align-items:flex-start;gap:10px;margin-top:12px;}
+  .lp{flex-shrink:0;min-width:84px;}
+  .lp.r{text-align:right;}
+  .tm{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.1;white-space:nowrap;}
+  .tm small{font-size:12px;font-weight:700;letter-spacing:0;}
+  .term{font-size:13px;font-weight:600;color:var(--blue);margin-top:4px;}
+  .city{font-size:13px;color:var(--ink2);}
+  .mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:0;min-width:0;}
+  .mid .dur{font-size:11.5px;color:var(--ink3);white-space:nowrap;}
+  .dash{position:relative;width:100%;height:2px;background:repeating-linear-gradient(90deg,#CDD4DF 0 6px,transparent 6px 11px);}
+  .dash::before,.dash::after{content:'';position:absolute;top:-2px;width:6px;height:6px;border-radius:50%;background:#CDD4DF;}
+  .dash::before{left:0;} .dash::after{right:0;}
+  .mid .dir{font-size:13px;color:var(--ink2);margin-top:2px;}
+  .stay{margin-top:0;scroll-margin-top:72px;}
+  .ph-btn{position:absolute;right:10px;bottom:10px;height:32px;padding:0 12px;border:none;border-radius:999px;background:rgba(17,26,43,.62);color:#fff;font:inherit;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;backdrop-filter:blur(6px);}
+  .stay-r{margin-top:14px;padding:14px 0 2px;border-top:1px solid var(--line);}
+  .stay-r .term{margin-top:0;margin-bottom:2px;}
+  .hop{display:flex;flex-direction:column;align-items:center;padding:4px 0;}
+  .hop i{width:2px;height:14px;background:repeating-linear-gradient(180deg,#B9C3D3 0 4px,transparent 4px 7px);}
+  .hop-pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);box-shadow:0 1px 2px rgba(17,26,43,.06),0 4px 12px -8px rgba(17,26,43,.25);}
+  .hop-pill svg{color:var(--blue);}
+  .idx{display:flex;flex-direction:column;margin:0 0 14px;border-top:1px solid var(--line);}
+  .idx-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border:none;border-bottom:1px solid var(--line);background:none;font:inherit;text-align:left;cursor:pointer;color:inherit;}
+  .idx-n{width:24px;height:24px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .idx-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .idx-t b{font-weight:600;font-size:15px;}
+  .idx-t > span{font-size:13px;color:var(--ink2);}
+  .idx-t b{color:var(--ink);}
+  .idx-c{color:var(--ink3);display:inline-flex;}
+  .hn{font-size:17px;font-weight:700;line-height:1.25;}
+  .ta{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--ink2);}
+  .ta b{color:var(--ink);font-weight:700;font-size:14px;}
+  .ta-logo{width:18px;height:18px;border-radius:50%;background:#E3E8EF;box-shadow:inset 0 0 0 1.5px #C9D1DD;flex-shrink:0;}
+  .bub{display:inline-flex;gap:2px;}
+  .bub i{width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #8A93A3;}
+  .bub i.f{background:#8A93A3;}
+  .bub i.h{background:linear-gradient(90deg,#8A93A3 50%,transparent 50%);}
+  .opt-h{font-size:14px;color:var(--ink2);padding-bottom:10px;}
+  .opt-h b{color:var(--ink);font-weight:600;}
+  .sig{font-size:13.5px;color:var(--ink2);margin-top:12px;line-height:1.45;}
+  .sig b{color:var(--ink);font-weight:600;}
+  .note{font-size:14px;color:var(--ink2);margin:8px 0 0;line-height:1.45;}
+  .note b{color:var(--ink);font-weight:600;}
+  .act + .act{margin-top:12px;}
+  .alts{margin:0 -18px;background:#F6F8FB;}
+  .alts-h{font-size:12.5px;font-weight:600;color:var(--ink3);padding:12px 18px 0;}
+  .alts .alt{background:none;border-top:none;margin:0;padding:10px 18px;}
+  .alts .alt + .alt{border-top:1px solid var(--line);}
+  .tray-tot{flex:1;min-width:0;border:none;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;}
+  .up{color:var(--ink3);} .down{color:var(--green);}
+  .pk{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+  .pk-row{display:flex;align-items:center;gap:12px;padding:12px;border:none;border-radius:14px;background:#F6F8FB;font:inherit;color:inherit;text-align:left;cursor:pointer;box-shadow:inset 0 0 0 1.5px transparent;transition:background-color .18s var(--ease),box-shadow .18s var(--ease);}
+  .pk-row.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .pk-row .radio{margin:0;flex-shrink:0;background:#fff;}
+  .pk-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .pk-t b{font-weight:600;font-size:15px;line-height:1.25;}
+  .pk-t > span{font-size:13px;color:var(--ink2);}
+  .pk-t em{font-style:normal;font-weight:600;}
+  .pk-t em.rec{color:var(--blue-d);} .pk-t em.eco{color:var(--green);}
+  .pk-v{font-weight:700;white-space:nowrap;}
+  .pk-link{display:flex;justify-content:center;height:14px;}
+  .pk-link i{width:2px;height:14px;background:var(--blue-t2);}
+  .bar-l{flex:1;min-width:0;display:grid;}
+  .bar-s{grid-area:1/1;display:flex;flex-direction:column;min-width:0;transition:opacity .2s var(--ease),transform .2s var(--ease);}
+  .bar-s.off{opacity:0;transform:translateY(6px);pointer-events:none;}
+  .bar-k{font-size:12px;color:var(--ink2);white-space:nowrap;}
+  .bar-v{font-size:17px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .topic{height:36px;padding:0 14px;border:none;border-radius:999px;background:#F2F4F8;box-shadow:inset 0 0 0 1.5px #E3E8EF;font:inherit;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease),box-shadow .15s var(--ease);}
+  .topic.on{background:var(--blue-t);color:var(--blue-d);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  .ask-in{width:100%;margin-top:14px;border:none;border-radius:14px;background:#F6F8FB;box-shadow:inset 0 0 0 1.5px #E3E8EF;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);resize:none;outline:none;}
+  .ask-in:focus{box-shadow:inset 0 0 0 2px var(--blue);background:#fff;}
+  .btn.dis{background:#C9D1DD;cursor:default;}
+  .dates-box{margin-top:12px;padding:12px;border-radius:14px;background:#F6F8FB;}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .dfield{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;color:var(--ink2);min-width:0;}
+  .dfield input{height:44px;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1.5px #E3E8EF;padding:0 10px;font:inherit;font-size:15px;color:var(--ink);min-width:0;width:100%;}
+  .dfield input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--blue);}
+  .derr{font-size:13px;color:var(--amber);margin-top:8px;font-weight:600;}
+  .topic.sm{height:32px;font-size:13px;margin-top:10px;background:#fff;}
+  .topic.sm.on{background:var(--blue-t);}
+  svg{flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+</style>
+<style>
+  /* ===== Pulido del lado del cliente: quitar los patrones de plantilla ===== */
+  :root{--line:#E6E9EE;}
+  /* 1. Sin la primera letra en azul */
+  .sec-t::first-letter,.wz-t::first-letter,.grp-t::first-letter{color:inherit;}
+  /* 2. Encabezado plano: azul de marca sólido, título más sobrio */
+  .band{background:#1463F6;}
+  .band-t{font-size:40px;letter-spacing:-.025em;}
+  /* 3. Tarjetas: menos redondas, sin sombra flotante, borde fino */
+  .card{border-radius:14px;box-shadow:none;border:1px solid var(--line);}
+  /* 4. El azul solo para lo que se toca: etiquetas secundarias en tinta */
+  .plan,.term,.leg-h b{color:var(--ink2);}
+  .svc-t{color:var(--ink);}
+  .ic,.svc-ic,.step b,.idx-n{background:#F2F4F7;color:var(--ink2);}
+  /* 5. Chips: información, no botones */
+  .chip{background:transparent;color:var(--ink2);height:auto;padding:0;border-radius:0;font-weight:500;font-size:13px;}
+  .chips{gap:4px 14px;}
+  .chip svg{color:var(--ink3);}
+  /* 6. Líneas continuas en vez de punteadas */
+  .dash{background:#D5DBE4;height:1px;}
+  .hop i{background:#D5DBE4;width:1px;}
+  /* 8. Total y pie: sin degradado */
+  .inv-tot{background:var(--ink);}
+  .foot{background:#fff;color:var(--ink);border-top:1px solid var(--line);}
+  .foot div,.foot p{color:var(--ink2) !important;}
+  .foot > div:first-child{color:var(--ink) !important;}
+  .foot .link{color:var(--blue-d) !important;}
+  .foot .btn{background:var(--blue);color:#fff;}
+  /* 9. Insignias más discretas */
+  .b-blue{background:#EEF1F5;color:var(--ink2);}
+</style>
+
+</helmet>
+
+<div style="width:100%;min-height:100vh;min-height:100dvh;background:#E3E8EF;">
+<div style="max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;">
+  <div class="toast {{toastCls}}" role="status">{{toastMsg}}</div>
+
+  <!-- ============ PORTADA ============ -->
+  <header class="band">
+    <div class="row" style="justify-content:space-between;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 656.05 223.51" role="img" aria-label="Airoo" style="width:120px;height:auto;display:block;"><g><path fill="#fff" d="M359.51,79.65h21.17v82.05h-21.17v-9.68c-6.35,7.99-15.26,11.98-26.75,11.98s-20.32-4.18-28.14-12.55c-7.82-8.37-11.73-18.63-11.73-30.77s3.91-22.4,11.73-30.77c7.82-8.37,17.2-12.55,28.14-12.55,11.49,0,20.4,4,26.75,11.98v-9.68ZM320.45,137.34c4.27,4.32,9.68,6.48,16.25,6.48s12.01-2.16,16.33-6.48c4.32-4.32,6.48-9.87,6.48-16.66s-2.16-12.33-6.48-16.66c-4.32-4.32-9.76-6.48-16.33-6.48s-11.98,2.16-16.25,6.48c-4.27,4.32-6.4,9.87-6.4,16.66s2.13,12.34,6.4,16.66Z"/><path fill="#fff" d="M405.46,69.81c-3.5,0-6.54-1.28-9.11-3.86-2.57-2.57-3.86-5.61-3.86-9.11s1.28-6.56,3.86-9.19c2.57-2.63,5.61-3.94,9.11-3.94s6.7,1.31,9.27,3.94c2.57,2.63,3.86,5.69,3.86,9.19s-1.29,6.54-3.86,9.11-5.66,3.86-9.27,3.86ZM394.95,161.71v-82.05h21.17v82.05h-21.17Z"/><path fill="#fff" d="M451.73,93.77c1.97-5.25,5.22-9.19,9.76-11.82.64-.37,1.73-.99,3.77-1.83.89-.37,4.42-1.82,7.84-2.51,6.35-1.28,12.57,0,15.15.65-3.33,1.94-8.69,5.67-13.2,12.12-3,4.29-4.67,8.41-5.63,11.47-1.06.1-2.48.32-4.09.81,0,0-3.22,1.09-5.98,2.93-5.09,3.39-7.63,9.03-7.63,16.9v39.22h-21.17v-82.06h21.17v14.11Z"/><path fill="#fff" d="M550.85,151.45c-8.43,8.37-18.71,12.55-30.85,12.55s-22.4-4.18-30.77-12.55c-8.37-8.37-12.55-18.63-12.55-30.77s4.18-22.4,12.55-30.77c8.37-8.37,18.63-12.55,30.77-12.55s22.43,4.18,30.85,12.55c8.42,8.37,12.64,18.63,12.64,30.77s-4.21,22.4-12.64,30.77ZM504.16,136.93c4.21,4.27,9.49,6.4,15.84,6.4s11.65-2.13,15.92-6.4c4.27-4.27,6.4-9.68,6.4-16.25s-2.13-11.98-6.4-16.25c-4.27-4.27-9.57-6.4-15.92-6.4s-11.63,2.13-15.84,6.4c-4.21,4.27-6.32,9.68-6.32,16.25s2.11,11.98,6.32,16.25Z"/><path fill="#fff" d="M643.41,151.45c-8.43,8.37-18.71,12.55-30.85,12.55s-22.4-4.18-30.77-12.55c-8.37-8.37-12.55-18.63-12.55-30.77s4.18-22.4,12.55-30.77c8.37-8.37,18.63-12.55,30.77-12.55s22.43,4.18,30.85,12.55c8.42,8.37,12.64,18.63,12.64,30.77s-4.21,22.4-12.64,30.77ZM596.72,136.93c4.21,4.27,9.49,6.4,15.84,6.4s11.65-2.13,15.92-6.4c4.27-4.27,6.4-9.68,6.4-16.25s-2.13-11.98-6.4-16.25c-4.27-4.27-9.57-6.4-15.92-6.4s-11.63,2.13-15.84,6.4c-4.21,4.27-6.32,9.68-6.32,16.25s2.11,11.98,6.32,16.25Z"/><path fill="#fff" d="M249.22,95.18c-14.45,4.8-29.18,8.81-43.85,12.92-4.06,1.14-6.71,3.02-8.85,6.93-15.63,28.68-31.74,57.1-47.31,85.81-3.46,6.38-7.83,10.25-14.96,11.48-4.5.78-8.87,2.33-15.04,4.01,8.3-30.61,16.15-59.57,24.34-89.79-3.77,1.03-6.79,1.79-9.76,2.68-22.62,6.76-45.65,10.02-69.3,8.5-4.45-.29-8.31-1.3-11.67-3.34-16.4,23.62-35.19,46.4-51.13,70.21-4.78,7.77,1.23,18.63,10.3,18.89h181.2s23.72,0,23.72,0c17.26-1.21,30.26-13.53,32.49-30.6l-.1-97.74s-.04.02-.06.02Z"/><path fill="#fff" d="M54.82,92.12c3.36,4.65,7.86,8.37,13.08,10.76.03.01.05.02.08.04,3.05,1.39,7.28,1.98,10.43,1.07,15.59-4.51,31.18-9.05,46.76-13.6-1.13-.16-2.26-.55-2.95-1.12-13.97-11.48-27.79-23.13-41.57-34.8-.96-.81-1.33-2.23-2.51-4.31,14.75-3.92,27.49-11.67,43.6-1.91,16.26,9.85,34.03,17.51,51.13,26.14.73.37,1.44.79,2.33,1.32,16.26-4.79,32.53-9.59,48.78-14.4,8.6-2.54,17.04-3.05,25.28-1.52l-.03-30.32c-2.1-15.43-13.69-27.06-29.07-29.42h-25.39s-183.43-.03-183.43-.03C2.16.7-3.23,11.43,2.13,19.11l52.69,73.01Z"/></g></svg>
+      <button class="icon-btn glass" onClick="{{share}}" aria-label="Compartir propuesta"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
+    </div>
+    <div class="num" style="font-size:14px;color:rgba(255,255,255,.8);margin-top:34px;">Propuesta de viaje · {{kicker}}</div>
+    <h1 class="band-t">{{title}}</h1>
+    <div style="font-size:15px;color:rgba(255,255,255,.88);margin-top:6px;max-width:30ch;">Gracias por dejarnos planear tu viaje, Nataly.</div>
+  </header>
+
+  <div style="padding:0 16px;margin-top:-44px;position:relative;">
+    <div class="card pad" id="hero">
+      <sc-if value="{{tripRange}}" hint-placeholder-val="{{ true }}">
+        <div class="leg-r num" style="margin-top:0;">
+          <div class="lp"><div class="term" style="margin:0 0 2px;">{{trip.l1}}</div><div class="tm">{{trip.d1}}</div><div class="city">{{trip.w1}}</div></div>
+          <div class="mid" style="padding-top:26px;"><span class="dur">{{trip.mid}}</span><div class="dash"></div></div>
+          <div class="lp r"><div class="term" style="margin:0 0 2px;">{{trip.l2}}</div><div class="tm">{{trip.d2}}</div><div class="city">{{trip.w2}}</div></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{tripSingle}}" hint-placeholder-val="{{ false }}">
+        <div class="num"><div class="term" style="margin:0 0 2px;">Fecha</div><div class="tm">{{trip.d1}}</div><div class="city">{{trip.w1}}</div></div>
+      </sc-if>
+      <div class="kv" style="margin-top:16px;"><span>Viajan</span><span>4 adultos + 2 menores</span></div>
+      <sc-if value="{{fromRow}}" hint-placeholder-val="{{ true }}"><div class="kv"><span>Salen de</span><span>Guadalajara</span></div></sc-if>
+      <div class="sig">Preparada para <b>Nataly Cervantes</b> por <b>Luis, de Airoo</b></div>
+      <div class="row" style="gap:8px;margin-top:12px;font-size:13px;color:var(--ink3);flex-wrap:wrap;">
+        <span class="badge b-amber"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Válida hasta Mié 14 oct</span><span class="num">Emitida Sáb 26 sep</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NAVEGACIÓN ============ -->
+  <sc-if value="{{multi}}" hint-placeholder-val="{{ true }}">
+    <div class="tabs" style="margin-top:14px;" role="tablist" aria-label="Secciones">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><button class="tab {{t.c}}" id="{{t.tid}}" onClick="{{t.go}}" role="tab" aria-selected="{{t.aria}}">{{t.l}}</button></sc-for>
+    </div>
+  </sc-if>
+
+  <div style="padding:0 16px;">
+
+  <!-- ============ HOSPEDAJE ============ -->
+  <sc-if value="{{hasHotel}}" hint-placeholder-val="{{ true }}">
+  <section class="sec" id="hospedaje" aria-labelledby="h-hosp">
+  <!-- A) Opciones para la misma estancia -->
+  <sc-if value="{{isOpts}}" hint-placeholder-val="{{ true }}">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-hosp">Hospedaje</h2><div class="sec-s">{{optsSub}}</div></div><button class="link" onClick="{{openHotel}}">Comparar</button></div>
+    <div class="car" role="radiogroup" aria-label="Opciones de hotel" onScroll="{{carScroll}}">
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+        <button class="hc {{o.on}}" onClick="{{o.pick}}" role="radio" aria-checked="{{o.aria}}">
+          <div class="ph {{o.ph}}"><sc-if value="{{o.hasTag}}" hint-placeholder-val="{{ true }}"><span class="badge {{o.tagC}} tag">{{o.tag}}</span></sc-if><span class="sel"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span class="pt">Foto del hotel</span></div>
+          <div style="padding:14px 16px 16px;">
+            <div class="plan">{{o.plan}}</div>
+            <div class="hn">{{o.name}}</div>
+            <div class="ta num"><span class="ta-logo" title="Logo de Tripadvisor (API)"></span><b>{{o.r}}</b><span class="bub"><sc-for list="{{o.bub}}" as="bb" hint-placeholder-count="5"><i class="{{bb.c}}"></i></sc-for></span><span>{{o.rv}} opiniones</span></div>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+    <div class="dots" aria-hidden="true"><sc-for list="{{dots}}" as="d" hint-placeholder-count="3"><i class="{{d.c}}"></i></sc-for></div>
+
+    <div class="card pad" style="margin-top:6px;">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div style="min-width:0;"><div class="plan"><span class="{{morph}}">{{meals}}</span></div><div class="hn" style="font-size:19px;"><span class="{{morph}}">{{hotelFull}}</span></div>
+          <div class="ta num"><span class="ta-logo"></span><b><span class="{{morph}}">{{hotelR}}</span></b><span class="bub"><sc-for list="{{hotelBub}}" as="bb" hint-placeholder-count="5"><i class="{{bb.c}}"></i></sc-for></span><span><span class="{{morph}}">{{hotelRv}}</span> opiniones</span></div></div>
+        <button class="link" onClick="{{g0}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Fotos</button>
+      </div>
+      <div class="leg-r num stay-r">
+        <div class="lp"><div class="term">Check-in</div><div class="tm">21 oct</div><div class="city">Mié, 3:00 PM</div></div>
+        <div class="mid" style="padding-top:26px;"><span class="dur">6 noches</span><div class="dash"></div></div>
+        <div class="lp r"><div class="term">Check-out</div><div class="tm">27 oct</div><div class="city">Mar, 12:00 PM</div></div>
+      </div>
+      <p class="desc {{descCls}}"><span class="{{morph}}">{{hotelDesc}}</span></p>
+      <button class="link" style="font-size:14px;" onClick="{{toggleDesc}}" aria-expanded="{{descAria}}">{{descLbl}}</button>
+      <div class="rooms num">
+        <div class="rooms-h"><span>Habitación</span><span>Huéspedes</span></div>
+        <sc-for list="{{rooms}}" as="rm" hint-placeholder-count="2">
+          <div class="room"><div style="min-width:0;"><div style="font-weight:600;">{{rm.n}}</div><div class="muted" style="font-size:13px;"><span class="{{morph}}">{{rm.t}}</span></div></div><span class="guests">{{rm.g}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- B) Una estancia / C) Varias estancias -->
+  <sc-if value="{{isStays}}" hint-placeholder-val="{{ false }}">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-hosp">Hospedaje</h2><div class="sec-s">{{staySub}}</div></div></div>
+    <sc-if value="{{multiStay}}" hint-placeholder-val="{{ false }}">
+      <div class="idx">
+        <sc-for list="{{segs}}" as="sg" hint-placeholder-count="2"><button class="idx-row" onClick="{{sg.go}}"><span class="idx-n num">{{sg.i}}</span><span class="idx-t"><b>{{sg.name}}</b><span class="num">{{sg.meta}}</span></span><span class="idx-c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></button></sc-for>
+      </div>
+    </sc-if>
+    <sc-for list="{{stays}}" as="st" hint-placeholder-count="1">
+      <div class="card stay" id="{{st.id}}" style="overflow:hidden;">
+        <div class="ph {{st.ph}}" style="height:170px;">
+          <sc-if value="{{st.showLbl}}" hint-placeholder-val="{{ false }}"><span class="badge b-blue tag">{{st.lbl}}</span></sc-if>
+          <button class="ph-btn" onClick="{{st.gal}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Ver fotos</button>
+        </div>
+        <div class="pad">
+          <div class="plan">{{st.plan}}</div>
+          <div class="hn" style="font-size:19px;">{{st.name}}</div>
+          <div class="ta num"><span class="ta-logo"></span><b>{{st.r}}</b><span class="bub"><sc-for list="{{st.bub}}" as="bb" hint-placeholder-count="5"><i class="{{bb.c}}"></i></sc-for></span><span>{{st.rv}} opiniones</span></div>
+          <div class="leg-r num stay-r">
+            <div class="lp"><div class="term">Check-in</div><div class="tm">{{st.d1}}</div><div class="city">{{st.w1}}</div></div>
+            <div class="mid" style="padding-top:26px;"><span class="dur">{{st.nights}}</span><div class="dash"></div></div>
+            <div class="lp r"><div class="term">Check-out</div><div class="tm">{{st.d2}}</div><div class="city">{{st.w2}}</div></div>
+          </div>
+          <p class="desc {{st.dc}}">{{st.desc}}</p>
+          <button class="link" style="font-size:14px;" onClick="{{st.toggle}}" aria-expanded="{{st.da}}">{{st.dl}}</button>
+          <div class="rooms num">
+            <div class="rooms-h"><span>Habitación</span><span>Huéspedes</span></div>
+            <sc-for list="{{st.rooms}}" as="rm" hint-placeholder-count="2">
+              <div class="room"><div style="min-width:0;"><div style="font-weight:600;">{{rm.n}}</div><div class="muted" style="font-size:13px;">{{rm.t}}</div></div><span class="guests">{{rm.g}}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{st.hasNext}}" hint-placeholder-val="{{ false }}">
+        <div class="hop"><i></i><span class="hop-pill num"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>{{st.hop}}</span><i></i></div>
+      </sc-if>
+    </sc-for>
+  </sc-if>
+    <div class="inset">{{insetText}}</div>
+  </section>
+  </sc-if>
+
+  <!-- ============ VUELOS ============ -->
+  <sc-if value="{{isPkg}}" hint-placeholder-val="{{ true }}">
+  <section class="sec" id="vuelos" aria-labelledby="h-vue">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-vue">Vuelos</h2><div class="sec-s">Redondos y directos desde Guadalajara.</div></div></div>
+    <div class="card svc">
+      <div class="svc-top">
+        <div class="al-logo"><span>VB</span></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-t">VivaAerobus</div>
+          <div class="svc-d">Vuelo redondo, directo en ambos sentidos. Tarifa Switch.</div>
+        </div>
+      </div>
+      <div class="chips"><span class="chip" title="Pasajeros" aria-label="6 pasajeros"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>6</span><span class="chip" title="Equipaje documentado por persona"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>15 kg</span><span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M9 4V3h6v1M8 13h8"/></svg>Artículo personal</span></div>
+      <sc-for list="{{legs}}" as="lg" hint-placeholder-count="2">
+        <div class="leg">
+          <div class="leg-h num"><b>{{lg.name}}</b> · {{lg.date}} · <strong>{{lg.code}}</strong></div>
+          <div class="leg-r num">
+            <div class="lp"><div class="tm">{{lg.t1}} <small>{{lg.p1}}</small></div><div class="term">{{lg.term1}}</div><div class="city">{{lg.c1}}</div></div>
+            <div class="mid"><span class="dur">{{lg.dur}}</span><div class="dash"></div><span class="dir">Directo</span></div>
+            <div class="lp r"><div class="tm">{{lg.t2}} <small>{{lg.p2}}</small></div><div class="term">{{lg.term2}}</div><div class="city">{{lg.c2}}</div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- ============ ACTIVIDADES ============ -->
+  <sc-if value="{{hasAct}}" hint-placeholder-val="{{ true }}">
+  <section class="sec" id="actividades" aria-labelledby="h-act">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-act">Actividades y excursiones</h2></div></div>
+    <sc-for list="{{acts}}" as="ac" hint-placeholder-count="2">
+      <div class="card act" style="overflow:hidden;">
+        <div class="logo-band" style="background:{{ac.bg}};"><span>{{ac.name}}</span><em>Logo del parque</em></div>
+        <div class="pad">
+          <div class="row" style="justify-content:space-between;align-items:baseline;gap:10px;"><div class="svc-t">{{ac.title}}</div><span class="muted num" style="font-size:13px;white-space:nowrap;">{{ac.date}}</span></div>
+          <div class="muted" style="font-size:13px;margin-top:2px;">Todo el día · 6 personas</div>
+          <p class="desc">{{ac.desc}}</p>
+          <p class="note"><b>Incluye:</b> {{ac.inc}}</p>
+          <button class="link" style="margin-top:10px;font-size:14px;" onClick="{{ac.toggle}}" aria-expanded="{{ac.aria}}">Ver todo lo que incluye <span class="chev {{ac.chev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+          <div class="clp" style="grid-template-rows:{{ac.rows}};opacity:{{ac.op}};"><div>
+            <div style="padding-top:12px;display:flex;flex-direction:column;gap:8px;font-size:15px;">
+              <sc-for list="{{ac.yes}}" as="y" hint-placeholder-count="3"><div class="row" style="gap:10px;"><span style="color:var(--green);display:inline-flex;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>{{y.l}}</div></sc-for>
+              <div class="row" style="gap:10px;color:var(--ink2);"><span style="display:inline-flex;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></span>{{ac.no}}</div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </sc-for>
+  </section>
+  </sc-if>
+
+  <!-- ============ SERVICIOS ============ -->
+  <sc-if value="{{isPkg}}" hint-placeholder-val="{{ true }}">
+  <section class="sec" id="servicios" aria-labelledby="h-serv">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-serv">Servicios adicionales</h2></div></div>
+    <div class="card svc">
+      <div class="svc-top">
+        <div class="svc-img"><img src="/_blob/9e0c8d34d353be744f266c89b0125540" alt="Van privada adaptada"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-t">Traslados</div>
+          <div class="svc-d">{{trasDesc}}</div>
+        </div>
+      </div>
+      <div class="chips"><span class="chip" title="Pasajeros" aria-label="6 pasajeros"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>6</span><span class="chip" title="Maletas" aria-label="6 maletas"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="7" width="12" height="14" rx="2"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>6</span><span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4" r="1"/><path d="M18 19l1-7-6 1"/><path d="M5 8l3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/></svg>Adaptada</span><span class="chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{trasChip}}</span></div>
+      <p class="note" style="margin-top:12px;">Los horarios de recogida se coordinan con la llegada y salida de tus vuelos.</p>
+    </div>
+    <div class="card svc" style="margin-top:12px;">
+      <div class="svc-top">
+        <div class="svc-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.7 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.5 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div style="flex:1;min-width:0;">
+          <div class="svc-t">Seguro de viaje Plus</div>
+          <div class="svc-d num">Para los 6 viajeros, del 21 al 27 oct.</div>
+        </div>
+      </div>
+      <div class="chips"><span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Gastos médicos</span><span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Equipaje</span><span class="chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Cancelación</span></div>
+    </div>
+  </section>
+  </sc-if>
+
+  <!-- ============ INVERSIÓN ============ -->
+  <section class="sec" id="inversion" aria-labelledby="h-inv">
+    <div class="sec-h"><div><h2 class="sec-t" id="h-inv">Inversión</h2></div></div>
+    <sc-if value="{{isOptsH}}" hint-placeholder-val="{{ true }}">
+      <div class="card pad pk-card">
+        <div style="font-weight:700;font-size:17px;">Tu hotel</div>
+        <div class="muted" style="font-size:14px;margin-top:2px;">El desglose cambia según el hotel que elijas.</div>
+        <div class="pk num" role="radiogroup" aria-label="Hotel">
+          <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+            <button class="pk-row {{o.on}}" onClick="{{o.pick}}" role="radio" aria-checked="{{o.aria}}">
+              <span class="radio"><i></i></span>
+              <span class="pk-t"><b>{{o.name}}</b><span>{{o.plan}}<sc-if value="{{o.hasTagInv}}" hint-placeholder-val="{{ true }}"> · <em class="{{o.tagInvC}}">{{o.tagInv}}</em></sc-if></span></span>
+              <span class="pk-v">{{o.tot}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="pk-link" aria-hidden="true"><i></i></div>
+    </sc-if>
+    <div class="card pad num" style="padding-bottom:0;overflow:hidden;">
+      <sc-if value="{{isOptsH}}" hint-placeholder-val="{{ true }}">
+        <div class="opt-h">Con <b><span class="{{morph}}">{{hotelFull}}</span></b> · <span class="{{morph}}" style="color:var(--blue-d);">{{meals}}</span></div>
+      </sc-if>
+      <sc-for list="{{inv}}" as="r" hint-placeholder-count="5">
+        <div class="inv-row"><div style="flex:1;min-width:0;"><div class="inv-k">{{r.k}}</div><sc-if value="{{r.hasD}}" hint-placeholder-val="{{ true }}"><div class="inv-d"><span class="{{r.mo}}">{{r.d}}</span></div></sc-if></div><span class="inv-v {{r.fl}}">{{r.v}}</span></div>
+      </sc-for>
+      <div class="inv-tot">
+        <div class="row" style="justify-content:space-between;align-items:flex-end;">
+          <div>
+            <div style="font-size:13px;color:rgba(255,255,255,.8);font-weight:500;">Total · 6 personas</div>
+            <div class="{{fl}}" style="font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.15;border-radius:6px;">{{totInt}}<span class="cents" style="color:rgba(255,255,255,.75);">{{totCents}}</span></div>
+          </div>
+          <div style="text-align:right;"><div style="font-weight:700;font-size:17px;">{{pp}}</div><div style="font-size:13px;color:rgba(255,255,255,.8);">por persona</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="fine"><b>Precios sujetos a disponibilidad y pueden cambiar hasta confirmar la reservación.</b> {{fineText}}</p>
+
+    <div class="card pad" id="condiciones" style="margin-top:14px;">
+      <h3 style="font-size:19px;font-weight:700;">Condiciones de pago</h3>
+      <div class="muted" style="font-size:14px;margin:4px 0 16px;"><span class="{{morph}}">{{payIntro}}</span></div>
+      <div class="sched num">
+        <sc-for list="{{pay}}" as="p" hint-placeholder-count="3">
+          <div class="sc-row">
+            <div class="sc-rail"><i class="{{p.dotCls}}"></i><sc-if value="{{p.hasLine}}" hint-placeholder-val="{{ true }}"><b></b></sc-if></div>
+            <div style="flex:1;padding-bottom:18px;min-width:0;">
+              <div class="row" style="justify-content:space-between;gap:10px;align-items:baseline;"><div style="font-weight:700;">{{p.k}}</div><span class="{{p.fl}}" style="font-weight:700;border-radius:4px;">{{p.v}}</span></div>
+              <div class="muted" style="font-size:13px;">{{p.w}}</div>
+              <div class="row" style="gap:6px;margin-top:6px;"><span class="badge {{p.bc}}" style="height:24px;font-size:11.5px;">{{p.b}}</span></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <button class="link" style="font-size:14px;" onClick="{{toggleCond}}" aria-expanded="{{condAria}}">Qué pasa si cancelo <span class="chev {{condChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+      <div class="clp" style="grid-template-rows:{{condRows}};opacity:{{condOp}};"><div>
+        <div style="font-size:14px;color:var(--ink2);line-height:1.55;padding-top:10px;display:flex;flex-direction:column;gap:10px;">
+          <p style="margin:0;">El anticipo cubre los servicios que se contratan y liquidan por adelantado con los proveedores (vuelos, actividades y traslados) y el cargo por servicio de la agencia. Una vez confirmada la reservación, <b style="color:var(--ink);font-weight:600;">el anticipo no es reembolsable</b>.</p>
+          <p style="margin:0;">El segundo pago y el pago final <b style="color:var(--ink);font-weight:600;">pueden reembolsarse</b> si cancelas antes de que la agencia los liquide al hotel, siempre que el hotel lo permita. Después, la cancelación queda sujeta a los cargos y penalizaciones del hotel.</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  </div>
+
+  <!-- ============ CIERRE (del PDF) ============ -->
+  <footer class="foot">
+    <div style="font-size:21px;font-weight:700;">¿Tienes dudas?</div>
+    <div style="color:rgba(255,255,255,.85);margin-top:4px;">Te ayudamos antes y durante tu viaje, por WhatsApp.</div>
+    <button class="btn wa" onClick="{{openAsk}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Escribir a mi asesora</button>
+    <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:8px;text-align:center;">Te respondemos por WhatsApp.</div>
+    <button class="link" style="color:#fff;font-size:14px;margin-top:22px;" onClick="{{toggleTyc}}" aria-expanded="{{tycAria}}">Términos y condiciones <span class="chev {{tycChev}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>
+    <div class="clp" style="grid-template-rows:{{tycRows}};opacity:{{tycOp}};"><div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.78);line-height:1.55;padding-top:10px;display:flex;flex-direction:column;gap:8px;">
+        <p style="margin:0;">La agencia actúa como intermediaria entre el cliente y los prestadores de servicio. Ante cualquier eventualidad, te acompañamos en la gestión conforme a las condiciones de cada proveedor.</p>
+        <p style="margin:0;">Esta cotización es una propuesta sujeta a disponibilidad y a las condiciones vigentes de los prestadores de servicios turísticos. No representa una reservación confirmada hasta que los servicios sean solicitados y confirmados.</p>
+        <p style="margin:0;">Las condiciones de cambio, cancelación y reembolso dependen de los servicios contratados y de las políticas de hoteles, aerolíneas, transportistas, parques y operadores. Las tarifas aéreas están sujetas a las condiciones de la aerolínea; una vez emitidos los boletos, pueden limitar o impedir cambios y reembolsos.</p>
+        <p style="margin:0;">Es responsabilidad del viajero proporcionar correctamente sus datos y contar con la documentación necesaria para viajar. Antes de pagar, conviene revisar que nombres, fechas, destinos, número de pasajeros y servicios sean correctos.</p>
+        <p style="margin:0;">[Texto completo de términos y condiciones generales]</p>
+      </div>
+    </div></div>
+  </footer>
+</div>
+</div>
+
+  <!-- ============ GALERÍA ============ -->
+  <div class="gal {{galCls}}" role="dialog" aria-label="Fotos del hotel">
+    <div class="row" style="justify-content:space-between;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px;color:#fff;">
+      <span class="num" style="font-size:14px;">{{galCount}}</span>
+      <button class="gbtn" onClick="{{galClose}}" aria-label="Cerrar fotos"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="gal-img {{galImg}}"><span style="background:rgba(255,255,255,.8);border-radius:6px;padding:3px 8px;">Foto del hotel</span></div>
+    <div class="row" style="justify-content:space-between;padding:14px 16px calc(18px + var(--safe));color:#fff;">
+      <button class="gbtn" onClick="{{galPrev}}" aria-label="Foto anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <span style="font-size:14px;font-weight:500;">{{galName}}</span>
+      <button class="gbtn" onClick="{{galNext}}" aria-label="Foto siguiente"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ BANDEJA ============ -->
+  <div class="scrim {{scrimCls}}" onClick="{{toMin}}"></div>
+  <div class="tray" role="{{trayRole}}" aria-modal="{{trayModal}}" aria-label="{{trayLabel}}" style="transform:translateX(-50%) translateY({{dragY}}px);transition:{{trayTrans}};">
+    <sc-if value="{{notMin}}" hint-placeholder-val="{{ false }}"><div class="grab" onPointerDown="{{dragStart}}" onPointerMove="{{dragMove}}" onPointerUp="{{dragEnd}}" onPointerCancel="{{dragEnd}}" aria-hidden="true"><i></i></div></sc-if>
+    <div class="clp" style="grid-template-rows:{{minRows}};opacity:{{minOp}};"><div>
+      <div class="row" style="gap:12px;padding:12px 12px 12px 18px;">
+        <div class="bar-l">
+          <div class="bar-s {{barA}}"><span class="bar-k">{{barCap}}</span><span class="bar-v"><span class="{{morph}}">{{barName}}</span></span></div>
+          <div class="bar-s {{barB}}"><span class="bar-k">Total · 6 personas</span><span class="bar-v num {{fl}}" style="border-radius:4px;">{{totInt}}<span class="cents">{{totCents}}</span></span></div>
+        </div>
+        <button class="btn" onClick="{{barAct}}">{{barLbl}}</button>
+      </div>
+    </div></div>
+
+    <div class="clp" style="grid-template-rows:{{hotRows}};opacity:{{hotOp}};"><div>
+      <div style="padding:10px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">Comparar hoteles</h3><button class="link" onClick="{{toMin}}">Cerrar</button></div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">Solo lo que cambia entre opciones.</div>
+        <div class="cmp num" style="margin-top:14px;grid-template-columns:{{cmpCols}};">
+          <div class="k" style="border-bottom:none;"></div>
+          <sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><div class="h col {{o.con}}" onClick="{{o.pick}}" role="radio" aria-checked="{{o.aria}}"><span class="radio"><i></i></span><br>{{o.short}}</div></sc-for>
+          <div class="k">Régimen</div><sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><div class="col {{o.con}}" onClick="{{o.pick}}">{{o.plan}}</div></sc-for>
+          <div class="k">Tripadvisor</div><sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><div class="col {{o.con}}" onClick="{{o.pick}}">{{o.r}} de 5</div></sc-for>
+          <div class="k">Habitación</div><sc-for list="{{opts}}" as="o" hint-placeholder-count="3"><div class="col {{o.con}}" onClick="{{o.pick}}">{{o.roomS}}</div></sc-for>
+        </div>
+        <div class="muted" style="font-size:13px;margin-top:12px;">Tu asesora recomienda Seadust Family. El resto del viaje es igual con cualquier hotel; verás el costo de cada opción en Inversión.</div>
+        <button class="btn" style="width:100%;margin-top:14px;" onClick="{{toMin}}">Listo · <span class="{{morph}}">{{hotelName}}</span></button>
+      </div>
+    </div></div>
+
+    <div class="clp" style="grid-template-rows:{{resRows}};opacity:{{resOp}};"><div>
+      <div style="padding:10px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">{{confTitle}}</h3><button class="link" onClick="{{toMin}}">Cerrar</button></div>
+        <div class="num" style="margin-top:8px;">
+          <sc-if value="{{hasHotel}}" hint-placeholder-val="{{ true }}"><div class="kv"><span>{{hotelLbl}}</span><span style="text-align:right;">{{hotelName}}</span></div></sc-if>
+          <div class="kv"><span>Total</span><span>{{total}}</span></div>
+          <div class="kv"><span>Anticipo para confirmar</span><span style="color:var(--blue-d);">{{first}}</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+          <div class="step"><b>1</b><span>Tu asesora recibe tu selección y verifica disponibilidad.</span></div>
+          <div class="step"><b>2</b><span>Te habilita aquí mismo la captura de datos y el pago del anticipo de {{first}}, con un plazo de hasta 3 horas.</span></div>
+          <div class="step"><b>3</b><span>Con el anticipo reservamos y recibes tu confirmación.</span></div>
+        </div>
+        <div class="muted" style="font-size:14px;margin-top:14px;">Aún no se te cobra nada.</div>
+        <button class="btn" style="width:100%;margin-top:12px;" onClick="{{send}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Enviar confirmación</button>
+      </div>
+    </div></div>
+
+    <div class="clp" style="grid-template-rows:{{okRows}};opacity:{{okOp}};"><div>
+      <div style="padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <sc-if value="{{sentShown}}" hint-placeholder-val="{{ false }}"><div class="ok"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div></sc-if>
+        <div style="font-size:21px;font-weight:700;margin-top:12px;">Listo, Nataly</div>
+        <div class="muted" style="margin-top:4px;">Tu asesora recibió tu selección. Verificará disponibilidad y te escribirá para continuar.</div>
+        <div class="num" style="background:#E7F7EE;border-radius:16px 16px 16px 4px;padding:12px 14px;margin-top:16px;text-align:left;font-size:14px;line-height:1.5;align-self:stretch;">{{waMsg}}</div>
+        <button class="btn2" style="margin-top:16px;" onClick="{{toMin}}">Volver a mi propuesta</button>
+      </div>
+    </div></div>
+
+    <div class="clp" style="grid-template-rows:{{askRows}};opacity:{{askOp}};"><div>
+      <div style="padding:10px 18px 18px;">
+        <div class="row" style="justify-content:space-between;"><h3 style="font-size:20px;">Escribir a tu asesora</h3><button class="link" onClick="{{toMin}}">Cerrar</button></div>
+        <div class="muted" style="font-size:14px;margin-top:4px;">{{askHint}}</div>
+        <div class="topics" role="group" aria-label="Temas">
+          <sc-for list="{{topics}}" as="tp" hint-placeholder-count="5"><button class="topic {{tp.on}}" onClick="{{tp.tog}}" aria-pressed="{{tp.aria}}">{{tp.l}}</button></sc-for>
+        </div>
+        <div class="clp" style="grid-template-rows:{{datesRows}};opacity:{{datesOp}};"><div>
+          <div class="dates-box">
+            <div class="dgrid">
+              <label class="dfield"><span>{{d1Lbl}}</span><input type="date" min="2026-09-27" value="{{nd1}}" onChange="{{setNd1}}"></label>
+              <sc-if value="{{twoDates}}" hint-placeholder-val="{{ true }}"><label class="dfield"><span>Nuevo regreso</span><input type="date" min="{{nd2min}}" value="{{nd2}}" onChange="{{setNd2}}"></label></sc-if>
+            </div>
+            <sc-if value="{{dateErrShow}}" hint-placeholder-val="{{ false }}"><div class="derr">{{dateErr}}</div></sc-if>
+            <button class="topic sm {{flexCls}}" onClick="{{togFlex}}" aria-pressed="{{flexAria}}">Mis fechas son flexibles</button>
+          </div>
+        </div></div>
+        <textarea class="ask-in" rows="3" placeholder="Tu mensaje (opcional)" value="{{askText}}" onChange="{{askInput}}" aria-label="Tu mensaje"></textarea>
+        <button class="btn {{askBtn}}" style="width:100%;margin-top:12px;" onClick="{{askSend}}" aria-disabled="{{askDis}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Enviar a mi asesora</button>
+      </div>
+    </div></div>
+
+    <div class="clp" style="grid-template-rows:{{askOkRows}};opacity:{{askOkOp}};"><div>
+      <div style="padding:18px;display:flex;flex-direction:column;align-items:center;text-align:center;">
+        <sc-if value="{{askOkShown}}" hint-placeholder-val="{{ false }}"><div class="ok"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div></sc-if>
+        <div style="font-size:21px;font-weight:700;margin-top:12px;">Mensaje enviado</div>
+        <div class="muted" style="margin-top:4px;">Tu asesora te responderá por WhatsApp.</div>
+        <div style="background:#E7F7EE;border-radius:16px 16px 16px 4px;padding:12px 14px;margin-top:16px;text-align:left;font-size:14px;line-height:1.5;align-self:stretch;white-space:pre-line;">{{askMsg}}</div>
+        <button class="btn2" style="margin-top:16px;" onClick="{{toMin}}">Volver a mi propuesta</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"escenario":{"editor":"enum","options":["Paquete completo","Solo hospedaje","Solo actividad"],"default":"Paquete completo"},"hospedaje":{"editor":"enum","options":["Opciones de hotel","Una estancia","Dos estancias"],"default":"Una estancia"},"$preview":{"width":390,"height":4742}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { inInv: false, askTopics: [], askText: '', nd1: '', nd2: '', flex: false, opt: 0, stDesc: [false, false], actOpen: [false, false], galName: '', tray: 'min', desc: false, cond: false, tyc: false, car: 0, fl: 0, m: 0, sec: 'hospedaje', gal: -1, dragY: 0, dragging: false, toast: '' };
+    // Datos de ejemplo. Calificación y opiniones = lo que devolvería la API de Tripadvisor (no se guarda; se consulta al abrir).
+    const seadust = { name: 'Seadust Cancún Family Resort', short: 'Seadust Family', plan: 'Todo incluido', r: 4.5, rv: '3,106', ph: 'g',
+      desc: 'En el km 16.5 de la Zona Hotelera, con acceso directo a la playa. Tiene varias albercas, incluida una zona infantil, parque acuático con toboganes, Kids Club, diez centros de consumo entre restaurantes y snacks, y espectáculos nocturnos en el teatro.',
+      roomS: 'Suite Deluxe', rooms: [['Suite Deluxe con 2 camas dobles', '2 adultos + 1 menor'], ['Suite Deluxe con 2 camas dobles', '2 adultos + 1 menor']] };
+    this.options = [
+      Object.assign({}, seadust, { price: 24200, rec: true }),
+      { name: 'Iberostar Selection Cancún', short: 'Iberostar Selection', plan: 'Todo incluido', r: 4.5, rv: '9,812', ph: '', price: 44700,
+        desc: 'Frente a Playa Delfines, en el km 17 de la Zona Hotelera. Resort todo incluido con acceso directo al mar, 10 albercas, spa, campo de golf de 18 hoyos, centro de buceo y varios restaurantes y bares. De noche hay espectáculos en vivo.',
+        roomS: 'Doble Premium vista al mar', rooms: [['Habitación Doble Premium, vista lateral al mar', '2 adultos + 1 menor'], ['Habitación Doble Premium, vista lateral al mar', '2 adultos + 1 menor']] },
+      { name: 'Adhara Hacienda Cancún', short: 'Adhara Hacienda', plan: 'Solo desayunos', r: 4.0, rv: '2,287', ph: 'g', price: 18700,
+        desc: 'En el centro de Cancún, sobre Avenida Carlos Nader. Tiene alberca, pool bar, restaurante y desayuno buffet incluido. Queda cerca de Avenida Tulum, Mercado 28 y el Parque de las Palapas, y ofrece traslado diario a un club de playa en la Zona Hotelera, sujeto a disponibilidad. Las comidas y bebidas adicionales no están incluidas.',
+        roomS: 'Doble estándar', rooms: [['Habitación Doble con 2 camas dobles', '2 adultos + 1 menor'], ['Habitación Doble Estándar, cama king', '2 adultos + 1 menor']] }
+    ];
+    this.stayData = {
+      una: [Object.assign({}, seadust, { city: 'Cancún', price: 24200, d1: '21 oct', w1: 'Mié, 3:00 PM', d2: '27 oct', w2: 'Mar, 12:00 PM', n: 6 })],
+      dos: [
+        Object.assign({}, seadust, { city: 'Cancún', price: 12100, d1: '21 oct', w1: 'Mié, 3:00 PM', d2: '24 oct', w2: 'Sáb, 12:00 PM', n: 3, hop: 'Sáb 24 oct · Traslado a Tulum · ≈ 2 h' }),
+        { city: 'Tulum', name: 'Dreams Tulum Resort & Spa', short: 'Dreams Tulum', plan: 'Todo incluido', r: 4.5, rv: '6,540', ph: '', price: 15900,
+          d1: '24 oct', w1: 'Sáb, 3:00 PM', d2: '27 oct', w2: 'Mar, 12:00 PM', n: 3,
+          desc: 'Resort todo incluido frente al mar, en una zona más tranquila de la Riviera Maya y a unos minutos de Xel-Há. Tiene club infantil, varias albercas, restaurantes de especialidad y acceso directo a la playa.',
+          rooms: [['Habitación Deluxe con 2 camas dobles', '2 adultos + 1 menor'], ['Habitación Deluxe con 2 camas dobles', '2 adultos + 1 menor']] }
+      ]
+    };
+    this.parks = {
+      xelha: { name: 'Xel-Há', title: 'Xel-Há · Todo incluido', bg: '#1463F6', price: 4800.40,
+        desc: 'Una caleta turquesa alimentada por ríos subterráneos y rodeada de selva. Snorkel ilimitado, senderos para explorar a pie o en bici y un cenote cubierto por luz natural.',
+        inc: 'alimentos y bebidas ilimitados. Traslado redondo desde el hotel.',
+        yes: ['Entrada, snorkel ilimitado y senderos', 'Alimentos y bebidas ilimitados', 'Casilleros y traslado desde el hotel'], no: 'No incluye propinas, souvenirs ni fotos' },
+      xcaret: { name: 'Xcaret', title: 'Xcaret Plus', bg: '#0F8A4A', price: 6420.00,
+        desc: 'Más de 50 experiencias en un solo parque: ríos subterráneos, playa, acuario de arrecife, aviario y mariposario. Al caer la noche, el espectáculo México Espectacular.',
+        inc: 'alimentos y bebidas. Traslado redondo desde el hotel.',
+        yes: ['Entrada y espectáculo nocturno', 'Buffet, bebidas y equipo de snorkel', 'Traslado redondo desde el hotel'], no: 'No incluye fotos ni actividades opcionales' }
+    };
+    this.pushed = false; this.timers = {}; this.lock = 0;
+    this.onScroll = this.onScroll.bind(this);
+    this.onPop = this.onPop.bind(this);
+  }
+  componentDidMount() {
+    try { window.addEventListener('scroll', this.onScroll, { passive: true }); window.addEventListener('popstate', this.onPop); } catch (e) {}
+  }
+  componentWillUnmount() {
+    try { window.removeEventListener('scroll', this.onScroll); window.removeEventListener('popstate', this.onPop); } catch (e) {}
+    cancelAnimationFrame(this.raf); Object.values(this.timers).forEach(clearTimeout);
+  }
+  sections() { return [['hospedaje', 'Hospedaje'], ['vuelos', 'Vuelos'], ['actividades', 'Actividades'], ['servicios', 'Servicios'], ['inversion', 'Inversión']]; }
+  onScroll() {
+    cancelAnimationFrame(this.raf);
+    this.raf = requestAnimationFrame(() => {
+      let cur = 'hospedaje';
+      const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      this.sections().forEach(([id]) => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 100) cur = id; });
+      if (atEnd) cur = 'inversion';
+      if (Date.now() < this.lock) cur = this.state.sec;
+      const inv = document.getElementById('inversion');
+      const inInv = !!inv && inv.getBoundingClientRect().top < window.innerHeight - 200;
+      if (cur !== this.state.sec) this.revealTab(cur);
+      if (cur !== this.state.sec || inInv !== this.state.inInv) this.setState({ sec: cur, inInv: inInv });
+    });
+  }
+  revealTab(id) {
+    try { const t = document.getElementById('tab-' + id); if (!t) return; t.parentElement.scrollTo({ left: Math.max(0, t.offsetLeft - 16), behavior: 'smooth' }); } catch (e) {}
+  }
+  go(id) {
+    this.lock = Date.now() + 700;
+    this.setState({ sec: id });
+    this.revealTab(id);
+    try { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+  }
+  // ---- capas + botón Atrás ----
+  openLayer(patch) {
+    try { if (!this.pushed) { history.pushState({ airooLayer: 1 }, ''); this.pushed = true; } } catch (e) {}
+    this.setState(Object.assign({ dragY: 0 }, patch));
+  }
+  closeLayer() {
+    if (this.pushed) { this.pushed = false; try { history.back(); return; } catch (e) {} }
+    this.setState({ tray: 'min', gal: -1, dragY: 0 });
+  }
+  onPop() { this.pushed = false; const t = this.state.tray; this.setState(Object.assign({ tray: 'min', gal: -1, dragY: 0 }, t === 'askok' ? { askTopics: [], askText: '', nd1: '', nd2: '', flex: false } : {})); }
+  // ---- datos ----
+  hmode() { const m = this.props.hospedaje ?? 'Opciones de hotel'; return m === 'Una estancia' ? 'una' : (m === 'Dos estancias' ? 'dos' : 'opts'); }
+  scen() { const e = this.props.escenario ?? 'Paquete completo'; return e === 'Solo hospedaje' ? 'hotel' : (e === 'Solo actividad' ? 'act' : 'pkg'); }
+  money(n) { return '$' + (Math.round(n * 100) / 100).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  money0(n) { return '$' + Math.round(n).toLocaleString('es-MX'); }
+  split(n) { const s = this.money(n); const i = s.lastIndexOf('.'); return [s.slice(0, i), s.slice(i)]; }
+  bub(r) { return [1, 2, 3, 4, 5].map((i) => ({ c: r >= i ? 'f' : (r >= i - 0.5 ? 'h' : '') })); }
+  actList(sc) {
+    if (sc === 'act') return [Object.assign({ date: 'Jue 22 oct' }, this.parks.xelha)];
+    if (sc === 'hotel') return [];
+    return this.hmode() === 'dos'
+      ? [Object.assign({ date: 'Vie 23 oct' }, this.parks.xcaret), Object.assign({ date: 'Dom 25 oct' }, this.parks.xelha)]
+      : [Object.assign({ date: 'Jue 22 oct' }, this.parks.xelha), Object.assign({ date: 'Sáb 24 oct' }, this.parks.xcaret)];
+  }
+  hotelParts(opt) {
+    const hm = this.hmode();
+    if (hm === 'opts') return [['Hospedaje', this.options[opt].price, 'hotel', '6 noches · 2 habitaciones']];
+    const st = this.stayData[hm];
+    if (st.length === 1) return [['Hospedaje', st[0].price, 'hotel', st[0].short + ' · ' + st[0].n + ' noches · 2 habitaciones']];
+    return st.map((x) => ['Hospedaje · ' + x.city, x.price, 'hotel', x.short + ' · ' + x.n + ' noches']);
+  }
+  calc(sc, opt) {
+    const acts = this.actList(sc);
+    const actAmt = acts.reduce((a, x) => a + x.price, 0);
+    const actDesc = acts.map((x) => x.name === 'Xcaret' ? 'Xcaret Plus' : x.name).join(' y ') + ' · 6 personas';
+    let parts = [];
+    if (sc === 'pkg') parts = this.hotelParts(opt).concat([['Vuelos', 2750.08, '', 'Redondo · 6 pasajeros'], ['Actividades y excursiones', actAmt, '', actDesc], ['Servicios adicionales', 3828.00, '', 'Traslados y seguro']]);
+    if (sc === 'hotel') parts = this.hotelParts(opt);
+    if (sc === 'act') parts = [['Actividades y excursiones', actAmt, '', actDesc + ' · traslado incluido']];
+    parts.push(['Cargo por servicio', 250, '', '']);
+    const r2 = (n) => Math.round(n * 100) / 100;
+    const total = r2(parts.reduce((a, p) => a + p[1], 0));
+    // Esquema del PDF: el anticipo cubre lo que se liquida por adelantado (todo menos hospedaje) + cargo por servicio; el hospedaje se divide en 2 pagos
+    const hotelAmt = parts.filter((p) => p[2] === 'hotel').reduce((a, p) => a + p[1], 0);
+    const second = r2(Math.ceil(hotelAmt * 50) / 100);
+    return { parts: parts, total: total, pp: total / 6, first: r2(total - hotelAmt), second: second, last: r2(hotelAmt - second) };
+  }
+  pick(i) { if (this.state.opt !== i) this.setState({ opt: i, fl: this.state.fl + 1, m: this.state.m + 1 }); }
+  share() {
+    const url = (typeof location !== 'undefined' ? location.href : '');
+    const data = { title: 'Propuesta de viaje · Airoo', text: 'Te comparto la propuesta de nuestro viaje', url: url };
+    const done = (msg) => { clearTimeout(this.timers.t); this.setState({ toast: msg }); this.timers.t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    try {
+      if (navigator.share) { navigator.share(data).catch(() => {}); return; }
+      if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => done('Enlace copiado'), () => done('El enlace se puede copiar desde tu navegador')); return; }
+    } catch (e) {}
+    done('El enlace se puede copiar desde tu navegador');
+  }
+  renderVals() {
+    const s = this.state, sc = this.scen(), hm = this.hmode(), isOpts = hm === 'opts';
+    const h = this.options[s.opt];
+    const stays = isOpts ? [] : this.stayData[hm];
+    const hName = isOpts ? h.short : stays.map((x) => x.short).join(' y ');
+    const c = this.calc(sc, s.opt);
+    const fl = s.fl ? (s.fl % 2 ? 'fa' : 'fb') : '';
+    const morph = s.m ? (s.m % 2 ? 'mA' : 'mB') : '';
+    // ---- opciones de hotel ----
+    const cs = this.options.map((o, i) => this.calc(sc, i));
+    const recI = this.options.findIndex((o) => o.rec);
+    const minI = cs.reduce((m, x, i) => (x.total < cs[m].total ? i : m), 0);
+    const opts = this.options.map((o, i) => {
+      const d = cs[i].total - cs[recI].total;
+      return {
+        name: o.name, short: o.short, plan: o.plan, r: o.r.toFixed(1), rv: o.rv, bub: this.bub(o.r), ph: o.ph,
+        hasTag: !!o.rec, tag: 'Recomendado', tagC: 'b-blue', roomS: o.roomS,
+        hasTagInv: !!o.rec || i === minI, tagInv: o.rec ? 'Recomendado' : 'Más económica', tagInvC: o.rec ? 'rec' : 'eco',
+        tot: this.money0(cs[i].total), pp: this.money0(cs[i].pp),
+        diff: o.rec ? '' : (d < 0 ? '−' + this.money0(-d) : '+' + this.money0(d)), dc: d < 0 ? 'down' : 'up',
+        on: s.opt === i ? 'on' : '', con: s.opt === i ? 'on' : '', aria: s.opt === i ? 'true' : 'false',
+        pick: () => this.pick(i)
+      };
+    });
+    const others = this.options.map((o, i) => ({ o: o, i: i })).filter((x) => x.i !== s.opt).map((x) => {
+      const d = cs[x.i].total - c.total;
+      return { name: 'Con ' + x.o.name, tot: this.money0(cs[x.i].total), diff: d < 0 ? this.money0(-d) + ' menos' : this.money0(d) + ' más', dc: d < 0 ? 'down' : 'up', pick: () => this.pick(x.i) };
+    });
+    // ---- pagos ----
+    const hw = hm === 'dos' ? 'a los hoteles' : 'al hotel';
+    const payRaw = c.second > 0 ? [
+      { k: 'Anticipo', w: 'Al confirmar tu reservación', v: this.money(c.first), b: 'No reembolsable tras confirmar', bc: 'b-amber', fl: '' },
+      { k: 'Segundo pago', w: 'Vence el Lun 5 oct', v: this.money(c.second), b: 'Reembolsable antes de liquidar ' + hw, bc: 'b-green', fl: fl },
+      { k: 'Pago final', w: 'Vence el Lun 12 oct', v: this.money(c.last), b: 'Reembolsable antes de liquidar ' + hw, bc: 'b-green', fl: fl }
+    ] : [{ k: 'Pago único', w: 'Al confirmar tu reservación', v: this.money(c.first), b: 'No reembolsable tras confirmar', bc: 'b-amber', fl: '' }];
+    const pay = payRaw.map((p, i) => Object.assign(p, { dotCls: i === 0 ? '' : 'o', hasLine: i < payRaw.length - 1 }));
+    const payIntro = sc === 'act' ? 'Se paga completo al confirmar, porque la entrada al parque se compra por adelantado.'
+      : (sc === 'hotel' ? 'El anticipo cubre el cargo por servicio; el hospedaje se paga en dos partes.'
+        : (isOpts ? 'El anticipo es el mismo con cualquier hotel; lo que cambia son los dos pagos siguientes.' : 'El anticipo cubre vuelos, actividades, traslados, seguro y el cargo por servicio; el hospedaje se paga en dos partes.'));
+    // ---- portada ----
+    const trip = sc === 'act' ? { d1: 'Jue 22 oct', w1: 'Todo el día · recogida en tu hotel' }
+      : (sc === 'hotel' ? { l1: 'Check-in', d1: '21 oct', w1: 'Miércoles', l2: 'Check-out', d2: '27 oct', w2: 'Martes', mid: '6 noches' }
+        : { l1: 'Ida', d1: '21 oct', w1: 'Miércoles', l2: 'Regreso', d2: '27 oct', w2: 'Martes', mid: '6 noches' });
+    // ---- bandeja ----
+    const tray = s.tray, open = (k) => (tray === k ? '1fr' : '0fr'), op = (k) => (tray === k ? '1' : '0');
+    const msg = (isOpts && sc !== 'act' ? 'Hola, confirmo mi selección de la propuesta AIR-2458' : 'Hola, confirmo la propuesta AIR-2458') + (sc !== 'act' ? ' con ' + hName : '') + '. Total ' + this.money(c.total) + ', anticipo ' + this.money(c.first) + '.';
+    const topicL = sc === 'act' ? ['Cambiar fecha', 'Agregar otra actividad', 'Formas de pago', 'Otra duda'] : ['Cambiar fechas', 'Ver otro hotel', 'Agregar un servicio', 'Formas de pago', 'Otra duda'];
+    const dateTopic = sc === 'act' ? 'Cambiar fecha' : 'Cambiar fechas';
+    const showDates = s.askTopics.indexOf(dateTopic) >= 0;
+    const fmt = (v) => { if (!v) return ''; const d = new Date(v + 'T12:00:00'); const W = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], M = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']; return W[d.getDay()] + ' ' + d.getDate() + ' ' + M[d.getMonth()]; };
+    const badRange = sc !== 'act' && s.nd1 && s.nd2 && s.nd2 <= s.nd1;
+    const datesLine = showDates && s.nd1 ? '\n' + (sc === 'act' ? 'Nueva fecha: ' + fmt(s.nd1) : 'Nuevas fechas: ' + fmt(s.nd1) + (s.nd2 ? ' – ' + fmt(s.nd2) : '')) + (s.flex ? ' (flexibles)' : '') : '';
+    const askReady = !badRange && (s.askTopics.length > 0 || s.askText.trim().length > 0);
+    const askMsg = 'Duda sobre la propuesta AIR-2458' + (s.askTopics.length ? '\nTema: ' + s.askTopics.join(', ') : '') + datesLine + (s.askText.trim() ? '\n' + s.askText.trim() : '');
+    const [ti, tc] = this.split(c.total);
+    const gi = s.gal < 0 ? 0 : s.gal;
+    const acts = this.actList(sc);
+    return {
+      isPkg: sc === 'pkg', hasHotel: sc !== 'act', hasAct: sc !== 'hotel', multi: sc === 'pkg',
+      title: sc === 'act' ? 'Xel-Há' : (hm === 'dos' ? 'Cancún y Tulum' : 'Cancún'),
+      kicker: 'Octubre 2026', fromRow: sc === 'pkg', trip: trip, tripRange: sc !== 'act', tripSingle: sc === 'act',
+      tabs: this.sections().map(([id, l]) => ({ l: l, tid: 'tab-' + id, c: s.sec === id ? 'on' : '', aria: s.sec === id ? 'true' : 'false', go: () => this.go(id) })),
+      // hospedaje
+      isOpts: isOpts, isStays: !isOpts, multiStay: stays.length > 1, isOptsH: isOpts && sc !== 'act',
+      optsSub: this.options.length + ' opciones para elegir.',
+      opts: opts, others: others, cmpCols: '78px repeat(' + this.options.length + ',1fr)',
+      dots: this.options.map((o, i) => ({ c: s.car === i ? 'on' : '' })),
+      carScroll: (e) => { const el = e.currentTarget; const card = el.querySelector('.hc'); if (!card) return; const i = Math.round(el.scrollLeft / (card.offsetWidth + 12)); if (i !== this.state.car) this.setState({ car: i }); },
+      hotelName: hName, hotelFull: h.name, meals: h.plan, hotelDesc: h.desc, hotelR: h.r.toFixed(1), hotelRv: h.rv, hotelBub: this.bub(h.r),
+      rooms: h.rooms.map((r, i) => ({ n: 'Habitación ' + (i + 1), t: r[0], g: r[1] })),
+      descCls: s.desc ? '' : 'clamp', descLbl: s.desc ? 'Leer menos' : 'Leer más', descAria: s.desc ? 'true' : 'false',
+      toggleDesc: () => this.setState({ desc: !this.state.desc }),
+      staySub: hm === 'dos' ? 'Dos hoteles, en orden de fechas.' : 'Tu hotel para las 6 noches.',
+      segs: stays.map((x, i) => ({ i: String(i + 1), name: x.name, meta: x.city + ' · ' + x.d1.split(' ')[0] + '–' + x.d2 + ' · ' + x.n + ' noches', go: () => { try { document.getElementById('stay-' + i).scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } })),
+      stays: stays.map((x, i) => ({
+        id: 'stay-' + i, ph: x.ph, showLbl: stays.length > 1, lbl: 'Estancia ' + (i + 1) + ' · ' + x.city,
+        plan: x.plan, name: x.name, r: x.r.toFixed(1), rv: x.rv, bub: this.bub(x.r),
+        d1: x.d1, w1: x.w1, d2: x.d2, w2: x.w2, nights: x.n + ' noches', desc: x.desc,
+        dc: s.stDesc[i] ? '' : 'clamp', dl: s.stDesc[i] ? 'Leer menos' : 'Leer más', da: s.stDesc[i] ? 'true' : 'false',
+        toggle: () => { const d = this.state.stDesc.slice(); d[i] = !d[i]; this.setState({ stDesc: d }); },
+        rooms: x.rooms.map((r, j) => ({ n: 'Habitación ' + (j + 1), t: r[0], g: r[1] })),
+        gal: () => this.openLayer({ gal: 0, galName: x.name }),
+        hasNext: i < stays.length - 1, hop: x.hop || ''
+      })),
+      insetText: isOpts ? 'Elegimos estas opciones pensando en que viajan con niños: Seadust tiene Kids Club y parque acuático, Iberostar es la opción frente al mar más completa y Adhara la céntrica, para salir a comer y conocer la ciudad.'
+        : (hm === 'dos' ? 'Dividimos la estancia en dos zonas: Cancún para los primeros días y Tulum para cerrar el viaje más tranquilos, a unos minutos de Xel-Há.'
+          : 'Lo elegimos por el Kids Club y el parque acuático: los niños tienen actividades todo el día sin salir del hotel.'),
+      // vuelos
+      legs: [
+        { name: 'Ida', date: 'Mié 21 oct', code: 'VB 2124', t1: '4:55', p1: 'PM', term1: 'Terminal 1', c1: 'Guadalajara', t2: '7:26', p2: 'PM', term2: 'Terminal 2', c2: 'Cancún', dur: '2 h 31 min' },
+        { name: 'Regreso', date: 'Mar 27 oct', code: 'VB 2125', t1: '6:13', p1: 'PM', term1: 'Terminal 2', c1: 'Cancún', t2: '7:45', p2: 'PM', term2: 'Terminal 1', c2: 'Guadalajara', dur: '1 h 32 min' }
+      ],
+      // actividades
+      acts: acts.map((a, i) => ({
+        name: a.name, title: a.title, bg: a.bg, date: a.date, desc: a.desc, inc: a.inc, yes: a.yes.map((l) => ({ l: l })), no: a.no,
+        rows: s.actOpen[i] ? '1fr' : '0fr', op: s.actOpen[i] ? '1' : '0', chev: s.actOpen[i] ? 'open' : '', aria: s.actOpen[i] ? 'true' : 'false',
+        toggle: () => { const d = this.state.actOpen.slice(); d[i] = !d[i]; this.setState({ actOpen: d }); }
+      })),
+      // servicios
+      trasDesc: hm === 'dos' ? 'Tres trayectos en unidad privada adaptada: aeropuerto → Cancún, Cancún → Tulum y Tulum → aeropuerto.' : 'Aeropuerto de Cancún ↔ tu hotel, ida y vuelta, en unidad privada adaptada.',
+      trasChip: hm === 'dos' ? '3 trayectos' : '30–40 min',
+      // inversión
+      inv: c.parts.map((p) => ({ k: p[0], d: p[3], hasD: !!p[3], v: this.money(p[1]), fl: p[2] ? fl : '', mo: p[2] ? morph : '' })),
+      total: this.money(c.total), totInt: ti, totCents: tc, pp: this.money(c.pp), fl: fl, morph: morph, first: this.money(c.first),
+      fineText: (sc === 'pkg' ? 'Los vuelos incluyen TUA e impuestos. ' : '') + (sc !== 'act' ? 'Algunos hoteles cobran cargos adicionales directamente al huésped en el check-in. ' : '') + 'Si requieres factura, se aplica el IVA correspondiente.',
+      pay: pay, payIntro: payIntro,
+      toggleCond: () => this.setState({ cond: !this.state.cond }),
+      condRows: s.cond ? '1fr' : '0fr', condOp: s.cond ? '1' : '0', condChev: s.cond ? 'open' : '', condAria: s.cond ? 'true' : 'false',
+      toggleTyc: () => this.setState({ tyc: !this.state.tyc }),
+      tycRows: s.tyc ? '1fr' : '0fr', tycOp: s.tyc ? '1' : '0', tycChev: s.tyc ? 'open' : '', tycAria: s.tyc ? 'true' : 'false',
+      // bandeja
+      openHotel: () => this.openLayer({ tray: 'hot' }),
+      toMin: () => this.closeLayer(),
+      toReserve: () => this.openLayer({ tray: 'res' }),
+      toInv: () => this.go('inversion'),
+      barA: s.inInv ? 'off' : '', barB: s.inInv ? '' : 'off',
+      barCap: isOpts && sc !== 'act' ? 'Tu selección' : 'Tu propuesta',
+      barName: sc === 'act' ? 'Xel-Há · 6 personas' : (isOpts ? h.name : (hm === 'dos' ? 'Cancún y Tulum' : stays[0].name)),
+      barLbl: s.inInv ? (isOpts && sc !== 'act' ? 'Confirmar selección' : 'Confirmar propuesta') : 'Ver inversión',
+      barAct: () => (this.state.inInv ? this.openLayer({ tray: 'res' }) : this.go('inversion')),
+      confTitle: isOpts && sc !== 'act' ? 'Confirmar selección' : 'Confirmar propuesta',
+      openAsk: () => this.openLayer({ tray: 'ask' }),
+      topics: topicL.map((l) => { const on = s.askTopics.indexOf(l) >= 0; return { l: l, on: on ? 'on' : '', aria: on ? 'true' : 'false', tog: () => { const t = this.state.askTopics.slice(); const k = t.indexOf(l); if (k >= 0) t.splice(k, 1); else t.push(l); this.setState({ askTopics: t }); } }; }),
+      askText: s.askText, askInput: (e) => this.setState({ askText: e.target.value }),
+      datesRows: showDates ? '1fr' : '0fr', datesOp: showDates ? '1' : '0', twoDates: sc !== 'act',
+      d1Lbl: sc === 'act' ? 'Nueva fecha' : 'Nueva ida', nd1: s.nd1, nd2: s.nd2, nd2min: s.nd1 || '2026-09-27',
+      setNd1: (e) => this.setState({ nd1: e.target.value }), setNd2: (e) => this.setState({ nd2: e.target.value }),
+      flexCls: s.flex ? 'on' : '', flexAria: s.flex ? 'true' : 'false', togFlex: () => this.setState({ flex: !this.state.flex }),
+      dateErr: badRange ? 'El regreso queda antes de la ida o el mismo día; quizá las fechas están invertidas.' : '', dateErrShow: !!badRange,
+      askHint: showDates ? 'Te confirmamos disponibilidad y precio con las nuevas fechas.' : 'Puedes elegir un tema, escribir tu duda o las dos cosas.',
+      askBtn: askReady ? '' : 'dis', askDis: askReady ? 'false' : 'true',
+      askSend: () => { if (askReady) this.setState({ tray: 'askok' }); },
+      askMsg: askMsg, askRows: open('ask'), askOp: op('ask'), askOkRows: open('askok'), askOkOp: op('askok'), askOkShown: tray === 'askok',
+      send: () => this.setState({ tray: 'ok' }),
+      minRows: open('min'), minOp: op('min'), hotRows: open('hot'), hotOp: op('hot'), resRows: open('res'), resOp: op('res'), okRows: open('ok'), okOp: op('ok'),
+      notMin: tray !== 'min', sentShown: tray === 'ok',
+      scrimCls: tray === 'min' ? 'hide' : '',
+      trayRole: tray === 'min' ? 'region' : 'dialog', trayModal: tray === 'min' ? 'false' : 'true',
+      trayLabel: tray === 'hot' ? 'Comparar hoteles' : (tray === 'res' ? 'Confirmar' : (tray === 'ask' || tray === 'askok' ? 'Escribir a tu asesora' : 'Resumen')),
+      trayCaption: sc === 'act' ? 'Xel-Há · 6 personas' : (isOpts ? 'Con ' + h.short + ' · 6 personas' : (hm === 'dos' ? 'Cancún y Tulum · 6 personas' : stays[0].short + ' · 6 personas')),
+      hotelLbl: hm === 'dos' ? 'Hoteles' : 'Hotel',
+      dragY: s.dragY, trayTrans: s.dragging ? 'none' : 'transform .2s cubic-bezier(.2,.8,.2,1)',
+      dragStart: (e) => { this.dragY0 = e.clientY; this.setState({ dragging: true }); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} },
+      dragMove: (e) => { if (!this.state.dragging) return; this.setState({ dragY: Math.max(0, e.clientY - this.dragY0) }); },
+      dragEnd: () => { if (!this.state.dragging) return; const far = this.state.dragY > 70; this.setState({ dragging: false, dragY: 0 }); if (far) this.closeLayer(); },
+      share: () => this.share(), toastCls: s.toast ? 'show' : '', toastMsg: s.toast,
+      g0: () => this.openLayer({ gal: 0, galName: '' }),
+      galCls: s.gal < 0 ? 'hide' : '', galImg: (gi % 2 ? '' : 'g'), galCount: (gi + 1) + ' de 8', galName: s.galName || h.name,
+      galClose: () => this.closeLayer(),
+      galPrev: () => this.setState({ gal: (gi + 7) % 8 }), galNext: () => this.setState({ gal: (gi + 1) % 8 }),
+      waMsg: msg,
+      waDuda: 'https://wa.me/529988601718?text=' + encodeURIComponent('Hola, tengo una duda sobre mi propuesta AIR-2458.')
+    };
+  }
+}
+
+</script>
+</body>
+</html>

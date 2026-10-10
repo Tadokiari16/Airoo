@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel — Inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;font-display:swap;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--blue-t2:#D3E0FD;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--card:#FFFFFF;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;--red:#A23B3B;--red-t:#FCE9E9;--ease:cubic-bezier(.2,.8,.2,1);}
+  *{box-sizing:border-box;}
+  html{overflow-x:hidden;}
+  body{margin:0;overflow-x:hidden;font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45;}
+  button{font-family:inherit;color:inherit;}
+  h1,h2,h3{margin:0;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .row{display:flex;align-items:center;}
+  .app{display:flex;width:1440px;min-height:100vh;}
+  /* ---- Barra lateral ---- */
+  .side{width:232px;flex-shrink:0;background:#fff;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:22px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px;}
+  .brand img{width:30px;height:30px;display:block;}
+  .brand b{font-size:19px;font-weight:700;letter-spacing:-.02em;}
+  .brand span{font-size:11.5px;color:var(--ink3);font-weight:600;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:auto;}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-k{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:14px 10px 6px;}
+  .nv{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;text-align:left;width:100%;}
+  .nv svg{color:var(--ink3);flex-shrink:0;}
+  .nv:hover{background:#F4F6FA;}
+  .nv.on{background:var(--blue-t);color:var(--blue-d);}
+  .nv .cnt.g{background:#E3E8F0;color:var(--ink);}
+  .nv.on svg{color:var(--blue);}
+  .nv .cnt{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:999px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;}
+  .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);}
+  .av{width:28px;height:28px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .av.b{background:#EFE9FB;color:#5B3FA0;} .av.c{background:#E4F5EB;color:var(--green);}
+  /* ---- Contenido ---- */
+  .main{flex:1;min-width:0;padding:24px 32px 40px;}
+  .top{display:flex;align-items:center;gap:14px;}
+  .search{flex:1;max-width:520px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--ink3);font-size:14px;}
+  .search kbd{margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:6px;padding:2px 6px;}
+  .btn{height:40px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;cursor:pointer;white-space:nowrap;transition:background-color .15s var(--ease);}
+  .btn:hover{background:var(--blue-d);}
+  .btn2{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 12px;cursor:pointer;white-space:nowrap;color:var(--ink);}
+  .btn2:hover{background:#F7F8FA;}
+  .btn2.pri{background:var(--blue);color:#fff;box-shadow:none;}
+  .btn2.pri:hover{background:var(--blue-d);}
+  .hello{margin:26px 0 20px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .hello h1{font-size:28px;font-weight:700;letter-spacing:-.02em;}
+  .hello h1::first-letter{color:var(--blue);}
+  .hello p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+  .card{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -18px rgba(17,26,43,.2);}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 10px;}
+  .card-h h2{font-size:17px;font-weight:700;}
+  .card-h .s{font-size:13px;color:var(--ink3);font-weight:500;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);} .b-green{background:var(--green-t);color:var(--green);}
+  .b-amber{background:var(--amber-t);color:var(--amber);} .b-gray{background:#EEF1F5;color:var(--ink2);} .b-red{background:var(--red-t);color:var(--red);}
+  .b-ball{background:var(--blue);color:#fff;}
+  /* ---- Bandeja de pendientes ---- */
+  .grp{padding:4px 18px 8px;}
+  .grp-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px;display:flex;align-items:center;gap:8px;}
+  .grp-k i{flex:1;height:1px;background:var(--line);}
+  .td{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);}
+  .grp-k + .td{border-top:none;}
+  .td-ic{flex-shrink:0;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+  .td-ic.blue{background:var(--blue-t);color:var(--blue);} .td-ic.amber{background:var(--amber-t);color:var(--amber);}
+  .td-ic.green{background:var(--green-t);color:var(--green);} .td-ic.gray{background:#EEF1F5;color:var(--ink2);} .td-ic.red{background:var(--red-t);color:var(--red);}
+  .td-t{min-width:0;display:flex;flex-direction:column;}
+  .td-t b{font-weight:600;font-size:14.5px;}
+  .td-t > span{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .td-a{display:flex;align-items:center;gap:8px;}
+  .when{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;min-width:92px;text-align:right;}
+  .when.hot{color:var(--amber);} .when.late{color:var(--red);}
+  .done-row{display:flex;align-items:center;gap:10px;padding:10px 18px 16px;color:var(--green);font-size:13.5px;font-weight:600;}
+  /* ---- Agenda ---- */
+  .ag{padding:2px 18px 14px;}
+  .ag-d{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;}
+  .ag-r{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;margin:0 -8px;width:calc(100% + 16px);border:none;background:none;border-radius:10px;text-align:left;cursor:pointer;transition:background-color .12s var(--ease);}
+  .ag-r:hover{background:#F4F6FA;}
+  .ag-d.today{color:var(--blue-d);}
+  .st-s{display:block;font-size:12.5px;color:var(--ink3);margin:3px 0 0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .st-s.ok{color:var(--green);font-weight:600;} .st-s.miss{color:var(--amber);font-weight:600;} .st-s.air{color:var(--blue-d);font-weight:600;}
+  .st-s.ok::before{content:'✓ ';} .st-s.tm::before{content:'◷ ';} .st-s.tm.hot{color:var(--amber);font-weight:600;}
+  .st-s.part{color:var(--ink2);}
+  .st-s.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;margin-top:4px;} .st-s.part::before{content:'◐ ';} .st-s.miss::before{content:'● ';font-size:9px;vertical-align:2px;}
+  .st i.gray{background:#AAB3C1;}
+  .ag-r .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .dot.blue{background:var(--blue);} .dot.amber{background:#D38A1E;} .dot.green{background:#2E9A62;} .dot.gray{background:#AAB3C1;}
+  .ag-r b{font-weight:600;font-size:13.5px;display:block;line-height:1.35;}
+  .ag-r div > span{font-size:12.5px;color:var(--ink2);}
+  .ag-r > .tm{margin-left:auto;padding-left:6px;font-size:12.5px;color:var(--ink3);font-weight:600;white-space:nowrap;}
+  /* ---- Viajes: pestañas por formato + etapas ---- */
+  .vj{position:relative;}
+  .vj-h{display:flex;align-items:flex-end;gap:22px;padding:14px 18px 0;margin-bottom:0;border-bottom:1px solid var(--line);}
+  .vj-h h2{font-size:17px;font-weight:700;padding-bottom:12px;margin-right:6px;}
+  .tab{border:none;background:none;padding:0 2px 11px;font-size:14.5px;font-weight:600;color:var(--ink3);cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 -2px 0 transparent;transition:color .15s var(--ease),box-shadow .15s var(--ease);}
+  .tab:hover{color:var(--ink);}
+  .tab.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--blue);}
+  .tab > span:last-child{font-size:12px;font-weight:700;color:var(--ink2);background:#EEF1F5;border-radius:999px;min-width:22px;height:20px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;}
+  .tab.on > span:last-child{background:var(--blue-t);color:var(--blue-d);}
+  .lnk{margin-bottom:10px;border:none;background:none;font-size:13.5px;font-weight:600;color:var(--blue-d);cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 4px;border-radius:8px;}
+  .lnk:hover{background:var(--blue-t);}
+  .sps{display:flex;gap:6px;padding:12px 18px;flex-wrap:wrap;}
+  .sp{height:32px;border:none;border-radius:999px;background:none;padding:0 12px;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background-color .15s var(--ease),color .15s var(--ease);}
+  .sp:hover{background:#F2F4F8;color:var(--ink);}
+  .sp > span:last-child{font-weight:700;color:var(--ink3);}
+  .sp.on{background:var(--ink);color:#fff;}
+  .sp.on > span:last-child{color:rgba(255,255,255,.7);}
+  .sp.z{color:#A7AEBA;cursor:default;} .sp.z:hover{background:none;color:#A7AEBA;}
+  .sp.z > span:last-child{color:#C3C8D1;}
+  .dd-w{position:relative;margin-left:auto;margin-bottom:9px;z-index:5;}
+  .dd-w .dd-m{right:0;left:auto;}
+  .dd{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 12px;cursor:pointer;color:var(--ink);white-space:nowrap;}
+  .dd:hover{background:#F7F8FA;}
+  .dd.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);color:var(--blue-d);}
+  .dd-k{color:var(--ink3);font-weight:600;}
+  .dd.on .dd-k{color:var(--blue-d);opacity:.75;}
+  .dd svg{color:var(--ink3);}
+  .dd-m{top:40px;width:250px;}
+  .mo{display:flex;align-items:center;gap:10px;width:100%;height:38px;border:none;background:none;border-radius:9px;padding:0 10px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;}
+  .mo:hover{background:#F4F6FA;}
+  .mo > i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .mo > i.blue{background:var(--blue);} .mo > i.amber{background:#D38A1E;} .mo > i.green{background:#2E9A62;} .mo > i.teal{background:#0E8C8C;} .mo > i.none{background:transparent;}
+  .mo > span:nth-of-type(2){margin-left:auto;color:var(--ink3);font-weight:700;}
+  .mo-ck{width:16px;display:inline-flex;color:var(--blue);visibility:hidden;}
+  .mo.on .mo-ck{visibility:visible;}
+  .mo.z{color:#A7AEBA;cursor:default;} .mo.z:hover{background:none;}
+  .mo.z > span:nth-of-type(2){color:#C3C8D1;}
+  .dd-scrim{position:fixed;inset:0;z-index:4;display:none;}
+  .dd-scrim.show{display:block;}
+  /* resumen del saludo */
+  .sum{display:flex;gap:10px;}
+  .sum-c{display:inline-flex;align-items:center;gap:8px;height:40px;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);padding:0 14px;font-size:13.5px;color:var(--ink2);font-weight:500;}
+  .sum-c b{font-size:16px;font-weight:700;color:var(--ink);}
+  button.sum-c{cursor:pointer;transition:background-color .15s var(--ease),box-shadow .15s var(--ease);}
+  .sum-c.air i{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .sum-c.air b{color:var(--blue-d);}
+  button.sum-c:hover{background:#F7F9FD;}
+  .sum-c.air.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* filtros en el encabezado de columna */
+  .fth{position:relative;}
+  .thb{border:none;background:none;padding:4px 6px;margin:-4px -6px;border-radius:7px;font:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+  .thb:hover{background:#EEF1F5;color:var(--ink);}
+  .thb svg{width:13px;height:13px;}
+  .thb-d{display:none;width:6px;height:6px;border-radius:50%;background:var(--blue);}
+  .thb.on{color:var(--blue-d);background:var(--blue-t);}
+  .thb.on .thb-d{display:inline-block;}
+  .fth .dd-m{left:6px;right:auto;top:38px;text-transform:none;letter-spacing:0;z-index:20;}
+  .fth.r .dd-m{left:auto;right:-40px;}
+  .menu.hide{visibility:hidden;}
+  .clr{color:var(--ink2);}
+  .ract{text-align:right;white-space:nowrap;padding-right:18px!important;}
+  .ract .btn2{height:32px;}
+  .listo{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--green);}
+  /* semana */
+  .sched{padding:6px 18px 10px;}
+  .sd{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line);align-items:start;}
+  .sd:first-child{border-top:none;}
+  .sd-h{display:flex;flex-direction:column;padding-top:4px;}
+  .sd-h b{font-size:15px;font-weight:700;}
+  .sd-h > span{font-size:12.5px;color:var(--ink3);font-weight:500;}
+  .sd.today .sd-h b{color:var(--blue-d);}
+  .sd-l{display:flex;flex-wrap:wrap;gap:10px;}
+  .sd.empty{padding:10px 0;}
+  .sd.empty .sd-h{flex-direction:row;gap:8px;align-items:baseline;padding-top:0;}
+  .sd.empty .sd-h b{font-size:14px;color:var(--ink3);font-weight:600;}
+  .sd-e{font-size:13px;color:#A7AEBA;}
+  .we{flex:0 0 268px;}
+  .we{border:none;background:#F7F8FB;border-radius:12px;padding:10px 12px 10px 15px;text-align:left;cursor:pointer;box-shadow:inset 3px 0 0 #AAB3C1,0 1px 2px rgba(17,26,43,.05);display:flex;flex-direction:column;gap:1px;transition:box-shadow .15s var(--ease),transform .15s var(--ease);}
+  .we:hover{box-shadow:inset 3px 0 0 #AAB3C1,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.blue{box-shadow:inset 3px 0 0 var(--blue),0 1px 2px rgba(17,26,43,.05);} .we.blue:hover{box-shadow:inset 3px 0 0 var(--blue),0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.amber{box-shadow:inset 3px 0 0 #D38A1E,0 1px 2px rgba(17,26,43,.05);} .we.amber:hover{box-shadow:inset 3px 0 0 #D38A1E,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.green{box-shadow:inset 3px 0 0 #2E9A62,0 1px 2px rgba(17,26,43,.05);} .we.green:hover{box-shadow:inset 3px 0 0 #2E9A62,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we b{font-size:14px;font-weight:600;line-height:1.35;margin-top:1px;}
+  .we > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.35;}
+  .we-tm{font-size:12px;font-weight:700;color:var(--ink3);}
+  .vw{display:inline-flex;background:#EEF1F5;border-radius:10px;padding:3px;margin-bottom:9px;margin-right:4px;}
+  .vw button{height:30px;border:none;border-radius:8px;background:none;padding:0 11px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .vw button svg{width:15px;height:15px;color:var(--ink3);}
+  .vw button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(17,26,43,.1);}
+  .vw button.on svg{color:var(--blue);}
+  .sum-c.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* celdas sobrias: el color solo marca lo que pide acción */
+  .st{display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap;}
+  .st i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .st i.blue{background:var(--blue);} .st i.amber{background:#D38A1E;} .st i.green{background:#2E9A62;} .st i.teal{background:#0E8C8C;}
+  .pd{font-size:13.5px;color:var(--ink3);font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+  .pd.air{color:var(--blue-d);font-weight:700;}
+  .pd.air::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .pd.ok{color:var(--green);font-weight:600;}
+  .svt{font-size:13.5px;color:var(--ink2);white-space:nowrap;}
+  .svt.ok{color:var(--green);font-weight:600;} .svt.miss{color:var(--amber);font-weight:600;}
+  .dt > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;}
+  .py{display:flex;flex-direction:column;gap:3px;min-width:120px;}
+  .py b{font-weight:600;font-size:13.5px;}
+  .py-s{font-size:12.5px;color:var(--ink3);white-space:nowrap;}
+  .py.ok .py-s{color:var(--green);font-weight:600;} .py.late .py-s{color:var(--amber);font-weight:600;} .py.late .bar i{background:#D38A1E;}
+  .py .bar{margin-top:2px;}
+  .chev{color:#B6BDC8;opacity:0;transition:opacity .12s var(--ease);}
+  .tbl tr.r:hover .chev{opacity:1;}
+  .chev{display:inline-flex;}
+  .tbl tr.r.sel{background:var(--blue-t);}
+  /* ---- Panel lateral (vista rápida) ---- */
+  .scrim{position:fixed;inset:0;background:rgba(17,26,43,.28);opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;z-index:30;}
+  .scrim.show{opacity:1;visibility:visible;}
+  .dw{position:fixed;top:0;right:0;height:100vh;width:460px;background:#fff;box-shadow:-1px 0 0 var(--line),-24px 0 48px -24px rgba(17,26,43,.28);transform:translateX(104%);visibility:hidden;transition:transform .25s var(--ease),visibility .25s;z-index:31;display:flex;flex-direction:column;}
+  .dw.show{transform:none;visibility:visible;}
+  .dw-h{padding:14px 20px 14px;}
+  .dw-nav{display:flex;align-items:center;gap:6px;margin-bottom:8px;color:var(--ink3);font-size:12.5px;font-weight:600;}
+  .dw-nav kbd{font-family:inherit;font-size:11px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:5px;padding:1px 5px;margin-left:4px;}
+  .nv-b{width:28px;height:28px;border:none;border-radius:8px;background:#F2F4F8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink2);}
+  .nv-b:hover{background:#E8EBF0;}
+  .dw-q{display:flex;gap:8px;padding:10px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;}
+  .qa{height:32px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px;cursor:pointer;color:var(--ink);}
+  .qa:hover{background:#F7F8FA;}
+  .qa-k{color:var(--ink3);font-weight:600;}
+  .qa svg{color:var(--ink3);}
+  .note{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#F6F8FB;box-shadow:inset 3px 0 0 #AAB3C1;}
+  .note svg{color:var(--ink3);margin-top:2px;}
+  .note b{display:block;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+  .note div > span{font-size:13.5px;color:var(--ink);line-height:1.45;}
+  .eng{margin-top:12px;padding:12px 14px;border-radius:12px;background:#F6F8FB;}
+  .eng-k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:8px;}
+  .eng-k svg{color:var(--blue);}
+  .eng-r{display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;padding:4px 0;}
+  .eng-l{font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .eng-b{height:6px;border-radius:3px;background:#E3E8F0;overflow:hidden;}
+  .eng-b i{display:block;height:100%;background:var(--blue);border-radius:3px;}
+  .eng-m{font-size:12.5px;color:var(--ink2);font-weight:600;text-align:right;}
+  .dw-t{display:flex;align-items:center;gap:8px;}
+  .dw-t h3{font-size:19px;font-weight:700;letter-spacing:-.01em;}
+  .dw-x{margin-left:auto;width:32px;height:32px;border:none;border-radius:9px;background:#F2F4F8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink2);}
+  .dw-x:hover{background:#E8EBF0;}
+  .dw-s{font-size:13.5px;color:var(--ink2);margin-top:3px;}
+  .prog{display:flex;gap:4px;margin-top:14px;}
+  .prog i{flex:1;height:4px;border-radius:2px;background:#E6EAF0;}
+  .prog i.on{background:var(--blue);}
+  .prog-l{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink3);margin-top:6px;font-weight:600;}
+  .prog-l b{color:var(--ink);}
+  .prog-l .hot{color:var(--amber);}
+  .dw-b{flex:1;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:18px;}
+  .nxt{border-radius:14px;background:#F6F8FB;padding:14px;}
+  .nxt.air{background:var(--blue-t);}
+  .nxt-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
+  .nxt.air .nxt-k{color:var(--blue-d);}
+  .nxt b{display:block;font-size:15px;font-weight:600;margin-top:4px;}
+  .nxt > span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;}
+  .nxt .btn2{margin-top:12px;}
+  .btn2.act{background:#000D25;color:#fff;box-shadow:none;}
+  .btn2.act:hover{background:#1A2640;}
+  .sec-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sec-k + div .li:first-child,.sec-k + .li{border-top:none;}
+  .li-ic{width:30px;height:30px;border-radius:9px;background:#F2F4F8;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .li-t{flex:1;min-width:0;}
+  .li-t b{display:block;font-weight:600;}
+  .li-t > span{font-size:12.5px;color:var(--ink3);}
+  .li-s{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;}
+  .li-s.ok{color:var(--green);} .li-s.miss{color:var(--amber);}
+  .more{font-size:13px;color:var(--ink3);padding-top:6px;}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;}
+  .kv span{color:var(--ink2);} .kv b{font-weight:600;}
+  .kv.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:9px;}
+  .dw-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;}
+  .dw-f .btn{flex:1;}
+  .dw-f .btn.sec{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
+  .dw-f .btn.sec:hover{background:#F7F8FA;}
+  .tbl{width:100%;border-collapse:collapse;}
+  .tbl.fixed{table-layout:fixed;}
+  .tbl.fixed th:nth-child(1){width:24%;}.tbl.fixed th:nth-child(2){width:12%;}.tbl.fixed th:nth-child(3){width:17%;}.tbl.fixed th:nth-child(4){width:15%;}.tbl.fixed th:nth-child(5){width:22%;}.tbl.fixed th:nth-child(6){width:10%;}
+  .tbl.fixed th:last-child,.tbl.fixed td:last-child{text-align:right;padding-right:20px !important;}
+  /* a prueba de textos largos: una línea y puntos suspensivos, el texto completo en el title */
+  .tbl.fixed .trip b,.tbl.fixed .nx b,.tbl.fixed .nx > span,.tbl.fixed .py-s,.tbl.fixed .dt > span,.tbl.fixed .st{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .tbl.fixed .st{display:flex;}
+                .tbl.fixed td{padding:14px 14px;}
+  .tbl.fixed th{padding-left:14px;padding-right:14px;}
+  .trip > span{overflow:hidden;text-overflow:ellipsis;}
+  .tbl th{font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;white-space:nowrap;}
+  .tbl th:first-child,.tbl td:first-child{padding-left:18px;}
+  .tbl td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13.5px;}
+  .tbl tr.r{cursor:pointer;transition:background-color .12s var(--ease);}
+  .tbl tr.r:hover{background:#F8FAFD;}
+  .tbl tbody tr:last-child td{border-bottom:none;}
+  .trip-b{border:none;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:block;}
+  .trip-b:hover b{color:var(--blue-d);}
+  .trip b{font-weight:600;font-size:14.5px;display:block;white-space:nowrap;}
+  .trip > span{font-size:12.5px;color:var(--ink2);display:block;margin-top:2px;white-space:nowrap;}
+  .trip-l{display:flex;align-items:center;gap:6px;}
+  .fmt{font-style:normal;display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;font-size:11px;font-weight:700;background:#F2F4F8;color:var(--ink2);flex-shrink:0;}
+  .svcs{display:flex;gap:4px;}
+  .sv{width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;}
+  .sv.ok{background:var(--green-t);color:var(--green);} .sv.wait{background:#EEF1F5;color:#8A93A3;} .sv.miss{background:var(--amber-t);color:var(--amber);}
+  .pay{display:flex;flex-direction:column;gap:4px;min-width:110px;}
+  .pay span{font-size:12.5px;color:var(--ink2);font-weight:600;}
+  .bar{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .bar i{display:block;height:100%;background:#2E9A62;border-radius:3px;}
+  .nx b{font-weight:600;display:block;font-size:13.5px;}
+  .nx > span{font-size:12.5px;color:var(--ink3);display:block;}
+  .chg{font-style:normal;display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:6px;background:#F0F2F6;color:var(--ink2);font-size:11.5px;font-weight:600;margin-left:6px;vertical-align:1px;}
+  .fol{font-style:normal;color:#A7AEBA;font-weight:500;font-size:11.5px;margin-right:6px;}
+  .fol-b{border:none;background:#F2F4F8;border-radius:6px;padding:1px 7px;margin-right:8px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;}
+  .fol-b:hover{background:#E8EBF0;}
+  .tl{position:relative;padding-left:4px;}
+  .tl-r{display:flex;gap:12px;position:relative;padding:0 0 12px;}
+  .tl-r::before{content:'';position:absolute;left:4px;top:14px;bottom:-2px;width:1px;background:var(--line);}
+  .tl-r:last-child::before{display:none;}
+  .tl-d{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;background:#C3C8D1;}
+  .tl-d.now{background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);} .tl-d.blue{background:#7FA7F8;}
+  .tl-r b{display:block;font-weight:600;font-size:13.5px;}
+  .tl-r div > span{font-size:12.5px;color:var(--ink3);}
+  .lnk-s{margin:-4px 0 12px -4px;}
+  .lnk-s .lnk{margin:0;font-size:13px;}
+  .vw-k{font-size:12px;font-weight:700;color:var(--ink3);margin:2px 0 6px;}
+  .vrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);}
+  .vw-k + .vrow{border-top:none;}
+  .vrow > div{flex:1;min-width:0;}
+  .vrow b{display:block;font-weight:600;font-size:13.5px;}
+  .vrow > div > span{font-size:12.5px;color:var(--ink3);}
+  .vt{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap;}
+  .vnone{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--ink2);padding:6px 0;}
+  .ins{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#F6F8FB;font-size:13px;color:var(--ink2);}
+  .ins svg{color:var(--blue);}
+  .shr-k{font-size:12px;font-weight:700;color:var(--ink3);margin:14px 0 4px;}
+  .shr{display:grid;grid-template-columns:1fr auto 84px;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .shr-k + .shr{border-top:none;}
+  .shr div > b{display:block;font-weight:600;} .shr div > span{font-size:12.5px;color:var(--ink3);}
+  .shr-s{justify-self:end;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EEF1F5;color:var(--ink2);}
+  .shr-s.ok{background:var(--green-t);color:var(--green);}
+  .nx .hot{color:var(--amber);} .nx .late{color:var(--red);} .nx .air{color:var(--blue-d);}
+  .empty{padding:28px 18px;text-align:center;color:var(--ink2);}
+  /* ---- Menú y aviso ---- */
+  .menu{position:absolute;right:0;top:46px;width:280px;background:#fff;border-radius:14px;box-shadow:0 0 0 1px rgba(17,26,43,.06),0 18px 40px -12px rgba(17,26,43,.3);padding:6px;z-index:20;transition:opacity .15s var(--ease),transform .15s var(--ease);}
+  .menu.hide{opacity:0;transform:translateY(-4px);pointer-events:none;}
+  .mi{display:flex;gap:12px;align-items:flex-start;width:100%;border:none;background:none;border-radius:10px;padding:10px;text-align:left;cursor:pointer;}
+  .mi:hover{background:#F4F6FA;}
+  .mi b{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+  .mi > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.4;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;visibility:hidden;background:var(--ink);color:#fff;font-size:13.5px;font-weight:500;border-radius:999px;padding:10px 16px;z-index:50;transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s;}
+  .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+  svg{flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+</style>
+
+</helmet>
+
+<div class="app">
+  <div class="toast {{toastCls}}" role="status">{{toastMsg}}</div>
+
+  <!-- ================= BARRA LATERAL ================= -->
+  <aside class="side" aria-label="Navegación">
+    <div class="brand"><img src="/_blob/9415e1981290d924b54d965a0e67aa4b" alt=""><b>airoo</b><span>Panel</span></div>
+    <nav class="nav">
+      <button class="nv on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>Viajes<span class="cnt num">{{pendCount}}</span></button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Avisos<span class="cnt g num">7</span></button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Clientes</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>Finanzas</button>
+      <div class="nav-k">Catálogos</div>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M15 9h4a2 2 0 0 1 2 2v10M2 21h20M7 7h4M7 11h4M7 15h4"/></svg>Hoteles</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>Actividades</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>Servicios</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>Aerolíneas</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.6-5h14.8L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/></svg>Proveedores</button>
+      <div class="nav-k">Agencia</div>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Configuración</button>
+    </nav>
+    <div class="me"><span class="av">TÚ</span><div><div style="font-weight:600;font-size:13.5px;">Tu cuenta</div><div style="font-size:12px;color:var(--ink3);">Administrador</div></div></div>
+  </aside>
+
+  <!-- ================= CONTENIDO ================= -->
+  <main class="main">
+    <div class="top">
+      <div class="search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span>Buscar viaje, cliente, folio o clave de confirmación</span><kbd>⌘K</kbd></div>
+      <div style="margin-left:auto;position:relative;">
+        <button class="btn" onClick="{{toggleNew}}" aria-expanded="{{newAria}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Nuevo viaje</button>
+        <div class="menu {{newCls}}" role="menu">
+          <button class="mi" onClick="{{newQuote}}" role="menuitem"><span class="td-ic blue"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span><b>Cotización</b><span>Por servicios: hotel, vuelos, actividades. Con opciones para elegir.</span></span></button>
+          <button class="mi" onClick="{{newItin}}" role="menuitem"><span class="td-ic blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg></span><span><b>Itinerario</b><span>Por día, con narrativa y varios servicios cada día.</span></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hello">
+      <div>
+        <h1>Buenos días</h1>
+        <p class="num">Martes 29 de septiembre</p>
+      </div>
+      <div class="sum">
+        <button class="sum-c air {{sumOn}}" onClick="{{sumGo}}"><i></i><b class="num">{{airN}}</b><span>{{airTxt}}</span></button>
+        <button class="sum-c {{sumWkOn}}" onClick="{{toWeek}}"><b class="num">{{todayN}}</b><span>eventos hoy</span></button>
+      </div>
+    </div>
+
+    <!-- Viajes en curso: la vista principal -->
+    <section class="card vj" aria-labelledby="h-trips">
+      <div class="dd-scrim {{ddScrim}}" onClick="{{closeDd}}"></div>
+      <div class="vj-h">
+        <h2 id="h-trips">Viajes</h2>
+        <div role="tablist" aria-label="Formato" style="display:flex;gap:22px;">
+          <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2"><button class="tab {{tb.c}}" role="tab" aria-selected="{{tb.aria}}" onClick="{{tb.go}}"><span>{{tb.l}}</span><span class="num">{{tb.n}}</span></button></sc-for>
+        </div>
+        <sc-if value="{{hasFilter}}" hint-placeholder-val="{{ false }}"><button class="lnk clr" onClick="{{clear}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>Quitar filtros</button></sc-if>
+        <div class="dd-w">
+          <button class="dd {{scOn}}" onClick="{{toggleSc}}" aria-haspopup="listbox" aria-expanded="{{scAria}}"><span class="dd-k">Mostrar</span><span>{{scLbl}}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="menu dd-m {{scCls}}" role="listbox" aria-label="Mostrar">
+            <sc-for list="{{scOpts}}" as="p" hint-placeholder-count="5"><button class="mo {{p.c}}" role="option" aria-selected="{{p.aria}}" onClick="{{p.go}}"><i class="{{p.tone}}"></i><span>{{p.l}}</span><span class="num">{{p.n}}</span><span class="mo-ck"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button></sc-for>
+          </div>
+        </div>
+        <div class="vw" role="radiogroup" aria-label="Vista">
+          <button class="{{vList}}" role="radio" aria-checked="{{vListA}}" onClick="{{toList}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
+          <button class="{{vWeek}}" role="radio" aria-checked="{{vWeekA}}" onClick="{{toWeek}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Próximos 7 días</button>
+        </div>
+      </div>
+      <sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+      <table class="tbl fixed">
+        <thead><tr><th>Viaje</th><th>Fechas</th><th class="fth"><button class="thb {{fs.on}}" onClick="{{fs.toggle}}" aria-haspopup="listbox" aria-expanded="{{fs.aria}}">Etapa<i class="thb-d"></i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="menu dd-m {{fs.cls}}" role="listbox" aria-label="Etapa">
+                <sc-for list="{{fs.opts}}" as="p" hint-placeholder-count="4"><button class="mo {{p.c}}" role="option" aria-selected="{{p.aria}}" onClick="{{p.go}}"><i class="{{p.tone}}"></i><span>{{p.l}}</span><span class="num">{{p.n}}</span><span class="mo-ck"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button></sc-for>
+              </div></th><th>Inversión</th><th>Última actividad</th><th class="fth r"><button class="thb {{fw.on}}" onClick="{{fw.toggle}}" aria-haspopup="listbox" aria-expanded="{{fw.aria}}">A cargo<i class="thb-d"></i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+              <div class="menu dd-m {{fw.cls}}" role="listbox" aria-label="A cargo">
+                <sc-for list="{{fw.opts}}" as="p" hint-placeholder-count="4"><button class="mo {{p.c}}" role="option" aria-selected="{{p.aria}}" onClick="{{p.go}}"><i class="{{p.tone}}"></i><span>{{p.l}}</span><span class="num">{{p.n}}</span><span class="mo-ck"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span></button></sc-for>
+              </div></th></tr></thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+            <tr class="r {{r.selCls}}" onClick="{{r.open}}">
+              <td class="trip"><button class="trip-b" onClick="{{r.open}}"><b>{{r.client}}</b></button><span><i class="fol num">{{r.folio}}</i>{{r.dest}} · {{r.pax}}</span></td>
+              <td class="dt num"><b style="font-weight:500;white-space:nowrap;">{{r.dates}}</b><span>{{r.len}}</span></td>
+              <td><span class="st"><i class="{{r.stTone}}"></i>{{r.stage}}</span><span class="st-s {{r.svCls}}" title="{{r.svTip2}}">{{r.svTxt}}</span></td>
+              <td><div class="py {{r.payCls}}"><b class="num">{{r.amt}}</b><sc-if value="{{r.hasTxt}}" hint-placeholder-val="{{ true }}"><span class="py-s">{{r.payTxt}}</span></sc-if><sc-if value="{{r.hasBar}}" hint-placeholder-val="{{ false }}"><div class="bar"><i style="width:{{r.payW}};"></i></div></sc-if></div></td>
+              <td class="nx" title="{{r.next}} · {{r.nextS}}"><b class="{{r.nxCls}}">{{r.next}}</b><span class="num">{{r.nextS}}<sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ false }}"><i class="chg">{{r.tag}}</i></sc-if></span></td>
+              <td><span class="av {{r.avCls}}" title="{{r.who}}">{{r.ini}}</span></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+      </sc-if>
+      <sc-if value="{{isWeek}}" hint-placeholder-val="{{ false }}">
+      <div class="sched">
+        <sc-for list="{{week}}" as="wd" hint-placeholder-count="7">
+          <div class="sd {{wd.c}}">
+            <div class="sd-h"><b>{{wd.dow}}</b><span class="num">{{wd.date}}</span></div>
+            <div class="sd-l">
+              <sc-for list="{{wd.items}}" as="e" hint-placeholder-count="2">
+                <button class="we {{e.tone}}" onClick="{{e.go}}"><span class="we-tm num">{{e.tm}}</span><b>{{e.t}}</b><span>{{e.s}}</span></button>
+              </sc-for>
+              <sc-if value="{{wd.empty}}" hint-placeholder-val="{{ false }}"><span class="sd-e">Sin eventos</span></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{noRowsList}}" hint-placeholder-val="{{ false }}"><div class="empty">No hay viajes con estos filtros. <button class="btn2" onClick="{{clear}}" style="margin-left:8px;">Quitar filtros</button></div></sc-if>
+      <div style="height:6px;"></div>
+    </section>
+
+    </section>
+    </div>
+
+  </main>
+      <!-- Vista rápida -->
+    <aside class="dw {{dwCls}}" aria-label="Vista rápida del viaje" aria-hidden="{{dwHidden}}">
+    <div class="dw-h">
+      <div class="dw-nav"><sc-if value="{{d.hasPos}}" hint-placeholder-val="{{ true }}"><button class="nv-b" onClick="{{d.prev}}" aria-label="Viaje anterior"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button><button class="nv-b" onClick="{{d.next2}}" aria-label="Viaje siguiente"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span class="num">{{d.pos}}</span><kbd>↑ ↓</kbd></sc-if><button class="dw-x" onClick="{{closeDw}}" aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+      <div class="dw-t"><h3>{{d.client}}</h3><i class="fmt">{{d.fmt}}</i></div>
+      <div class="dw-s num"><button class="fol-b" onClick="{{d.copyFolio}}" title="Copiar folio">{{d.folio}}</button>{{d.dest}} · {{d.pax}} · {{d.dates}} ({{d.len}})</div>
+      <div class="prog" aria-hidden="true"><sc-for list="{{d.prog}}" as="g" hint-placeholder-count="3"><i class="{{g.c}}"></i></sc-for></div>
+      <div class="prog-l"><b>{{d.stage}}</b><span class="{{d.subCls}}">{{d.sub}}</span></div>
+    </div>
+    <div class="dw-q">
+      <button class="qa" onClick="{{d.reassign}}"><span class="qa-k">A cargo</span><b>{{d.whoLbl}}</b><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="qa" onClick="{{d.addNote}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Nota interna</button>
+    </div>
+    <div class="dw-b">
+      <sc-if value="{{d.hasNote}}" hint-placeholder-val="{{ false }}"><div class="note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 6 3 3H7l3-3z"/></svg><div><b>Nota del equipo</b><span>{{d.note}}</span></div></div></sc-if>
+      <sc-if value="{{d.showCard}}" hint-placeholder-val="{{ true }}">
+      <div class="nxt {{d.nxtCls}}">
+        <div class="nxt-k">{{d.nxtK}}</div>
+        <b>{{d.next}}</b><span class="num">{{d.nextS}}</span>
+        <sc-if value="{{d.hasAct}}" hint-placeholder-val="{{ true }}"><button class="btn2 act" onClick="{{d.doAct}}">{{d.act}}</button></sc-if>
+      </div>
+      </sc-if>
+      <div>
+        <div class="sec-k">Actividad</div>
+        <div class="tl">
+          <sc-for list="{{d.hist}}" as="h" hint-placeholder-count="3">
+            <div class="tl-r"><i class="tl-d {{h.dot}}"></i><div><b>{{h.t}}</b><span class="num">{{h.s}}<sc-if value="{{h.hasTag}}" hint-placeholder-val="{{ false }}"><i class="chg">{{h.tag}}</i></sc-if></span></div></div>
+          </sc-for>
+        </div>
+        <div class="lnk-s"><button class="lnk" onClick="{{d.openFull}}">Ver historial completo<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div>
+        <div class="vw-k">Quién abrió su enlace</div>
+        <sc-if value="{{d.hasViews}}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{d.views}}" as="v" hint-placeholder-count="2">
+            <div class="vrow"><span class="av">{{v.ini}}</span><div><b>{{v.who}}</b><span>{{v.n}}</span></div><span class="vt num">{{v.last}}</span></div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{d.isDraft}}" hint-placeholder-val="{{ false }}"><div class="vnone"><span>Todavía no se envía al cliente.</span></div></sc-if>
+        <sc-if value="{{d.noViews}}" hint-placeholder-val="{{ false }}">
+          <div class="vnone"><span>Aún no abre el enlace.</span><button class="btn2" onClick="{{d.nudge}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>Recordar por WhatsApp</button></div>
+        </sc-if>
+        <sc-if value="{{d.hasEng}}" hint-placeholder-val="{{ false }}"><div class="eng"><div class="eng-k"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Lo que más vio</div>
+          <sc-for list="{{d.eng}}" as="e" hint-placeholder-count="3"><div class="eng-r"><span class="eng-l">{{e.l}}</span><span class="eng-b"><i style="width:{{e.w}};"></i></span><span class="eng-m num">{{e.m}}</span></div></sc-for>
+        </div></sc-if>
+      </div>
+      <div>
+        <div class="sec-k">{{d.listK}}</div>
+        <sc-for list="{{d.items}}" as="it" hint-placeholder-count="3">
+          <div class="li">
+            <span class="li-ic"><sc-if value="{{it.h}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M15 9h4a2 2 0 0 1 2 2v10M2 21h20M7 7h4M7 11h4M7 15h4"/></svg></sc-if><sc-if value="{{it.f}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></sc-if><sc-if value="{{it.a}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg></sc-if><sc-if value="{{it.v}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></sc-if><sc-if value="{{it.dy}}" hint-placeholder-val="{{ false }}"><b class="num" style="font-size:12px;">{{it.dn}}</b></sc-if></span>
+            <div class="li-t"><b>{{it.t}}</b><span>{{it.s}}</span></div>
+            <span class="li-s {{it.c}}">{{it.st}}</span>
+          </div>
+        </sc-for>
+        <sc-if value="{{d.hasMore}}" hint-placeholder-val="{{ false }}"><div class="more">{{d.more}}</div></sc-if>
+      </div>
+      <div>
+        <div class="sec-k">Inversión</div>
+        <div class="kv"><span>Total del viaje</span><b class="num">{{d.amt}}</b></div>
+        <div class="kv"><span>Pagado</span><b class="num">{{d.paid}}</b></div>
+        <div class="kv tot"><span>Saldo</span><b class="num">{{d.bal}}</b></div>
+        <div style="font-size:12.5px;color:var(--ink3);margin-top:4px;">{{d.payNote}}</div>
+        <sc-if value="{{d.hasShares}}" hint-placeholder-val="{{ false }}"><div class="shr-k">Por persona</div>
+          <sc-for list="{{d.shares}}" as="x" hint-placeholder-count="2"><div class="shr"><div><b>{{x.who}}</b><span>{{x.when}}</span></div><b class="num">{{x.amt}}</b><span class="shr-s {{x.c}}">{{x.st}}</span></div></sc-for>
+        </sc-if>
+      </div>
+    </div>
+    <div class="dw-f">
+      <button class="btn" onClick="{{d.openFull}}">{{d.openLbl}}</button>
+      <sc-if value="{{d.notDraft}}" hint-placeholder-val="{{ true }}"><button class="btn2" style="height:40px;" onClick="{{d.copy}}">Copiar enlace</button>
+      <button class="btn2" style="height:40px;" onClick="{{d.wa}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>WhatsApp</button></sc-if>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'Cotización', scope: 'curso', view: 'list', fs: '', fb: '', fw: '', dd: '', sel: '', done: [], newOpen: false, toast: '', toastOn: false };
+    this.timers = {};
+  }
+  componentDidMount() {
+    this.onKey = (e) => {
+      if (!this.state.sel) return;
+      if (e.key === 'Escape') this.setState({ sel: '' });
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); this.step(e.key === 'ArrowDown' ? 1 : -1); }
+    };
+    window.addEventListener('keydown', this.onKey);
+  }
+  componentWillUnmount() { clearTimeout(this.timers.t); window.removeEventListener('keydown', this.onKey); }
+  step(dir) { const ids = this.rowIds || []; const i = ids.indexOf(this.state.sel); const n = ids.at(i + dir); if (i >= 0 && n && i + dir >= 0) this.setState({ sel: n }); }
+  toast(m) { clearTimeout(this.timers.t); this.setState({ toast: m, toastOn: true }); this.timers.t = setTimeout(() => this.setState({ toastOn: false }), 2400); }
+  stop(e) { if (e && e.stopPropagation) e.stopPropagation(); }
+
+  renderVals() {
+    const s = this.state;
+    const money = (n) => '$' + n.toLocaleString('en-US') ;
+    // Servicio de cotización: [tipo, nombre, detalle, estado] · estado: ok | miss | wait | prop
+    const S = (k, t, d, st) => ({ k, t, d, st });
+    // Día de itinerario: [n, título, servicios]
+    const DY = (n, t, d) => ({ n, t, d });
+    const trips = [
+      { id: 'nat', note: 'Quiere las dos habitaciones juntas. Viaja con su esposo, su hermana y sus familias.', eng: [['Seadust Cancún', 4], ['Iberostar Selection', 1.5], ['Vuelos', 0.5]], folio: 'AIR-2458', views: [['NC', 'Nataly', 4, 'Hoy, 9:14 AM', 'Titular', 2]], insight: 'Lo que más vio: Seadust · 4 min', hist: [['c', 'Nataly abrió la cotización', 'Hoy, 9:14 AM'], ['c', 'Nataly abrió la cotización en otro dispositivo', 'Ayer, 8:40 PM'], ['a', 'Se envió la cotización', 'Dom 27 sep, 5:20 PM']], fmt: 'Cotización', client: 'Nataly Cervantes', dest: 'Cancún', pax: '6 personas', dates: '21–27 oct', len: '6 noches', stage: 'Confirmando', ball: 'Airoo',
+        svcs: [S('h', 'Seadust Cancún Family Resort', 'Todo incluido · 2 habitaciones', 'wait'), S('f', 'Vuelos GDL ⇄ Cancún', 'Viva · 6 pasajeros', 'wait'), S('a', 'Xel-Há y Xcaret Plus', '6 personas · Jue 22 y Sáb 24 oct', 'wait'), S('v', 'Traslado redondo y seguro', 'Aeropuerto ⇄ hotel · van adaptada', 'wait')],
+        total: 42248, paid: 0, la: 'Nataly aceptó Seadust', laS: 'hace 12 min', next: 'Revalidar Seadust', nextS: 'Falta confirmar precio y disponibilidad; con eso se habilita Datos y pago', nx: 'air', act: 'Revisar', who: 'Tú', ini: 'TÚ', av: '' },
+      { id: 'pao', note: 'Andrés suele pagar en la noche; recordarle después de las 7 PM.', folio: 'AIR-2476', views: [['PS', 'Paola', 5, 'Hace 20 min'], ['AM', 'Andrés', 1, 'Ayer, 7:02 PM', 'Paga su parte']], hist: [['a', 'Se habilitó Datos y pago', 'Hoy, 8:30 AM'], ['c', 'Andrés abrió el enlace', 'Ayer, 7:02 PM'], ['c', 'Paola aceptó Hyatt Ziva', 'Ayer, 6:45 PM']], shares: [['Paola', '$19,450', 'Pagado', 'Hace 20 min'], ['Andrés', '$19,450', 'Pendiente', 'Abrió su enlace ayer']], fmt: 'Cotización', client: 'Paola Sandoval', dest: 'Puerto Vallarta', pax: '2 personas', dates: '9–14 nov', len: '5 noches', stage: 'Datos y pago', left: '48 min', leftHot: true, ball: 'Cliente',
+        svcs: [S('h', 'Hyatt Ziva Puerto Vallarta', 'Todo incluido · 1 habitación', 'prop'), S('f', 'Vuelos MTY ⇄ PVR', 'Volaris · 2 pasajeros', 'prop')],
+        total: 38900, paid: 19450, split: [1, 2], la: 'Paola pagó su parte', laS: 'hace 20 min · $19,450', next: 'Pago de Andrés', nextS: 'Su parte: $19,450', nx: '', who: 'Tú', ini: 'TÚ', av: '' },
+      { id: 'bel', folio: 'AIR-2470', views: [], hist: [], fmt: 'Cotización', client: 'Luis y Renata Beltrán', dest: 'Oaxaca', pax: '2 personas', dates: '5–9 ene', len: '4 noches', stage: 'Propuesta', ball: 'Cliente',
+        svcs: [S('h', 'Quinta Real Oaxaca', 'Desayuno incluido', 'prop'), S('f', 'Vuelos CUN ⇄ OAX', 'Aeroméxico · 2 pasajeros', 'prop')],
+        total: 27300, opts: 2, paid: 0, la: 'Se envió la cotización', laS: 'hace 4 días · aún no la abren', next: 'Que abra la cotización', nextS: 'Enviada hace 4 días, sin abrir', nx: '', who: 'Asesora 2', ini: 'A2', av: 'b' },
+      { id: 'fer', folio: 'AIR-2455', views: [['FR', 'Fernanda', 7, 'Ayer, 9:30 PM']], hist: [['c', 'Fernanda pagó el total', 'Sáb 26 sep, 1:12 PM'], ['c', 'Fernanda aceptó Riu Caribe', 'Vie 25 sep, 11:03 AM']], fmt: 'Cotización', client: 'Fernanda Ríos', dest: 'Cancún', pax: '2 personas', dates: '2–5 oct', len: '3 noches', stage: 'Confirmado', ball: 'Airoo',
+        svcs: [S('h', 'Riu Caribe', 'Clave 48213-RC', 'ok'), S('f', 'Viva VB 1104', 'Clave K7M2-2 · check-in hoy 10:40 AM', 'ok'), S('a', 'Xcaret Plus', 'Falta el bono del proveedor', 'miss')],
+        total: 31750, paid: 31750, la: 'Se actualizó Hospedaje', laS: 'Ayer, 6:10 PM', tag: 'Clave de reservación', next: 'Check-in de VB 1104', nextS: 'Abre hoy a las 10:40 AM · 2 pasajeros', nx: 'air', act: 'Subir pases', who: 'Tú', ini: 'TÚ', av: '' },
+      { id: 'mar', folio: 'AIR-2441', views: [['MP', 'Mariana', 4, 'Lun 28 sep, 10:05 PM']], hist: [['a', 'Se actualizó Hospedaje', 'Jue 24 sep', 'Clave de reservación'], ['c', 'Mariana pagó el total', 'Mié 23 sep, 4:40 PM']], fmt: 'Cotización', client: 'Mariana Pech', dest: 'Holbox', pax: '2 personas', dates: '12–15 oct', len: '3 noches', stage: 'Confirmado', ball: 'Nadie',
+        svcs: [S('h', 'Casa Las Tortugas', 'Clave HLB-2290', 'ok'), S('a', 'Tour Isla Pasión', 'Bono con folio 5521', 'ok'), S('v', 'Traslado y ferry', 'Chofer asignado', 'ok')],
+        total: 22480, paid: 22480, la: 'Se actualizaron Actividades', laS: 'Lun 28 sep', tag: 'Bono', next: 'Salida', nextS: 'Lun 12 oct · en 11 días', nx: '', who: 'Asesora 3', ini: 'A3', av: 'c' },
+      { id: 'hec', folio: 'AIR-2433', views: [['HV', 'Héctor', 2, 'Hoy, 7:15 AM']], hist: [['a', 'Se actualizó Hospedaje', 'Vie 25 sep', 'Clave de reservación'], ['c', 'Héctor pagó el total', 'Lun 21 sep, 10:20 AM']], fmt: 'Cotización', client: 'Héctor Villarreal', dest: 'Mérida', pax: '2 personas', dates: '29 sep–3 oct', len: '4 noches', stage: 'En viaje', dayTxt: 'Día 1 de 5', ball: 'Proveedor',
+        svcs: [S('h', 'Casa Lecanda', 'Clave verificada por teléfono', 'ok'), S('v', 'Traslado de salida', 'Faltan los datos del chofer', 'miss')],
+        total: 18900, paid: 18900, la: 'Inició el viaje', laS: 'hoy, 9:30 AM', next: 'Regreso', nextS: 'Sáb 3 oct · 6:20 PM', nx: '', who: 'Tú', ini: 'TÚ', av: '' },
+      { id: 'cas', eng: [['Día 3 · Chichén Itzá', 6], ['Día 2 · Isla Mujeres', 3], ['Inversión', 2]], folio: 'AIR-2479', views: [['LC', 'Laura', 3, 'Hace 3 h']], insight: 'Lo que más vio: Día 3, Chichén Itzá · 6 min', hist: [['a', 'Se envió la propuesta', 'Sáb 26 sep, 12:30 PM']], fmt: 'Itinerario', client: 'Grupo Castillo', dest: 'Riviera Maya', pax: '8 personas', dates: '15–22 nov', len: '8 días · 3 destinos', stage: 'Propuesta', ball: 'Cliente',
+        days: [DY(1, 'Llegada a Cancún', 'Traslado y hotel'), DY(2, 'Isla Mujeres', 'Catamarán y comida'), DY(3, 'Chichén Itzá y Valladolid', 'Tour con guía · cenote')], nDays: 8, nSvc: 22, okSvc: 0,
+        total: 184000, paid: 0, la: 'Laura abrió la propuesta', laS: 'hace 3 h · 3 veces en total', next: 'Su respuesta', nextS: 'Vista 3 veces · vence el Vie 2 oct', nx: '', who: 'Asesora 2', ini: 'A2', av: 'b' },
+      { id: 'mqz', eng: [['Día 3 · Izamal', 5], ['Día 2 · Uxmal', 2], ['Inversión', 1]], folio: 'AIR-2484', views: [['SM', 'Sofía', 2, 'Hace 2 h']], hist: [['c', 'Sofía abrió la propuesta', 'Hace 2 h'], ['a', 'Se envió la propuesta', 'Ayer, 4:15 PM']], fmt: 'Itinerario', client: 'Sofía y Daniel Márquez', dest: 'Yucatán', pax: '2 personas', dates: '10–17 nov', len: '8 días · 4 destinos', stage: 'Propuesta', change: true, ball: 'Airoo',
+        days: [DY(1, 'Mérida, centro histórico', 'Hotel y recorrido a pie'), DY(2, 'Uxmal y Ruta Puuc', 'Tour privado'), DY(3, 'Izamal', 'Traslado y comida')], nDays: 8, nSvc: 14, okSvc: 0,
+        total: 64500, paid: 0, la: 'Sofía pidió cambios', laS: 'hace 2 h · día 3', next: 'Ajustar el día 3', nextS: 'Pidió Valladolid en lugar de Izamal; al guardar le llega la versión nueva', nx: 'air', act: 'Ver solicitud', who: 'Tú', ini: 'TÚ', av: '' },
+      { id: 'ort', folio: 'AIR-2462', views: [['JO', 'Javier', 6, 'Ayer, 6:50 PM']], hist: [['a', 'Se habilitó Datos y pago', 'Ayer, 10:00 AM'], ['c', 'Javier aceptó la propuesta', 'Lun 28 sep, 9:12 PM']], fmt: 'Itinerario', client: 'Grupo Ortega', dest: 'Chiapas', pax: '10 personas', dates: '3–9 dic', len: '7 días · 3 destinos', stage: 'Reservando', ball: 'Airoo', okN: 11,
+        days: [DY(1, 'Tuxtla y Cañón del Sumidero', 'Lancha · traslado'), DY(2, 'San Cristóbal de las Casas', 'Hotel y recorrido'), DY(3, 'Chamula y Zinacantán', 'Tour con guía local')], nDays: 7, nSvc: 18, okSvc: 0,
+        total: 121600, paid: 52000, pays: '1 de 3', nextPay: '3 nov', la: 'Javier pagó el anticipo', laS: 'ayer · $52,000', next: 'Reservar 7 servicios', nextS: 'Ya tienen clave 11 de 18', nx: 'air', act: 'Continuar', who: 'Asesora 2', ini: 'A2', av: 'b' },
+      { id: 'ren', note: 'Carmen es quien decide; la factura va a nombre de su empresa.', folio: 'AIR-2451', views: [['CR', 'Carmen', 9, 'Hace 1 h']], hist: [['a', 'Se actualizaron Actividades', 'Mar 22 sep', 'Bono'], ['c', 'Carmen pagó el anticipo', 'Lun 14 sep, 12:05 PM']], fmt: 'Itinerario', client: 'Familia Rentería', dest: 'Tulum', pax: '6 personas', dates: '28 dic–4 ene', len: '8 días · 2 destinos', stage: 'Confirmado', ball: 'Airoo',
+        days: [DY(1, 'Llegada a Tulum', 'Traslado y hotel'), DY(2, 'Cobá y cenotes', 'Tour privado · comida'), DY(3, 'Sian Ka’an', 'Lancha y snorkel')], nDays: 8, nSvc: 16, okSvc: 16,
+        total: 64300, paid: 40100, pays: '1 de 3', nextPay: '5 oct', la: 'Carmen mandó un comprobante', laS: 'hace 1 h · 2º pago · SPEI $12,100', next: 'Validar el 2º pago', nextS: 'SPEI de $12,100 por cotejar con el CEP de Banxico', nx: 'air', act: 'Validar', who: 'Asesora 3', ini: 'A3', av: 'c' },
+      { id: 'dom', fmt: 'Cotización', folio: 'AIR-2486', client: 'Familia Domínguez', dest: 'Los Cabos', pax: '4 personas', dates: '18–23 dic', len: '5 noches', stage: 'Borrador', ball: 'Nadie',
+        svcs: [S('h', 'Hotel por definir', '3 opciones en armado', 'wait'), S('f', 'Vuelos CUN ⇄ SJD', 'Por cotizar', 'wait')], total: 72800, opts: 3, paid: 0, la: 'Se editó el borrador', laS: 'Hace 2 h · Hospedaje', next: '', nextS: '', who: 'Tú', ini: 'TÚ', av: '', views: [], hist: [] },
+      { id: 'tor', fmt: 'Cotización', folio: 'AIR-2418', client: 'Ana Torres', dest: 'Bacalar', pax: '2 personas', dates: '15–18 sep', len: '3 noches', stage: 'Finalizada', ball: 'Nadie',
+        svcs: [S('h', 'Casa Hamaca', 'Clave BCL-771', 'ok'), S('a', 'Laguna de los 7 colores', 'Bono 3310', 'ok')], total: 24600, paid: 24600, la: 'Finalizó el viaje', laS: 'Sáb 19 sep', next: '', nextS: '', who: 'Asesora 3', ini: 'A3', av: 'c', views: [['AT', 'Ana', 11, 'Vie 18 sep, 8:12 AM']], hist: [['c', 'Ana pagó el total', 'Mié 2 sep, 5:30 PM']] },
+      { id: 'med', fmt: 'Cotización', folio: 'AIR-2463', client: 'Jorge Medina', dest: 'Ciudad de México', pax: '1 persona', dates: '8–10 oct', len: '2 noches', stage: 'Cancelada', ball: 'Nadie',
+        svcs: [S('h', 'Hotel Carlota', 'Cancelado con penalidad', 'miss')], total: 9800, paid: 9800, refund: '$6,550', la: 'Se canceló el viaje', laS: 'Jue 24 sep · reembolso $6,550', next: '', nextS: '', who: 'Tú', ini: 'TÚ', av: '', views: [['JM', 'Jorge', 3, 'Jue 24 sep, 1:05 PM']], hist: [['c', 'Jorge pidió cancelar', 'Mié 23 sep, 7:40 PM']] },
+      { id: 'agu', fmt: 'Itinerario', folio: 'AIR-2487', client: 'Pareja Aguilar', dest: 'Japón', pax: '2 personas', dates: '4–16 abr', len: '13 días · 4 ciudades', stage: 'Borrador', ball: 'Nadie',
+        days: [DY(1, 'Llegada a Tokio', 'Traslado y hotel'), DY(2, 'Tokio', 'Asakusa y Shibuya'), DY(3, 'Hakone', 'Tren y ryokan')], nDays: 13, nSvc: 21, okSvc: 0,
+        total: 286000, paid: 0, la: 'Se editó el borrador', laS: 'Ayer, 11:40 PM · día 6 de 13', next: '', nextS: '', who: 'Tú', ini: 'TÚ', av: '', views: [], hist: [] },
+      { id: 'vel', fmt: 'Itinerario', folio: 'AIR-2402', client: 'Familia Velázquez', dest: 'Chiapas', pax: '5 personas', dates: '1–7 sep', len: '7 días · 3 destinos', stage: 'Finalizada', ball: 'Nadie',
+        days: [DY(1, 'Tuxtla y Cañón del Sumidero', 'Lancha · traslado'), DY(2, 'San Cristóbal', 'Hotel y recorrido'), DY(3, 'Palenque', 'Zona arqueológica')], nDays: 7, nSvc: 15, okSvc: 15,
+        total: 98500, paid: 98500, la: 'Finalizó el viaje', laS: 'Mar 8 sep', next: '', nextS: '', who: 'Asesora 2', ini: 'A2', av: 'b', views: [['MV', 'Mónica', 14, 'Lun 7 sep, 9:20 PM']], hist: [] }
+    ];
+    const STG = [['Propuesta', ''], ['Confirmando', 'blue'], ['Datos y pago', 'amber'], ['Reservando', 'blue'], ['Confirmado', 'green'], ['En viaje', 'green']];
+    const stIdx = (n) => STG.findIndex((x) => x[0] === n);
+    const pre = (t) => stIdx(t.stage) <= 2;
+    // Etapa visible = categoría (como Linear); el paso fino lo maneja el sistema
+    // Etapas visibles (definidas por Airoo): cada una coincide con una pantalla del enlace del cliente
+    // La primera etapa se llama según el formato: Cotización (servicios sueltos o paquete) o Propuesta (itinerario)
+    const first = s.tab === 'Itinerario' ? 'Propuesta' : 'Cotización';
+    const MAC = [[first], ['Aprobada'], ['Datos y pago'], ['En reservación'], ['Reservada'], ['En viaje']];
+    const NAME = { 'Borrador': 'Borrador', 'Finalizada': 'Finalizada', 'Cancelada': 'Cancelada', 'Confirmando': 'Aprobada', 'Datos y pago': 'Datos y pago', 'Reservando': 'En reservación', 'Confirmado': 'Reservada', 'En viaje': 'En viaje' };
+    const macro = (t) => (t.stage === 'Propuesta' ? (t.fmt === 'Itinerario' ? 'Propuesta' : 'Cotización') : NAME[t.stage]);
+    const mIdx = (n) => (n === 'Cotización' || n === 'Propuesta' ? 0 : MAC.findIndex((x) => x[0] === n));
+    // Indicador: en Reservado y En viaje dice si todo está subido o si falta algo
+    const subOf = (t) => {
+      const st = t.stage;
+      if (st === 'Borrador') return { txt: 'Sin enviar', c: '', ind: false };
+      if (st === 'Finalizada') return { txt: 'Viaje completado', c: '', ind: false };
+      if (st === 'Cancelada') return { txt: t.refund ? 'Con reembolso' : 'Sin cobro', c: '', ind: false };
+      if (st === 'Propuesta') return t.change ? { txt: 'Solicitud de cambios', c: 'tag', ind: false } : { txt: 'Con el cliente', c: '', ind: false };
+      if (st === 'Confirmando') return { txt: 'Por revalidar', c: 'air', ind: false };
+      if (st === 'Datos y pago') return { txt: t.left ? 'Vence en ' + t.left : 'Con el cliente', c: t.leftHot ? 'tm hot' : 'tm', ind: false };
+      if (st === 'Reservando') return { txt: (t.okN || 0) + ' de ' + (t.nSvc || t.svcs.length) + ' con clave', c: 'air', ind: false };
+      // Indicador simple: reserva completa o cuántas piezas faltan (claves, bonos, datos)
+      const n = t.svcs ? t.svcs.length : t.nSvc, ok = t.svcs ? t.svcs.filter((x) => x.st === 'ok').length : t.okSvc;
+      if (ok >= n) return { txt: 'Reserva completa', c: 'ok', ind: true };
+      const pend = t.svcs ? t.svcs.filter((x) => x.st !== 'ok').map((x) => x.t).join(' · ') : '';
+      return { txt: 'Falta ' + (n - ok) + ' de ' + n, tip: 'Pendiente: ' + pend, c: 'part', ind: true };
+    };
+    const dotOf = (t) => (waitsAiroo(t) ? 'blue' : (t.stage === 'Confirmado' || t.stage === 'En viaje' ? 'green' : 'gray'));
+    const isDone = (t) => s.done.indexOf(t.id) >= 0;
+    const waitsAiroo = (t) => t.ball === 'Airoo' && !isDone(t);
+    const svcInfo = (t) => {
+      if (t.fmt === 'Itinerario') {
+        if (pre(t)) return { txt: t.nSvc + ' servicios', c: '' };
+        return t.okSvc === t.nSvc ? { txt: 'Todo confirmado', c: 'ok' } : { txt: t.okSvc + ' de ' + t.nSvc + ' confirmados', c: '' };
+      }
+      const n = t.svcs.length, miss = t.svcs.filter((x) => x.st === 'miss').length;
+      if (pre(t)) return { txt: n + (n === 1 ? ' servicio' : ' servicios'), c: '' };
+      if (miss) return { txt: miss + ' por completar', c: 'miss' };
+      return { txt: 'Todo confirmado', c: 'ok' };
+    };
+    // Inversión: antes de Datos y pago solo el monto (nadie ha pagado); desde Datos y pago, el estado del cobro
+    const payInfo = (t) => {
+      const pct = Math.round(t.paid / t.total * 100) + '%';
+      if (t.stage === 'Cancelada') return { pre: '', txt: 'Reembolsado ' + t.refund, bar: false, w: '0%', c: '' };
+      if (t.stage === 'Propuesta' || t.stage === 'Confirmando' || t.stage === 'Borrador') return { pre: t.opts ? 'Desde ' : '', txt: t.opts ? t.opts + ' opciones' : '', bar: false, w: '0%', c: '' };
+      if (t.paid >= t.total) return { pre: '', txt: 'Pagado', bar: true, w: '100%', c: 'ok' };
+      if (t.stage === 'Datos y pago') return t.split && t.paid > 0 ? { pre: '', txt: t.split[0] + ' de ' + t.split[1] + ' partes pagadas', bar: true, w: pct, c: '' } : { pre: '', txt: 'Sin pagar', bar: false, w: '0%', c: '' };
+      if (t.late) return { pre: '', txt: t.pays + ' · venció ' + t.nextPay, bar: true, w: pct, c: 'late' };
+      return { pre: '', txt: t.pays + ' · próx. ' + t.nextPay, bar: true, w: pct, c: '' };
+    };
+    const ballOf = (t) => (isDone(t) ? 'Hecho' : (t.ball === 'Nadie' ? 'Todo listo' : t.ball));
+
+    // ---------- Filtros por columna ----------
+    // Alcance: en curso (por defecto), borradores, finalizados, cancelados o todos
+    const scopeOf = (t) => (t.stage === 'Borrador' ? 'borr' : (t.stage === 'Finalizada' ? 'fin' : (t.stage === 'Cancelada' ? 'canc' : 'curso')));
+    const inScope = (t) => s.scope === 'todos' || scopeOf(t) === s.scope;
+    const inTab = trips.filter((t) => t.fmt === s.tab && inScope(t));
+    const pass = (t, skip) => (skip === 'fs' || !s.fs || macro(t) === s.fs) && (skip === 'fb' || !s.fb || ballOf(t) === s.fb) && (skip === 'fw' || !s.fw || t.who === s.fw);
+    const mkFilter = (key, allLbl, values, getVal, toneOf) => {
+      const base = inTab.filter((t) => pass(t, key));
+      const opts = [{ v: '', l: allLbl, tone: 'none', n: base.length }].concat(values.map((v) => ({ v: v, l: v, tone: toneOf ? toneOf(v) : 'none', n: base.filter((t) => getVal(t) === v).length })));
+      return {
+        on: s[key] ? 'on' : '', aria: s.dd === key ? 'true' : 'false', cls: s.dd === key ? '' : 'hide',
+        toggle: (e) => { this.stop(e); this.setState({ dd: this.state.dd === key ? '' : key }); },
+        opts: opts.map((o) => ({ l: o.l, n: o.n, tone: o.tone, c: s[key] === o.v ? 'on' : (o.n || !o.v ? '' : 'z'), aria: s[key] === o.v ? 'true' : 'false',
+          go: (e) => { this.stop(e); if (o.n || !o.v) { const st = { dd: '', sel: '' }; st[key] = o.v; this.setState(st); } } }))
+      };
+    };
+    const fs = mkFilter('fs', 'Todas', s.scope === 'curso' ? MAC.map((x) => x[0]) : (s.scope === 'todos' ? MAC.map((x) => x[0]).concat(['Borrador', 'Finalizada', 'Cancelada']) : [...new Set(inTab.map(macro))]), macro, () => 'none');
+    const fb = mkFilter('fb', 'Todos', ['Airoo', 'Cliente', 'Proveedor', 'Todo listo'], ballOf, (v) => ({ Airoo: 'blue', 'Todo listo': 'green' })[v] || 'gray');
+    const fw = mkFilter('fw', 'Todo el equipo', ['Tú', 'Asesora 2', 'Asesora 3'], (t) => t.who, null);
+
+    const rows = inTab.filter((t) => pass(t, '')).sort((x, y) => (waitsAiroo(x) ? 0 : 1) - (waitsAiroo(y) ? 0 : 1)).map((t) => {
+      const sv0 = svcInfo(t), py = payInfo(t), w = waitsAiroo(t), dn = isDone(t);
+      const sv = subOf(t);
+      return {
+        client: t.client, folio: t.folio, dest: t.dest, pax: t.pax, dates: t.dates, len: t.len, stage: macro(t), stTone: dotOf(t),
+        ball: ballOf(t), pdCls: w ? 'air' : (t.ball === 'Nadie' || dn ? 'ok' : ''),
+        svTxt: sv.txt, svCls: sv.c, svTip2: sv.tip || sv.txt, svTip: t.svcs ? t.svcs.map((x) => x.t).join(' · ') : t.nDays + ' días con ' + t.nSvc + ' servicios',
+        amt: py.pre + money(t.total), payTxt: py.txt, hasTxt: !!py.txt, payCls: py.c, hasBar: py.bar, payW: py.w,
+        next: t.la, nextS: t.laS.charAt(0).toUpperCase() + t.laS.slice(1), tag: t.tag || '', hasTag: !!t.tag, nxCls: '', who: t.who, ini: t.ini, avCls: t.av, selCls: s.sel === t.id ? 'sel' : '',
+        hasAct: w && !!t.act, act: t.act || '', isDone: dn, plain: !(w && t.act) && !dn,
+        doAct: (e) => { this.stop(e); this.setState({ done: this.state.done.concat([t.id]) }); this.toast(t.act + ' · ' + t.client + ' — listo'); },
+        open: () => this.setState({ sel: t.id, dd: '' })
+      };
+    });
+    this.rowIds = inTab.filter((t) => pass(t, '')).sort((x, y) => (waitsAiroo(x) ? 0 : 1) - (waitsAiroo(y) ? 0 : 1)).map((t) => t.id);
+    const tabs = ['Cotización', 'Itinerario'].map((f) => ({ l: f === 'Cotización' ? 'Cotizaciones' : 'Itinerarios', n: trips.filter((t) => t.fmt === f && inScope(t)).length, c: s.tab === f ? 'on' : '', aria: s.tab === f ? 'true' : 'false', go: () => this.setState({ tab: f, fs: '', fw: '', sel: '', dd: '' }) }));
+    const airN = trips.filter(waitsAiroo).length;
+    const SC = [['curso', 'En curso'], ['borr', 'Borradores'], ['fin', 'Finalizados'], ['canc', 'Cancelados'], ['todos', 'Todos']];
+    const scOpts = SC.map(([v, l]) => { const n = trips.filter((t) => t.fmt === s.tab && (v === 'todos' || scopeOf(t) === v)).length; return { l: l, n: n, tone: 'none', c: s.scope === v ? 'on' : (n ? '' : 'z'), aria: s.scope === v ? 'true' : 'false', go: (e) => { this.stop(e); if (n) this.setState({ scope: v, view: 'list', fs: '', sel: '', dd: '' }); } }; });
+
+    // ---------- Semana ----------
+    const fmtOf = (id) => (trips.find((x) => x.id === id) || {}).fmt;
+    const E = (tone, tm, t, sub, id) => ({ id: id, tone: tone, dot: tone || 'gray', tm: tm, t: t, s: sub, go: () => this.setState({ sel: id }) });
+    const week = [
+      { dow: 'Hoy', date: 'Martes 29 sep', c: 'today', items: [E('blue', '10:40 AM', 'Se abre el check-in de VB 1104', 'Fernanda Ríos · 2 pasajeros', 'fer'), E('amber', '11:30 AM', 'Termina el plazo de Paola Sandoval', 'Datos y pago · Puerto Vallarta', 'pao'), E('green', 'Día 1 de 5', 'Héctor Villarreal en Mérida', 'Regresa el Sáb 3 oct', 'hec')] },
+      { dow: 'Mañana', date: 'Miércoles 30 sep', items: [E('', 'Sugerido', 'Recordar la propuesta a Luis y Renata', 'Oaxaca · aún sin abrir', 'bel')] },
+      { dow: 'Jueves', date: '1 oct', items: [E('amber', 'Todo el día', 'Termina la cancelación gratuita', 'Dreams Tulum · Familia Rentería', 'ren'), E('', 'Proveedor', 'Llega el bono de Xcaret Plus', 'Fernanda Ríos', 'fer')] },
+      { dow: 'Viernes', date: '2 oct', items: [E('blue', '10:40 AM', 'Fernanda Ríos sale a Cancún', 'VB 1104 · CDMX → Cancún', 'fer'), E('', 'Vigencia', 'Termina la vigencia de la propuesta', 'Grupo Castillo · Riviera Maya', 'cas'), E('', 'Proveedor', 'Llegan datos del traslado de salida', 'Héctor Villarreal', 'hec')] },
+      { dow: 'Sábado', date: '3 oct', items: [E('green', '6:20 PM', 'Héctor Villarreal regresa', 'Mérida → CDMX', 'hec')] },
+      { dow: 'Domingo', date: '4 oct', items: [] },
+      { dow: 'Lunes', date: '5 oct', items: [E('amber', '$12,100', 'Vence el 2º pago', 'Familia Rentería · recordatorio el Vie 2 oct', 'ren')] }
+    ];
+    const weekAll = week;
+    const weekTab = week.map((d) => { const it = d.items.filter((e) => fmtOf(e.id) === s.tab); return Object.assign({}, d, { items: it, empty: it.length === 0, c: (d.c || '') + (it.length ? '' : ' empty') }); });
+
+    // ---------- Vista rápida ----------
+    const t = trips.find((x) => x.id === s.sel) || trips[0];
+    const ST_TXT = { ok: ['Completo', 'ok'], miss: ['Pendiente', ''], wait: ['Por confirmar', ''], prop: ['Precio confirmado', ''] };
+    const items = t.svcs
+      ? t.svcs.map((x) => { const v = t.stage === 'Propuesta' ? ['En propuesta', ''] : ST_TXT[x.st]; return { h: x.k === 'h', f: x.k === 'f', a: x.k === 'a', v: x.k === 'v', dy: false, dn: '', t: x.t, s: x.d, st: v[0], c: v[1] }; })
+      : t.days.map((x) => ({ h: false, f: false, a: false, v: false, dy: true, dn: x.n, t: x.t, s: x.d, st: '', c: '' }));
+    const air = waitsAiroo(t);
+    const tone = { c: 'blue', a: 'gray', s: 'green' };
+    const role = (i, v) => (v[4] || (i === 0 ? 'Titular' : 'Acompañante'));
+    const views = (t.views || []).map((v, i) => ({ ini: v[0], who: v[1], n: role(i, v) + ' · ' + (v[2] === 1 ? 'abrió 1 vez' : 'abrió ' + v[2] + ' veces') + (v[5] > 1 ? ' · ' + v[5] + ' dispositivos' : ''), last: v[3] }));
+    const histAll = [{ k: 'c', t: t.la, s: t.laS, tag: t.tag }].concat((t.hist || []).map((h) => ({ k: h[0], t: h[1], s: h[2], tag: h[3] })));
+    const hist = histAll.map((h, i) => ({ dot: i === 0 ? 'now' : (h.k === 'a' ? 'gray' : 'blue'), t: h.t, s: h.s.charAt(0).toUpperCase() + h.s.slice(1), tag: h.tag || '', hasTag: !!h.tag }));
+    const d = {
+      pos: (this.rowIds.indexOf(t.id) + 1) + ' de ' + this.rowIds.length, hasPos: this.rowIds.indexOf(t.id) >= 0,
+      prev: () => this.step(-1), next2: () => this.step(1),
+      note: t.note || '', hasNote: !!t.note, addNote: () => this.toast('Nota interna: solo la ve el equipo'),
+      reassign: () => this.toast('Reasignar a otra persona del equipo'), whoLbl: t.who,
+      eng: (t.eng || []).map((e) => ({ l: e[0], m: e[1] < 1 ? Math.round(e[1] * 60) + ' s' : e[1] + ' min', w: Math.round(e[1] / (t.eng[0][1]) * 100) + '%' })), hasEng: !!t.eng,
+      shares: (t.shares || []).map((x) => ({ who: x[0], amt: x[1], st: x[2], c: x[2] === 'Pagado' ? 'ok' : '', when: x[3] })), hasShares: !!t.shares,
+      showCard: air, folio: t.folio, views: views, hasViews: views.length > 0, noViews: views.length === 0 && t.stage !== 'Borrador', isDraft: t.stage === 'Borrador', notDraft: t.stage !== 'Borrador', openLbl: t.stage === 'Borrador' ? 'Seguir editando' : 'Abrir viaje', insight: t.insight || '', hasInsight: !!t.insight,
+      hist: hist, nudge: () => this.toast('Abriendo WhatsApp con un recordatorio para ' + t.client), copyFolio: () => this.toast('Folio ' + t.folio + ' copiado'),
+      client: t.client, fmt: t.fmt, dest: t.dest, pax: t.pax, dates: t.dates, len: t.len, stage: macro(t), sub: mIdx(macro(t)) < 0 ? (t.stage === 'Borrador' ? 'Sin enviar' : 'Cerrado') : (t.stage === 'Datos y pago' && t.left ? 'Vence en ' + t.left + ' · ' : '') + 'Etapa ' + (mIdx(macro(t)) + 1) + ' de 6', subCls: t.leftHot ? 'hot' : '',
+      prog: MAC.map((x, i) => ({ c: i <= mIdx(macro(t)) ? 'on' : '' })),
+      nxtCls: air ? 'air' : '', nxtK: air ? 'Pendiente de Airoo' : (isDone(t) ? 'Hecho hoy' : (t.ball === 'Nadie' ? 'Todo listo' : 'Pendiente de ' + t.ball.toLowerCase())),
+      next: t.next, nextS: t.nextS, hasAct: !!(air && t.act), act: ({ 'Revisar': 'Revisar selección', 'Subir pases': 'Subir pases de abordar', 'Capturar': 'Capturar datos del traslado', 'Validar': 'Validar comprobante', 'Continuar': 'Continuar reservas', 'Ver solicitud': 'Ver solicitud de cambios' })[t.act] || t.act || '',
+      doAct: () => { this.setState({ done: this.state.done.concat([t.id]) }); this.toast(t.act + ' · ' + t.client + ' — listo'); },
+      listK: t.svcs ? 'Servicios' : 'Itinerario · ' + t.nDays + ' días, ' + t.nSvc + ' servicios',
+      items: items, hasMore: !t.svcs, more: t.days ? 'y ' + (t.nDays - t.days.length) + ' días más en el expediente' : '',
+      amt: money(t.total), paid: money(t.paid), bal: money(t.total - t.paid),
+      payNote: t.paid >= t.total ? 'Liquidado.' : (t.split && t.paid > 0 ? t.split[0] + ' de ' + t.split[1] + ' partes pagadas · cada quien paga su parte' : (t.paid > 0 ? 'Esquema flexible · ' + t.pays + ' pagos · el siguiente vence el ' + t.nextPay : (t.stage === 'Borrador' ? 'Todavía no se envía.' : (t.stage === 'Propuesta' || t.stage === 'Confirmando' ? 'Todavía no se cobra nada.' : 'Aún sin pagos.')))),
+      openFull: () => this.toast('Abriendo el viaje de ' + t.client),
+      copy: () => this.toast('Enlace del cliente copiado'),
+      wa: () => this.toast('Abriendo WhatsApp con ' + t.client)
+    };
+
+    return {
+      toastCls: s.toastOn ? 'show' : '', toastMsg: s.toast,
+      pendCount: airN,
+      airN: airN, airTxt: airN === 1 ? 'viaje espera a Airoo' : 'viajes esperan a Airoo', sumOn: s.fb === 'Airoo' ? 'on' : '',
+      sumGo: () => this.setState({ fb: this.state.fb === 'Airoo' ? '' : 'Airoo', view: 'list', sel: '', dd: '' }),
+      todayN: weekAll[0].items.length,
+      tabs: tabs, fs: fs, fb: fb, fw: fw, rows: rows, noRows: rows.length === 0,
+      hasFilter: s.view === 'list' && !!(s.fs || s.fb || s.fw), clear: () => this.setState({ fs: '', fb: '', fw: '', dd: '' }),
+      ddScrim: s.dd ? 'show' : '', closeDd: () => this.setState({ dd: '' }),
+      scOpts: scOpts, scLbl: (SC.find((x) => x[0] === s.scope) || SC[0])[1], scCls: s.dd === 'sc' ? '' : 'hide', scAria: s.dd === 'sc' ? 'true' : 'false', scOn: s.scope !== 'curso' ? 'on' : '', toggleSc: (e) => { this.stop(e); this.setState({ dd: this.state.dd === 'sc' ? '' : 'sc' }); },
+      week: weekTab, isList: s.view === 'list', isWeek: s.view === 'week', noRowsList: s.view === 'list' && rows.length === 0,
+      vList: s.view === 'list' ? 'on' : '', vWeek: s.view === 'week' ? 'on' : '', vListA: s.view === 'list' ? 'true' : 'false', vWeekA: s.view === 'week' ? 'true' : 'false',
+      toList: () => this.setState({ view: 'list', dd: '' }), toWeek: () => this.setState({ view: 'week', scope: 'curso', dd: '', fs: '', fb: '', fw: '' }), sumWkOn: s.view === 'week' ? 'on' : '',
+      d: d, dwCls: s.sel ? 'show' : '', dwHidden: s.sel ? 'false' : 'true', closeDw: () => this.setState({ sel: '' }),
+      goAll: () => this.toast('Abriendo Viajes'),
+      toggleNew: () => this.setState({ newOpen: !s.newOpen }), newCls: s.newOpen ? '' : 'hide', newAria: s.newOpen ? 'true' : 'false',
+      newQuote: () => { this.setState({ newOpen: false }); this.toast('Nueva cotización'); },
+      newItin: () => { this.setState({ newOpen: false }); this.toast('Nuevo itinerario'); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

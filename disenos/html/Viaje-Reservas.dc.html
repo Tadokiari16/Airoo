@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Viaje — Reservas, documentos y pagos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @font-face{font-family:'Gilroy';src:url('/_blob/d2971e4914c568b7fb975aee938c520c') format('woff2');font-weight:400;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b38c2f6d8a0db38a666c83d42de6f131') format('woff2');font-weight:500;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/e28fca6b11aea736d015f7c6ae228b33') format('woff2');font-weight:600;font-display:swap;}
+  @font-face{font-family:'Gilroy';src:url('/_blob/b7704f0977acb34751e227ce45ce9c18') format('woff2');font-weight:700;font-display:swap;}
+  :root{--blue:#1463F6;--blue-d:#0050BB;--blue-t:#EAF0FE;--blue-t2:#D3E0FD;--ink:#111A2B;--ink2:#566175;--ink3:#68707F;--line:#E8EBF0;--bg:#F2F4F8;--card:#FFFFFF;--amber:#94580A;--amber-t:#FFF3DF;--green:#16784A;--green-t:#E4F5EB;--red:#A23B3B;--red-t:#FCE9E9;--ease:cubic-bezier(.2,.8,.2,1);}
+  *{box-sizing:border-box;}
+  html{overflow-x:hidden;}
+  body{margin:0;overflow-x:hidden;font-family:'Gilroy',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.45;}
+  button{font-family:inherit;color:inherit;}
+  h1,h2,h3{margin:0;}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .row{display:flex;align-items:center;}
+  .app{display:flex;width:1440px;min-height:100vh;}
+  /* ---- Barra lateral ---- */
+  .side{width:232px;flex-shrink:0;background:#fff;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:22px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px;}
+  .brand img{width:30px;height:30px;display:block;}
+  .brand b{font-size:19px;font-weight:700;letter-spacing:-.02em;}
+  .brand span{font-size:11.5px;color:var(--ink3);font-weight:600;border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:auto;}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav-k{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:14px 10px 6px;}
+  .nv{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:none;border-radius:10px;background:none;font-size:14px;font-weight:600;color:var(--ink2);cursor:pointer;text-align:left;width:100%;}
+  .nv svg{color:var(--ink3);flex-shrink:0;}
+  .nv:hover{background:#F4F6FA;}
+  .nv.on{background:var(--blue-t);color:var(--blue-d);}
+  .nv .cnt.g{background:#E3E8F0;color:var(--ink);}
+  .nv.on svg{color:var(--blue);}
+  .nv .cnt{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:999px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;}
+  .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--line);}
+  .av{width:28px;height:28px;border-radius:50%;background:var(--blue-t);color:var(--blue-d);font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .av.b{background:#EFE9FB;color:#5B3FA0;} .av.c{background:#E4F5EB;color:var(--green);}
+  /* ---- Contenido ---- */
+  .main{flex:1;min-width:0;padding:24px 32px 40px;}
+  .top{display:flex;align-items:center;gap:14px;}
+  .search{flex:1;max-width:520px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;gap:10px;padding:0 12px;color:var(--ink3);font-size:14px;}
+  .search kbd{margin-left:auto;font-family:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:6px;padding:2px 6px;}
+  .btn{height:40px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 16px;cursor:pointer;white-space:nowrap;transition:background-color .15s var(--ease);}
+  .btn:hover{background:var(--blue-d);}
+  .btn2{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 12px;cursor:pointer;white-space:nowrap;color:var(--ink);}
+  .btn2:hover{background:#F7F8FA;}
+  .btn2.pri{background:var(--blue);color:#fff;box-shadow:none;}
+  .btn2.pri:hover{background:var(--blue-d);}
+  .hello{margin:26px 0 20px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .hello h1{font-size:28px;font-weight:700;letter-spacing:-.02em;}
+  .hello h1::first-letter{color:var(--blue);}
+  .hello p{margin:4px 0 0;color:var(--ink2);font-size:14.5px;}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+  .card{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(17,26,43,.04),0 8px 24px -18px rgba(17,26,43,.2);}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 10px;}
+  .card-h h2{font-size:17px;font-weight:700;}
+  .card-h .s{font-size:13px;color:var(--ink3);font-weight:500;}
+  .badge{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .b-blue{background:var(--blue-t);color:var(--blue-d);} .b-green{background:var(--green-t);color:var(--green);}
+  .b-amber{background:var(--amber-t);color:var(--amber);} .b-gray{background:#EEF1F5;color:var(--ink2);} .b-red{background:var(--red-t);color:var(--red);}
+  .b-ball{background:var(--blue);color:#fff;}
+  /* ---- Bandeja de pendientes ---- */
+  .grp{padding:4px 18px 8px;}
+  .grp-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px;display:flex;align-items:center;gap:8px;}
+  .grp-k i{flex:1;height:1px;background:var(--line);}
+  .td{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);}
+  .grp-k + .td{border-top:none;}
+  .td-ic{flex-shrink:0;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+  .td-ic.blue{background:var(--blue-t);color:var(--blue);} .td-ic.amber{background:var(--amber-t);color:var(--amber);}
+  .td-ic.green{background:var(--green-t);color:var(--green);} .td-ic.gray{background:#EEF1F5;color:var(--ink2);} .td-ic.red{background:var(--red-t);color:var(--red);}
+  .td-t{min-width:0;display:flex;flex-direction:column;}
+  .td-t b{font-weight:600;font-size:14.5px;}
+  .td-t > span{font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .td-a{display:flex;align-items:center;gap:8px;}
+  .when{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;min-width:92px;text-align:right;}
+  .when.hot{color:var(--amber);} .when.late{color:var(--red);}
+  .done-row{display:flex;align-items:center;gap:10px;padding:10px 18px 16px;color:var(--green);font-size:13.5px;font-weight:600;}
+  /* ---- Agenda ---- */
+  .ag{padding:2px 18px 14px;}
+  .ag-d{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 4px;}
+  .grid2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;}
+  .ag-r{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;margin:0 -8px;width:calc(100% + 16px);border:none;background:none;border-radius:10px;text-align:left;cursor:pointer;transition:background-color .12s var(--ease);}
+  .ag-r:hover{background:#F4F6FA;}
+  .ag-d.today{color:var(--blue-d);}
+  .st-s{display:block;font-size:12.5px;color:var(--ink3);margin:3px 0 0 14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .st-s.ok{color:var(--green);font-weight:600;} .st-s.miss{color:var(--amber);font-weight:600;} .st-s.air{color:var(--blue-d);font-weight:600;}
+  .st-s.ok::before{content:'✓ ';} .st-s.tm::before{content:'◷ ';} .st-s.tm.hot{color:var(--amber);font-weight:600;}
+  .st-s.part{color:var(--ink2);}
+  .st-s.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;margin-top:4px;} .st-s.part::before{content:'◐ ';} .st-s.miss::before{content:'● ';font-size:9px;vertical-align:2px;}
+  .st i.gray{background:#AAB3C1;}
+  .ag-r .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .dot.blue{background:var(--blue);} .dot.amber{background:#D38A1E;} .dot.green{background:#2E9A62;} .dot.gray{background:#AAB3C1;}
+  .ag-r b{font-weight:600;font-size:13.5px;display:block;line-height:1.35;}
+  .ag-r div > span{font-size:12.5px;color:var(--ink2);}
+  .ag-r > .tm{margin-left:auto;padding-left:6px;font-size:12.5px;color:var(--ink3);font-weight:600;white-space:nowrap;}
+  /* ---- Viajes: pestañas por formato + etapas ---- */
+  .vj{position:relative;}
+  .vj-h{display:flex;align-items:flex-end;gap:22px;padding:14px 18px 0;margin-bottom:0;border-bottom:1px solid var(--line);}
+  .vj-h h2{font-size:17px;font-weight:700;padding-bottom:12px;margin-right:6px;}
+  .tab{border:none;background:none;padding:0 2px 11px;font-size:14.5px;font-weight:600;color:var(--ink3);cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 -2px 0 transparent;transition:color .15s var(--ease),box-shadow .15s var(--ease);}
+  .tab:hover{color:var(--ink);}
+  .tab.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--blue);}
+  .tab > span:last-child{font-size:12px;font-weight:700;color:var(--ink2);background:#EEF1F5;border-radius:999px;min-width:22px;height:20px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;}
+  .tab.on > span:last-child{background:var(--blue-t);color:var(--blue-d);}
+  .lnk{margin-bottom:10px;border:none;background:none;font-size:13.5px;font-weight:600;color:var(--blue-d);cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:6px 4px;border-radius:8px;}
+  .lnk:hover{background:var(--blue-t);}
+  .sps{display:flex;gap:6px;padding:12px 18px;flex-wrap:wrap;}
+  .sp{height:32px;border:none;border-radius:999px;background:none;padding:0 12px;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background-color .15s var(--ease),color .15s var(--ease);}
+  .sp:hover{background:#F2F4F8;color:var(--ink);}
+  .sp > span:last-child{font-weight:700;color:var(--ink3);}
+  .sp.on{background:var(--ink);color:#fff;}
+  .sp.on > span:last-child{color:rgba(255,255,255,.7);}
+  .sp.z{color:#A7AEBA;cursor:default;} .sp.z:hover{background:none;color:#A7AEBA;}
+  .sp.z > span:last-child{color:#C3C8D1;}
+  .dd-w{position:relative;margin-left:auto;margin-bottom:9px;z-index:5;}
+  .dd-w .dd-m{right:0;left:auto;}
+  .dd{height:34px;border:none;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px 0 12px;cursor:pointer;color:var(--ink);white-space:nowrap;}
+  .dd:hover{background:#F7F8FA;}
+  .dd.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);color:var(--blue-d);}
+  .dd-k{color:var(--ink3);font-weight:600;}
+  .dd.on .dd-k{color:var(--blue-d);opacity:.75;}
+  .dd svg{color:var(--ink3);}
+  .dd-m{top:40px;width:250px;}
+  .mo{display:flex;align-items:center;gap:10px;width:100%;height:38px;border:none;background:none;border-radius:9px;padding:0 10px;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;}
+  .mo:hover{background:#F4F6FA;}
+  .mo > i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .mo > i.blue{background:var(--blue);} .mo > i.amber{background:#D38A1E;} .mo > i.green{background:#2E9A62;} .mo > i.teal{background:#0E8C8C;} .mo > i.none{background:transparent;}
+  .mo > span:nth-of-type(2){margin-left:auto;color:var(--ink3);font-weight:700;}
+  .mo-ck{width:16px;display:inline-flex;color:var(--blue);visibility:hidden;}
+  .mo.on .mo-ck{visibility:visible;}
+  .mo.z{color:#A7AEBA;cursor:default;} .mo.z:hover{background:none;}
+  .mo.z > span:nth-of-type(2){color:#C3C8D1;}
+  .dd-scrim{position:fixed;inset:0;z-index:4;display:none;}
+  .dd-scrim.show{display:block;}
+  /* resumen del saludo */
+  .sum{display:flex;gap:10px;}
+  .sum-c{display:inline-flex;align-items:center;gap:8px;height:40px;border:none;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);padding:0 14px;font-size:13.5px;color:var(--ink2);font-weight:500;}
+  .sum-c b{font-size:16px;font-weight:700;color:var(--ink);}
+  button.sum-c{cursor:pointer;transition:background-color .15s var(--ease),box-shadow .15s var(--ease);}
+  .sum-c.air i{width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .sum-c.air b{color:var(--blue-d);}
+  button.sum-c:hover{background:#F7F9FD;}
+  .sum-c.air.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* filtros en el encabezado de columna */
+  .fth{position:relative;}
+  .thb{border:none;background:none;padding:4px 6px;margin:-4px -6px;border-radius:7px;font:inherit;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+  .thb:hover{background:#EEF1F5;color:var(--ink);}
+  .thb svg{width:13px;height:13px;}
+  .thb-d{display:none;width:6px;height:6px;border-radius:50%;background:var(--blue);}
+  .thb.on{color:var(--blue-d);background:var(--blue-t);}
+  .thb.on .thb-d{display:inline-block;}
+  .fth .dd-m{left:6px;right:auto;top:38px;text-transform:none;letter-spacing:0;z-index:20;}
+  .fth.r .dd-m{left:auto;right:-40px;}
+  .menu.hide{visibility:hidden;}
+  .clr{color:var(--ink2);}
+  .ract{text-align:right;white-space:nowrap;padding-right:18px!important;}
+  .ract .btn2{height:32px;}
+  .listo{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--green);}
+  /* semana */
+  .sched{padding:6px 18px 10px;}
+  .sd{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:14px 0;border-top:1px solid var(--line);align-items:start;}
+  .sd:first-child{border-top:none;}
+  .sd-h{display:flex;flex-direction:column;padding-top:4px;}
+  .sd-h b{font-size:15px;font-weight:700;}
+  .sd-h > span{font-size:12.5px;color:var(--ink3);font-weight:500;}
+  .sd.today .sd-h b{color:var(--blue-d);}
+  .sd-l{display:flex;flex-wrap:wrap;gap:10px;}
+  .sd.empty{padding:10px 0;}
+  .sd.empty .sd-h{flex-direction:row;gap:8px;align-items:baseline;padding-top:0;}
+  .sd.empty .sd-h b{font-size:14px;color:var(--ink3);font-weight:600;}
+  .sd-e{font-size:13px;color:#A7AEBA;}
+  .we{flex:0 0 268px;}
+  .we{border:none;background:#F7F8FB;border-radius:12px;padding:10px 12px 10px 15px;text-align:left;cursor:pointer;box-shadow:inset 3px 0 0 #AAB3C1,0 1px 2px rgba(17,26,43,.05);display:flex;flex-direction:column;gap:1px;transition:box-shadow .15s var(--ease),transform .15s var(--ease);}
+  .we:hover{box-shadow:inset 3px 0 0 #AAB3C1,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.blue{box-shadow:inset 3px 0 0 var(--blue),0 1px 2px rgba(17,26,43,.05);} .we.blue:hover{box-shadow:inset 3px 0 0 var(--blue),0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.amber{box-shadow:inset 3px 0 0 #D38A1E,0 1px 2px rgba(17,26,43,.05);} .we.amber:hover{box-shadow:inset 3px 0 0 #D38A1E,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we.green{box-shadow:inset 3px 0 0 #2E9A62,0 1px 2px rgba(17,26,43,.05);} .we.green:hover{box-shadow:inset 3px 0 0 #2E9A62,0 4px 12px -4px rgba(17,26,43,.18);}
+  .we b{font-size:14px;font-weight:600;line-height:1.35;margin-top:1px;}
+  .we > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.35;}
+  .we-tm{font-size:12px;font-weight:700;color:var(--ink3);}
+  .vw{display:inline-flex;background:#EEF1F5;border-radius:10px;padding:3px;margin-bottom:9px;margin-right:4px;}
+  .vw button{height:30px;border:none;border-radius:8px;background:none;padding:0 11px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .vw button svg{width:15px;height:15px;color:var(--ink3);}
+  .vw button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(17,26,43,.1);}
+  .vw button.on svg{color:var(--blue);}
+  .sum-c.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);}
+  /* celdas sobrias: el color solo marca lo que pide acción */
+  .st{display:inline-flex;align-items:center;gap:7px;font-weight:600;white-space:nowrap;}
+  .st i{width:7px;height:7px;border-radius:50%;background:#AAB3C1;flex-shrink:0;}
+  .st i.blue{background:var(--blue);} .st i.amber{background:#D38A1E;} .st i.green{background:#2E9A62;} .st i.teal{background:#0E8C8C;}
+  .pd{font-size:13.5px;color:var(--ink3);font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;}
+  .pd.air{color:var(--blue-d);font-weight:700;}
+  .pd.air::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);}
+  .pd.ok{color:var(--green);font-weight:600;}
+  .svt{font-size:13.5px;color:var(--ink2);white-space:nowrap;}
+  .svt.ok{color:var(--green);font-weight:600;} .svt.miss{color:var(--amber);font-weight:600;}
+  .dt > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;}
+  .py{display:flex;flex-direction:column;gap:3px;min-width:120px;}
+  .py b{font-weight:600;font-size:13.5px;}
+  .py-s{font-size:12.5px;color:var(--ink3);white-space:nowrap;}
+  .py.ok .py-s{color:var(--green);font-weight:600;} .py.late .py-s{color:var(--amber);font-weight:600;} .py.late .bar i{background:#D38A1E;}
+  .py .bar{margin-top:2px;}
+  .chev{color:#B6BDC8;opacity:0;transition:opacity .12s var(--ease);}
+  .tbl tr.r:hover .chev{opacity:1;}
+  .chev{display:inline-flex;}
+  .tbl tr.r.sel{background:var(--blue-t);}
+  /* ---- Panel lateral (vista rápida) ---- */
+  .scrim{position:fixed;inset:0;background:rgba(17,26,43,.28);opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;z-index:30;}
+  .scrim.show{opacity:1;visibility:visible;}
+  .dw{position:fixed;top:0;right:0;height:100vh;width:460px;background:#fff;box-shadow:-1px 0 0 var(--line),-24px 0 48px -24px rgba(17,26,43,.28);transform:translateX(104%);visibility:hidden;transition:transform .25s var(--ease),visibility .25s;z-index:31;display:flex;flex-direction:column;}
+  .dw.show{transform:none;visibility:visible;}
+  .dw-h{padding:14px 20px 14px;}
+  .dw-nav{display:flex;align-items:center;gap:6px;margin-bottom:8px;color:var(--ink3);font-size:12.5px;font-weight:600;}
+  .dw-nav kbd{font-family:inherit;font-size:11px;font-weight:700;color:var(--ink3);background:#F2F4F8;border-radius:5px;padding:1px 5px;margin-left:4px;}
+  .nv-b{width:28px;height:28px;border:none;border-radius:8px;background:#F2F4F8;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink2);}
+  .nv-b:hover{background:#E8EBF0;}
+  .dw-q{display:flex;gap:8px;padding:10px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;}
+  .qa{height:32px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:0 10px;cursor:pointer;color:var(--ink);}
+  .qa:hover{background:#F7F8FA;}
+  .qa-k{color:var(--ink3);font-weight:600;}
+  .qa svg{color:var(--ink3);}
+  .note{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#F6F8FB;box-shadow:inset 3px 0 0 #AAB3C1;}
+  .note svg{color:var(--ink3);margin-top:2px;}
+  .note b{display:block;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+  .note div > span{font-size:13.5px;color:var(--ink);line-height:1.45;}
+  .eng{margin-top:12px;padding:12px 14px;border-radius:12px;background:#F6F8FB;}
+  .eng-k{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:8px;}
+  .eng-k svg{color:var(--blue);}
+  .eng-r{display:grid;grid-template-columns:150px 1fr 44px;align-items:center;gap:10px;padding:4px 0;}
+  .eng-l{font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .eng-b{height:6px;border-radius:3px;background:#E3E8F0;overflow:hidden;}
+  .eng-b i{display:block;height:100%;background:var(--blue);border-radius:3px;}
+  .eng-m{font-size:12.5px;color:var(--ink2);font-weight:600;text-align:right;}
+  .dw-t{display:flex;align-items:center;gap:8px;}
+  .dw-t h3{font-size:19px;font-weight:700;letter-spacing:-.01em;}
+  .dw-x{margin-left:auto;width:32px;height:32px;border:none;border-radius:9px;background:#F2F4F8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink2);}
+  .dw-x:hover{background:#E8EBF0;}
+  .dw-s{font-size:13.5px;color:var(--ink2);margin-top:3px;}
+  .prog{display:flex;gap:4px;margin-top:14px;}
+  .prog i{flex:1;height:4px;border-radius:2px;background:#E6EAF0;}
+  .prog i.on{background:var(--blue);}
+  .prog-l{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink3);margin-top:6px;font-weight:600;}
+  .prog-l b{color:var(--ink);}
+  .prog-l .hot{color:var(--amber);}
+  .dw-b{flex:1;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:18px;}
+  .nxt{border-radius:14px;background:#F6F8FB;padding:14px;}
+  .nxt.air{background:var(--blue-t);}
+  .nxt-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
+  .nxt.air .nxt-k{color:var(--blue-d);}
+  .nxt b{display:block;font-size:15px;font-weight:600;margin-top:4px;}
+  .nxt > span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;}
+  .nxt .btn2{margin-top:12px;}
+  .btn2.act{background:#000D25;color:#fff;box-shadow:none;}
+  .btn2.act:hover{background:#1A2640;}
+  .sec-k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sec-k + div .li:first-child,.sec-k + .li{border-top:none;}
+  .li-ic{width:30px;height:30px;border-radius:9px;background:#F2F4F8;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .li-t{flex:1;min-width:0;}
+  .li-t b{display:block;font-weight:600;}
+  .li-t > span{font-size:12.5px;color:var(--ink3);}
+  .li-s{font-size:12.5px;font-weight:600;color:var(--ink3);white-space:nowrap;}
+  .li-s.ok{color:var(--green);} .li-s.miss{color:var(--amber);}
+  .more{font-size:13px;color:var(--ink3);padding-top:6px;}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;}
+  .kv span{color:var(--ink2);} .kv b{font-weight:600;}
+  .kv.tot{border-top:1px solid var(--line);margin-top:4px;padding-top:9px;}
+  .dw-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;}
+  .dw-f .btn{flex:1;}
+  .dw-f .btn.sec{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
+  .dw-f .btn.sec:hover{background:#F7F8FA;}
+  .tbl{width:100%;border-collapse:collapse;}
+  .tbl.fixed{table-layout:fixed;}
+  .tbl.fixed th:nth-child(1){width:24%;}.tbl.fixed th:nth-child(2){width:12%;}.tbl.fixed th:nth-child(3){width:17%;}.tbl.fixed th:nth-child(4){width:15%;}.tbl.fixed th:nth-child(5){width:22%;}.tbl.fixed th:nth-child(6){width:10%;}
+  .tbl.fixed th:last-child,.tbl.fixed td:last-child{text-align:right;padding-right:20px !important;}
+  /* a prueba de textos largos: una línea y puntos suspensivos, el texto completo en el title */
+  .tbl.fixed .trip b,.tbl.fixed .nx b,.tbl.fixed .nx > span,.tbl.fixed .py-s,.tbl.fixed .dt > span,.tbl.fixed .st{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+  .tbl.fixed .st{display:flex;}
+                .tbl.fixed td{padding:14px 14px;}
+  .tbl.fixed th{padding-left:14px;padding-right:14px;}
+  .trip > span{overflow:hidden;text-overflow:ellipsis;}
+  .tbl th{font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#FAFBFD;white-space:nowrap;}
+  .tbl th:first-child,.tbl td:first-child{padding-left:18px;}
+  .tbl td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13.5px;}
+  .tbl tr.r{cursor:pointer;transition:background-color .12s var(--ease);}
+  .tbl tr.r:hover{background:#F8FAFD;}
+  .tbl tbody tr:last-child td{border-bottom:none;}
+  .trip-b{border:none;background:none;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;display:block;}
+  .trip-b:hover b{color:var(--blue-d);}
+  .trip b{font-weight:600;font-size:14.5px;display:block;white-space:nowrap;}
+  .trip > span{font-size:12.5px;color:var(--ink2);display:block;margin-top:2px;white-space:nowrap;}
+  .trip-l{display:flex;align-items:center;gap:6px;}
+  .fmt{font-style:normal;display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;font-size:11px;font-weight:700;background:#F2F4F8;color:var(--ink2);flex-shrink:0;}
+  .svcs{display:flex;gap:4px;}
+  .sv{width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;}
+  .sv.ok{background:var(--green-t);color:var(--green);} .sv.wait{background:#EEF1F5;color:#8A93A3;} .sv.miss{background:var(--amber-t);color:var(--amber);}
+  .pay{display:flex;flex-direction:column;gap:4px;min-width:110px;}
+  .pay span{font-size:12.5px;color:var(--ink2);font-weight:600;}
+  .bar{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .bar i{display:block;height:100%;background:#2E9A62;border-radius:3px;}
+  .nx b{font-weight:600;display:block;font-size:13.5px;}
+  .nx > span{font-size:12.5px;color:var(--ink3);display:block;}
+  .chg{font-style:normal;display:inline-flex;align-items:center;height:19px;padding:0 7px;border-radius:6px;background:#F0F2F6;color:var(--ink2);font-size:11.5px;font-weight:600;margin-left:6px;vertical-align:1px;}
+  .fol{font-style:normal;color:#A7AEBA;font-weight:500;font-size:11.5px;margin-right:6px;}
+  .fol-b{border:none;background:#F2F4F8;border-radius:6px;padding:1px 7px;margin-right:8px;font:inherit;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;}
+  .fol-b:hover{background:#E8EBF0;}
+  .tl{position:relative;padding-left:4px;}
+  .tl-r{display:flex;gap:12px;position:relative;padding:0 0 12px;}
+  .tl-r::before{content:'';position:absolute;left:4px;top:14px;bottom:-2px;width:1px;background:var(--line);}
+  .tl-r:last-child::before{display:none;}
+  .tl-d{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;background:#C3C8D1;}
+  .tl-d.now{background:var(--blue);box-shadow:0 0 0 3px var(--blue-t);} .tl-d.blue{background:#7FA7F8;}
+  .tl-r b{display:block;font-weight:600;font-size:13.5px;}
+  .tl-r div > span{font-size:12.5px;color:var(--ink3);}
+  .lnk-s{margin:-4px 0 12px -4px;}
+  .lnk-s .lnk{margin:0;font-size:13px;}
+  .vw-k{font-size:12px;font-weight:700;color:var(--ink3);margin:2px 0 6px;}
+  .vrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);}
+  .vw-k + .vrow{border-top:none;}
+  .vrow > div{flex:1;min-width:0;}
+  .vrow b{display:block;font-weight:600;font-size:13.5px;}
+  .vrow > div > span{font-size:12.5px;color:var(--ink3);}
+  .vt{font-size:12.5px;color:var(--ink2);font-weight:600;white-space:nowrap;}
+  .vnone{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--ink2);padding:6px 0;}
+  .ins{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 12px;border-radius:10px;background:#F6F8FB;font-size:13px;color:var(--ink2);}
+  .ins svg{color:var(--blue);}
+  .shr-k{font-size:12px;font-weight:700;color:var(--ink3);margin:14px 0 4px;}
+  .shr{display:grid;grid-template-columns:1fr auto 84px;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .shr-k + .shr{border-top:none;}
+  .shr div > b{display:block;font-weight:600;} .shr div > span{font-size:12.5px;color:var(--ink3);}
+  .shr-s{justify-self:end;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EEF1F5;color:var(--ink2);}
+  .shr-s.ok{background:var(--green-t);color:var(--green);}
+  .nx .hot{color:var(--amber);} .nx .late{color:var(--red);} .nx .air{color:var(--blue-d);}
+  .empty{padding:28px 18px;text-align:center;color:var(--ink2);}
+  /* ---- Menú y aviso ---- */
+  .menu{position:absolute;right:0;top:46px;width:280px;background:#fff;border-radius:14px;box-shadow:0 0 0 1px rgba(17,26,43,.06),0 18px 40px -12px rgba(17,26,43,.3);padding:6px;z-index:20;transition:opacity .15s var(--ease),transform .15s var(--ease);}
+  .menu.hide{opacity:0;transform:translateY(-4px);pointer-events:none;}
+  .mi{display:flex;gap:12px;align-items:flex-start;width:100%;border:none;background:none;border-radius:10px;padding:10px;text-align:left;cursor:pointer;}
+  .mi:hover{background:#F4F6FA;}
+  .mi b{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px;}
+  .mi > span:last-child{font-size:12.5px;color:var(--ink2);line-height:1.4;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;visibility:hidden;background:var(--ink);color:#fff;font-size:13.5px;font-weight:500;border-radius:999px;padding:10px 16px;z-index:50;transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s;}
+  .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+  svg{flex-shrink:0;}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;}}
+</style>
+
+<style>
+  /* ===== Catálogo (compartido por Proveedores, Hoteles y Ficha) ===== */
+  .tabs{display:flex;gap:28px;padding:16px 20px 0;border-bottom:1px solid var(--line);}
+  .tabs .tab{padding-bottom:13px;}
+  .tabs .tab > span:last-child{margin-left:2px;}
+  .c-tools{display:flex;align-items:center;gap:10px;padding:14px 20px;}
+  .c-tools .search{max-width:340px;height:36px;border-radius:10px;font-size:13.5px;}
+  .c-tools .sp{flex:1;}
+  .tbl.cat{table-layout:fixed;}
+  .tbl.cat th,.tbl.cat td{padding-left:14px;padding-right:14px;}
+  .tbl.cat th:first-child,.tbl.cat td:first-child{padding-left:18px;}
+  .tbl.cat th:last-child,.tbl.cat td:last-child{text-align:right;padding-right:20px;}
+  .tbl.cat td > *{max-width:100%;}
+  .tbl.cat .t1{display:flex;flex-direction:column;min-width:0;}
+  .tbl.cat .t1 > b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tbl.cat .t1 > span{font-size:12.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tbl.cat .t1 > span.amb{color:var(--amber);font-weight:600;}
+  .tbl.cat .t1 > span.ok{color:var(--green);font-weight:600;}
+  .tbl.cat .t1.r{align-items:flex-end;}
+  .tbl.pv th:nth-child(1){width:26%;} .tbl.pv th:nth-child(2){width:20%;} .tbl.pv th:nth-child(3){width:24%;}
+  .tbl.pv th:nth-child(4){width:17%;} .tbl.pv th:nth-child(5){width:13%;}
+  .tbl.ht th:nth-child(1){width:23%;} .tbl.ht th:nth-child(2){width:9%;} .tbl.ht th:nth-child(3){width:17%;}
+  .tbl.ht th:nth-child(4){width:17%;} .tbl.ht th:nth-child(5){width:21%;} .tbl.ht th:nth-child(6){width:13%;}
+  .typ{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;background:#EEF1F5;color:var(--ink2);font-size:12px;font-weight:600;white-space:nowrap;}
+  /* moneda: monto en la moneda de la tarifa + etiqueta con la conversión */
+  .cur{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#F2F4F8;color:var(--ink2);font-size:11.5px;font-weight:600;white-space:nowrap;margin-left:6px;}
+  .cur.blk{margin-left:0;}
+  /* estado de datos bancarios */
+  .bk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap;}
+  .bk svg{flex-shrink:0;}
+  .bk.ok{color:var(--green);} .bk.pend{color:var(--amber);} .bk.none{color:var(--ink3);} .bk.card{color:var(--ink2);}
+  /* aviso arriba de la tabla */
+  .ban{display:flex;align-items:center;gap:12px;margin:0 18px 12px;padding:11px 14px;border-radius:12px;background:var(--amber-t);color:#5E3906;font-size:13.5px;}
+  .ban svg{color:var(--amber);flex-shrink:0;}
+  .ban b{font-weight:700;}
+  .ban .btn2{margin-left:auto;}
+  /* secciones del panel lateral, editables por sección */
+  .sx{border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);padding:12px 14px;}
+  .sx-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .sx-h .sec-k{margin:0;}
+  .sx-h .lnk{margin:0 0 0 auto;padding:2px 6px;font-size:13px;}
+  .vis{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--ink3);}
+  .vis.cli{color:var(--blue-d);}
+  .kv2{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .kv2{border-top:none;}
+  .kv2 > span{color:var(--ink3);}
+  .kv2 > b{font-weight:600;}
+  .kv2 > b em{display:block;font-style:normal;font-weight:500;color:var(--ink3);font-size:12.5px;margin-top:1px;}
+  .kv2 > b.amb{color:var(--amber);}
+  .seg2{display:flex;flex-wrap:wrap;gap:6px;}
+  .seg2 button{height:30px;border:none;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;font-weight:600;padding:0 10px;cursor:pointer;color:var(--ink2);}
+  .seg2 button.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);color:var(--blue-d);}
+  .in{height:34px;border-radius:9px;box-shadow:inset 0 0 0 1px var(--line);background:#fff;display:inline-flex;align-items:center;padding:0 10px;font-size:13.5px;color:var(--ink);gap:6px;}
+  .in.sm{width:64px;justify-content:flex-end;}
+  .in.w{width:100%;}
+  .in .u{color:var(--ink3);}
+  .ed{display:flex;flex-direction:column;gap:10px;padding-top:4px;}
+  .ed-l{font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px;}
+  .ed-a{display:flex;gap:8px;justify-content:flex-end;}
+  /* cuenta bancaria */
+  .acct{border-radius:12px;background:#F6F8FB;padding:12px 14px;display:flex;flex-direction:column;gap:3px;}
+  .acct-t{display:flex;align-items:center;gap:8px;}
+  .acct-t b{font-size:14.5px;font-weight:600;}
+  .acct-t .bk{margin-left:auto;font-size:12.5px;}
+  .acct > span{font-size:12.5px;color:var(--ink2);}
+  .acct.new{background:var(--amber-t);}
+  .acct.new > span{color:#5E3906;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;letter-spacing:.02em;}
+  .hist{font-size:12.5px;color:var(--ink3);margin-top:8px;display:flex;gap:6px;align-items:flex-start;}
+  .hist svg{margin-top:2px;flex-shrink:0;}
+  .warn{display:flex;gap:10px;padding:11px 12px;border-radius:12px;background:var(--amber-t);color:#5E3906;font-size:13px;line-height:1.45;margin-top:10px;}
+  .warn svg{color:var(--amber);flex-shrink:0;margin-top:2px;}
+  .warn .btn2{margin-top:8px;}
+  .fx{font-size:12.5px;color:var(--ink3);margin-top:6px;}
+  .pr{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .pr{border-top:none;}
+  .pr-d{width:46px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;border-radius:9px;background:#F2F4F8;padding:4px 0;}
+  .pr-d b{font-size:13px;font-weight:700;line-height:1.1;}
+  .pr-d span{font-size:10.5px;color:var(--ink3);font-weight:600;text-transform:uppercase;}
+  .pr-d.late{background:var(--amber-t);} .pr-d.late b,.pr-d.late span{color:var(--amber);}
+  .pr-t{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .pr-t b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pr-t span{font-size:12.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pr-m{text-align:right;display:flex;flex-direction:column;align-items:flex-end;}
+  .pr-m b{font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .ctc{display:flex;align-items:center;gap:10px;}
+  .ctc .av{width:34px;height:34px;}
+  .ctc b{display:block;font-weight:600;}
+  .ctc span{font-size:12.5px;color:var(--ink3);}
+  /* modal */
+  .mdl-s{position:fixed;inset:0;background:rgba(17,26,43,.36);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding-top:80px;opacity:0;visibility:hidden;transition:opacity .2s var(--ease),visibility .2s;}
+  .mdl-s.show{opacity:1;visibility:visible;}
+  .mdl{width:520px;background:#fff;border-radius:18px;box-shadow:0 30px 80px -20px rgba(17,26,43,.45);overflow:hidden;transform:translateY(8px);transition:transform .2s var(--ease);}
+  .mdl-s.show .mdl{transform:none;}
+  .mdl-h{padding:18px 20px 6px;display:flex;align-items:flex-start;gap:10px;}
+  .mdl-h h3{font-size:18px;font-weight:700;}
+  .mdl-h p{margin:4px 0 0;font-size:13.5px;color:var(--ink2);}
+  .mdl-b{padding:10px 20px 4px;display:flex;flex-direction:column;gap:12px;}
+  .mdl-f{padding:14px 20px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--line);margin-top:12px;}
+  .cmp{display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;gap:8px;}
+  .cmp .acct{padding:10px 12px;}
+  .cmp > svg{color:var(--ink3);justify-self:center;}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;border:none;background:#fff;text-align:left;width:100%;font:inherit;color:inherit;}
+  .step:hover{background:#FAFBFD;}
+  .step.on{box-shadow:inset 0 0 0 1.5px var(--green);background:#F6FBF8;}
+  .ckb{width:22px;height:22px;border-radius:7px;box-shadow:inset 0 0 0 1.5px #C5CCD8;display:inline-flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;margin-top:1px;}
+  .step.on .ckb{background:var(--green);box-shadow:none;}
+  .ckb svg{opacity:0;} .step.on .ckb svg{opacity:1;}
+  .step b{display:block;font-weight:600;font-size:14px;}
+  .step span{font-size:13px;color:var(--ink2);}
+  .btn2.ok{background:var(--green);color:#fff;box-shadow:none;}
+  .btn2.dis{opacity:.4;cursor:not-allowed;}
+  .tbl .bk::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .fld{display:flex;flex-direction:column;}
+  /* foto (placeholder de cielo, mar y arena, igual que en la propuesta) */
+  .ph{position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#B9D9F4,#6DB4E4 60%,#EADCC2 60.5%);}
+  .ph.b{background:linear-gradient(180deg,#F3D9B5,#E9A96A 55%,#3C6E8F 55.5%);}
+  .ph.c{background:linear-gradient(160deg,#CFE5D8,#7FB79A 58%,#E9E1CF 58.5%);}
+  .ph.d{background:linear-gradient(180deg,#DCE6F2,#9DB4CF 50%,#D7C7AE 50.5%);}
+  .ph.e{background:linear-gradient(200deg,#E7D3C8,#C9917A 60%,#5A7D6C 60.5%);}
+  .ph.f{background:linear-gradient(180deg,#C8E1F1,#4C9AC9 45%,#F1E6CF 45.5%);}
+  .ph i{position:absolute;left:8px;top:8px;font-style:normal;font-size:11px;font-weight:700;background:rgba(17,26,43,.62);color:#fff;border-radius:6px;padding:2px 7px;}
+  /* completitud de la ficha */
+  .cpl{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;white-space:nowrap;}
+  .cpl .rg{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+  .cpl.ok{color:var(--green);} .cpl.miss{color:var(--amber);}
+  .tbl .cpl{display:flex;max-width:100%;}
+  .tbl .cpl > span{overflow:hidden;text-overflow:ellipsis;}
+  .tbl .cpl::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+  .rate{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);}
+  .bub{display:inline-flex;gap:2px;}
+  .bub i{width:10px;height:10px;border-radius:50%;background:#00AA6C;display:inline-block;}
+  .bub i.h{background:linear-gradient(90deg,#00AA6C 50%,#fff 50%);box-shadow:inset 0 0 0 1.5px #00AA6C;}
+  .bub i.e{background:#fff;box-shadow:inset 0 0 0 1.5px #00AA6C;}
+  .reg{display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:6px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;}
+  .reg + .reg{margin-left:4px;}
+  .mx{display:flex;flex-direction:column;gap:6px;}
+  .mx-r{display:flex;align-items:center;gap:8px;font-size:13.5px;}
+  .mx-r svg{flex-shrink:0;color:var(--amber);}
+  .mx-r .lnk{margin:0 0 0 auto;padding:2px 6px;font-size:12.5px;}
+  /* galería en el panel del hotel */
+  .gal{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:74px 74px;gap:6px;margin:0 20px 12px;}
+  .gal .ph:first-child{grid-row:1 / span 2;}
+  .gal .ph{border-radius:12px;}
+  .ph.add{background:#F6F8FB;border:1.5px dashed #C5CCD8;display:flex;align-items:center;justify-content:center;}
+  .ph.add::after{content:'Agregar foto';font-size:12.5px;font-weight:600;color:var(--ink3);}
+  .gal .more-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(17,26,43,.42);color:#fff;font-size:13px;font-weight:700;}
+  .rm{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .sx-h + .rm{border-top:none;}
+  .rm-t{flex:1;min-width:0;}
+  .rm-t b{display:block;font-weight:600;}
+  .rm-t span{font-size:12.5px;color:var(--ink3);}
+  .al{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:6px;background:#F2F4F8;color:var(--ink2);font-size:12px;font-weight:600;white-space:nowrap;}
+  .al.miss{background:var(--amber-t);color:var(--amber);}
+  .ok-line{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--green);font-weight:600;}
+  .desc{font-size:13.5px;color:var(--ink);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .tbl.cat .regs{display:flex;flex-wrap:wrap;gap:4px;}
+  .tbl.cat .regs .reg + .reg{margin-left:0;}
+  .draft{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:6px;background:#EEF1F5;color:var(--ink2);font-size:11.5px;font-weight:700;margin-left:6px;vertical-align:1px;}
+  .paid-c{display:flex;flex-direction:column;gap:8px;padding:10px 12px;margin:2px 0 8px 56px;border-radius:10px;background:#F6F8FB;font-size:13px;color:var(--ink2);}
+  .pr-a{flex-basis:100%;display:flex;align-items:center;gap:6px;padding-left:56px;margin-top:2px;}
+  .pr-a > span{font-size:12.5px;font-weight:600;color:var(--ink3);margin-right:auto;}
+  .pr-a > span.amb{color:var(--amber);}
+  .pr-a .btn2{height:30px;}
+  /* mini tabla dentro del panel lateral */
+  .mt{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+  .mt th{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:4px 6px 6px 0;}
+  .mt td{padding:7px 6px 7px 0;border-top:1px solid var(--line);vertical-align:top;}
+  .mt td b{font-weight:600;}
+  .mt td em{display:block;font-style:normal;color:var(--ink3);font-size:12px;}
+  .vf{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;white-space:nowrap;}
+  .vf.ok{color:var(--green);} .vf.pend{color:var(--amber);}
+  .auto{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:#F6F8FB;font-size:12.5px;color:var(--ink2);margin-top:8px;}
+  .auto svg{color:var(--blue);flex-shrink:0;margin-top:1px;}
+  .tbl.ac th:nth-child(1){width:24%;} .tbl.ac th:nth-child(2){width:15%;} .tbl.ac th:nth-child(3){width:20%;}
+  .tbl.ac th:nth-child(4){width:15%;} .tbl.ac th:nth-child(5){width:15%;} .tbl.ac th:nth-child(6){width:11%;}
+  .tbl.svc th:nth-child(1){width:24%;} .tbl.svc th:nth-child(2){width:12%;} .tbl.svc th:nth-child(3){width:16%;}
+  .tbl.svc th:nth-child(4){width:15%;} .tbl.svc th:nth-child(5){width:22%;} .tbl.svc th:nth-child(6){width:11%;}
+  .tbl.ae th:nth-child(1){width:20%;} .tbl.ae th:nth-child(2){width:20%;} .tbl.ae th:nth-child(3){width:17%;}
+  .tbl.ae th:nth-child(4){width:19%;} .tbl.ae th:nth-child(5){width:13%;} .tbl.ae th:nth-child(6){width:11%;}
+  .iata{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;background:var(--blue-t);color:var(--blue-d);font-size:12px;font-weight:700;flex-shrink:0;}
+  .sx.warnx{box-shadow:inset 0 0 0 1px #F3D9A8;background:#FFFBF3;}
+  .sx.warnx .sec-k{color:var(--amber);}
+  .mt td b.w5,.kv2 b.w5{font-weight:500;}
+  .kv2 > b.amb{color:var(--amber);}
+  .nm{display:flex;align-items:center;gap:10px;min-width:0;}
+</style>
+
+<style>
+  /* ===== Vista completa del viaje ===== */
+  .tv-top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 12px;}
+  .crumb{border:none;background:none;display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer;padding:4px 6px;margin-left:-6px;border-radius:8px;}
+  .crumb:hover{background:#E9ECF2;}
+  .crumb svg{transform:rotate(180deg);}
+  .demo{display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;border-radius:12px;border:1.5px dashed #C5CCD8;}
+  .demo > span{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
+  .th{padding:20px 22px 16px;}
+  .th-r{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .th-t{display:flex;align-items:center;gap:10px;}
+  .th-t h1{font-size:26px;font-weight:700;letter-spacing:-.02em;}
+  .th-s{font-size:14px;color:var(--ink2);margin-top:4px;}
+  .th-a{display:flex;align-items:center;gap:8px;}
+  .who{display:flex;align-items:center;gap:8px;margin-right:6px;}
+  .who > div > b{display:block;font-size:13px;font-weight:600;line-height:1.2;}
+  .who > div > span{font-size:12px;color:var(--ink3);}
+  .th-a .btn2{height:36px;}
+  .th-a .nv-b{width:36px;height:36px;font-size:18px;font-weight:700;}
+  .stg-t{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:18px;}
+  .sg i{display:block;height:5px;border-radius:3px;background:#E6EAF0;}
+  .sg > span{display:block;font-size:12px;font-weight:600;color:var(--ink3);margin-top:6px;}
+  .sg.past i{background:var(--blue);opacity:.45;}
+  .sg.now i{background:var(--blue);}
+  .sg.now > span{color:var(--ink);font-weight:700;}
+  .stg-l{display:flex;gap:8px;align-items:baseline;margin-top:10px;font-size:13.5px;}
+  .stg-l b{font-weight:700;}
+  .stg-l > span{color:var(--ink2);font-weight:600;}
+  .stg-l > span.hot{color:var(--amber);} .stg-l > span.miss{color:var(--amber);} .stg-l > span.ok{color:var(--green);}
+  .todo{display:flex;align-items:center;gap:16px;justify-content:space-between;margin:16px 0;padding:16px 20px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);}
+  .todo.air{background:var(--blue-t);box-shadow:none;}
+  .todo.calm{background:#F6FBF8;box-shadow:inset 0 0 0 1px #CDEBD9;}
+  .todo-k{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:3px;}
+  .todo.air .todo-k{color:var(--blue-d);}
+  .todo.calm .todo-k{color:var(--green);}
+  .todo > div > b{display:block;font-size:16px;font-weight:700;}
+  .todo > div > span{display:block;font-size:13.5px;color:var(--ink2);margin-top:2px;}
+  .btn2.lg{height:42px;padding:0 18px;font-size:14px;border-radius:12px;}
+  .tg{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start;}
+  .tcol{display:flex;flex-direction:column;gap:16px;}
+  .tsec .card-h{padding-bottom:4px;}
+  .svi{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;padding:14px 18px 16px;border-top:1px solid var(--line);}
+  .card-h + .svi{border-top:none;}
+  .svi-ic{width:40px;height:40px;border-radius:12px;background:var(--blue-t);color:var(--blue);display:flex;align-items:center;justify-content:center;}
+  .svi-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .svi-t b{font-size:15px;font-weight:600;}
+  .stb{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:600;}
+  .stb.ok{background:var(--green-t);color:var(--green);} .stb.amb{background:var(--amber-t);color:var(--amber);} .stb.gray{background:#EEF1F5;color:var(--ink2);}
+  .svi-l{font-size:13.5px;color:var(--ink2);margin-top:3px;}
+  .keys{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+  .key{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#F6F8FB;font-size:13px;}
+  .key > span:first-child{color:var(--ink2);flex:1;min-width:0;}
+  .key .mono{font-size:13.5px;font-weight:700;}
+  .cp{border:none;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--blue-d);cursor:pointer;padding:2px 4px;border-radius:6px;}
+  .cp:hover{background:var(--blue-t);}
+  .sl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-top:8px;}
+  .sl > svg{color:var(--ink3);flex-shrink:0;}
+  .sl.later{color:var(--amber);font-weight:600;} .sl.later svg{color:var(--amber);}
+  .sl.ok{color:var(--green);font-weight:600;} .sl.ok svg{color:var(--green);}
+  .sl.wait{color:var(--ink3);}
+  .svi-r{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;}
+  .svi-r > b{font-size:15px;font-weight:600;}
+  .svi-r > span:not(.x){font-size:12.5px;color:var(--ink3);}
+  .svi-r .btn2{margin-top:10px;}
+  .svi-r .lnk{margin:6px -4px 0 0;}
+  .ac2{padding:16px 18px;}
+  .ac2-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .ac2-h h3{font-size:15.5px;font-weight:700;}
+  .ac2-h > span{font-size:12.5px;color:var(--ink3);font-weight:600;}
+  .ac2-h > span.ok{color:var(--green);}
+  .pbar2{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .pbar2 i{display:block;height:100%;background:var(--green);border-radius:3px;}
+  .pb-l{font-size:12.5px;color:var(--ink2);margin:6px 0 4px;font-weight:600;}
+  .tpy{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .tpy > div > b{display:block;font-weight:600;}
+  .tpy > div > span{font-size:12.5px;color:var(--ink3);}
+  .tpy-r{text-align:right;}
+  .tpy-r > span.ok{color:var(--green);font-weight:600;}
+  .px{display:flex;align-items:center;gap:10px;padding:6px 0;}
+  .px > div > b{display:block;font-size:13.5px;font-weight:600;}
+  .px > div > span{font-size:12.5px;color:var(--ink3);}
+  .nt{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);margin-bottom:8px;}
+  .nt > span{flex:1;font-size:13.5px;color:var(--ink3);}
+  .nt .btn2{height:30px;}
+  .ev{display:flex;gap:10px;padding:7px 0;font-size:13.5px;}
+  .ev i{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;background:#AAB3C1;}
+  .ev.cli i{background:var(--green);} .ev.air i{background:var(--blue);}
+  .ev > div > b{display:block;font-weight:600;}
+  .ev > div > span{font-size:12.5px;color:var(--ink3);}
+  .ev em{font-style:normal;color:var(--ink2);font-weight:600;}
+  /* modales */
+  .mdl.wide{width:620px;}
+  .mdl-s{align-items:flex-start;padding-top:48px;}
+  .mdl-b{max-height:calc(100vh - 230px);overflow:auto;}
+  .rvi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);}
+  .rvi:first-child{border-top:none;}
+  .rvi-t b{display:block;font-weight:600;font-size:14px;}
+  .rvi-t > span{font-size:12.5px;color:var(--ink3);}
+  .rvs{display:flex;gap:4px;background:#F2F4F8;border-radius:10px;padding:3px;}
+  .rvs button{height:28px;border:none;border-radius:8px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);padding:0 10px;cursor:pointer;}
+  .rvs button.on.r-same{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(17,26,43,.12);}
+  .rvs button.on.r-chg{background:#fff;color:var(--amber);box-shadow:0 1px 2px rgba(17,26,43,.12);}
+  .rvs button.on.r-na{background:#fff;color:var(--red);box-shadow:0 1px 2px rgba(17,26,43,.12);}
+  .rvx{grid-column:1 / -1;font-size:13px;padding:8px 10px;border-radius:9px;}
+  .rvx.amb{background:var(--amber-t);color:#5E3906;} .rvx.red{background:var(--red-t);color:var(--red);}
+  .rv-out{margin-top:6px;padding:12px 14px;border-radius:12px;background:#F6F8FB;font-size:13.5px;}
+  .rv-out.amb{background:var(--amber-t);color:#5E3906;}
+  .mdl-f{flex-wrap:wrap;}
+  .mf-n{flex-basis:100%;display:flex;align-items:flex-start;gap:6px;font-size:12.5px;color:var(--ink2);margin-bottom:4px;}
+  .hint{font-size:12.5px;color:var(--ink3);margin-top:4px;}
+  .mf-n svg{flex-shrink:0;color:var(--ink3);margin-top:2px;}
+  .f2r{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .kr{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:center;margin-bottom:8px;font-size:13.5px;color:var(--ink2);}
+  .toast{display:flex;align-items:center;gap:12px;}
+  .t-undo{border:none;background:none;color:#8DB4FF;font:inherit;font-weight:700;cursor:pointer;padding:0;}
+</style>
+
+<style>
+  /* ===== Pestañas del viaje (compartidas por todas las vistas del viaje) ===== */
+  .ttabs{display:flex;gap:26px;margin:16px -22px -16px;padding:0 22px;border-top:1px solid var(--line);}
+  .ttab{border:none;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--ink3);padding:13px 0 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:inset 0 -2px 0 transparent;}
+  .ttab:hover{color:var(--ink);}
+  .ttab.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--blue);}
+  .ttab.off{color:#B4BAC5;cursor:default;}
+  .ttab > span.num{font-size:12px;font-weight:700;background:#EEF1F5;color:var(--ink2);border-radius:999px;min-width:20px;height:20px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;}
+  .ttab.on > span.num{background:var(--blue-t);color:var(--blue-d);}
+  .ttab > span.num.amb{background:var(--amber-t);color:var(--amber);}
+  /* ===== Validar y aprobar ===== */
+  .vg{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start;margin-top:16px;}
+  .vcol{display:flex;flex-direction:column;gap:16px;}
+  .vh{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px 6px;}
+  .vh h2{font-size:17px;font-weight:700;}
+  .vh > span{font-size:13px;color:var(--ink3);font-weight:600;}
+  .vl{padding:14px 20px 16px;border-top:1px solid var(--line);}
+  .vh + .vl{border-top:none;}
+  .vl-r{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;align-items:start;}
+  .vl-t b{display:block;font-size:15px;font-weight:600;}
+  .vl-t > span{display:block;font-size:13px;color:var(--ink2);margin-top:2px;}
+  .vl-p{text-align:right;}
+  .vl-p > span{display:block;font-size:12px;color:var(--ink3);font-weight:600;}
+  .vl-p > b{font-size:15px;font-weight:600;}
+  .vs{display:flex;gap:4px;background:#F2F4F8;border-radius:10px;padding:3px;margin:12px 0 0 54px;width:max-content;}
+  .vs button{height:30px;border:none;border-radius:8px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);padding:0 11px;cursor:pointer;}
+  .vs button:hover{color:var(--ink);}
+  .vs button.on.same{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(17,26,43,.14);}
+  .vs button.on.chg{background:#fff;color:var(--amber);box-shadow:0 1px 2px rgba(17,26,43,.14);}
+  .vs button.on.na{background:#fff;color:var(--amber);box-shadow:0 1px 2px rgba(17,26,43,.14);}
+  .vs button.on.unk{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(17,26,43,.14);}
+  .vs.lock{opacity:.55;pointer-events:none;}
+  .vm{margin:8px 0 0 54px;font-size:12.5px;color:var(--ink3);display:flex;align-items:center;gap:6px;}
+  .vm .lnk{margin:0 0 0 auto;padding:2px 6px;font-size:12.5px;}
+  .vx{margin:10px 0 0 54px;border-radius:12px;background:#F6F8FB;padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;}
+  .vx.amb{background:#FFFAF0;box-shadow:inset 0 0 0 1px #F3D9A8;}
+  .vx-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .vx-r > span:first-child{width:132px;color:var(--ink2);flex-shrink:0;}
+  .old{text-decoration:line-through;color:var(--ink3);}
+  .newp{font-weight:700;color:var(--amber);}
+  .newp.down{color:var(--green);}
+  .dl{font-weight:700;font-size:12.5px;padding:2px 7px;border-radius:6px;background:var(--amber-t);color:var(--amber);}
+  .dl.down{background:var(--green-t);color:var(--green);}
+  .chipr{display:flex;gap:6px;flex-wrap:wrap;}
+  .chipr button{height:28px;border:none;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);font:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);padding:0 10px;cursor:pointer;}
+  .chipr button.on{background:var(--blue-t);box-shadow:inset 0 0 0 1.5px var(--blue);color:var(--blue-d);}
+  .alt{display:flex;flex-direction:column;gap:6px;}
+  .alt button{display:flex;align-items:center;gap:10px;border:none;background:#fff;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);padding:10px 12px;font:inherit;font-size:13.5px;text-align:left;cursor:pointer;color:var(--ink);}
+  .alt button.on{box-shadow:inset 0 0 0 1.5px var(--blue);background:var(--blue-t);}
+  .alt button i{width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #AEB6C3;flex-shrink:0;}
+  .alt button.on i{box-shadow:inset 0 0 0 5px var(--blue);}
+  .alt button b{font-weight:600;}
+  .alt button span.r{margin-left:auto;font-weight:700;}
+  .vlk .vx{pointer-events:none;opacity:.7;}
+  .vlk .vm .lnk{display:none;}
+  .tol{font-size:12.5px;color:var(--ink2);}
+  .sumc{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px;}
+  .vbox{padding:16px 18px;}
+  .vbox h3{font-size:15.5px;font-weight:700;margin-bottom:10px;}
+  .ver{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .ver:first-of-type{border-top:none;}
+  .ver > div{flex:1;min-width:0;}
+  .ver b{display:block;font-weight:600;}
+  .ver span{font-size:12.5px;color:var(--ink3);}
+  .ver .amt{text-align:right;font-weight:700;font-size:15px;}
+  .vlock{width:28px;height:28px;border-radius:8px;background:#F2F4F8;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .vlock.v2{background:var(--blue-t);color:var(--blue);}
+  .dlist{display:flex;flex-direction:column;gap:4px;margin:2px 0 6px 38px;}
+  .dlist div{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);}
+  .ck{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:8px;}
+  .ck .bar{flex:1;height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .ck .bar i{display:block;height:100%;background:var(--green);border-radius:3px;}
+  .out{border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;}
+  .out.wait{background:#F6F8FB;color:var(--ink2);}
+  .out.go{background:var(--blue-t);}
+  .out.ask{background:#FFFAF0;box-shadow:inset 0 0 0 1px #F3D9A8;}
+  .out.done{background:var(--green-t);color:#0F5434;}
+  .out b{font-weight:700;color:var(--ink);}
+  .out .btn2{height:42px;justify-content:center;font-size:14px;border-radius:12px;}
+  .out .btn2.dis{opacity:.4;cursor:not-allowed;}
+  .out .hint2{font-size:12.5px;color:var(--ink2);display:flex;gap:6px;align-items:flex-start;}
+  .out .hint2 svg{flex-shrink:0;margin-top:2px;color:var(--ink3);}
+  /* vista previa del cliente (celular) */
+  .ph-prev{border-radius:26px;background:#0B1324;padding:8px;box-shadow:0 18px 40px -20px rgba(17,26,43,.5);}
+  .ph-in{border-radius:20px;background:#F2F4F8;overflow:hidden;}
+  .ph-top{background:var(--blue);color:#fff;padding:14px 16px 16px;font-size:12px;}
+  .ph-top b{display:block;font-size:16px;margin-top:2px;}
+  .ph-b{padding:12px;display:flex;flex-direction:column;gap:10px;}
+  .ph-ban{background:#fff;border-radius:14px;padding:12px;box-shadow:inset 3px 0 0 var(--amber);font-size:12.5px;color:var(--ink2);}
+  .ph-ban b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:4px;}
+  .ph-l{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px;}
+  .ph-l:first-of-type{border-top:none;}
+  .ph-l > span:last-child{white-space:nowrap;text-align:right;}
+  .ph-btn{height:40px;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .ph-cap{font-size:11.5px;color:var(--ink3);text-align:center;}
+  .arch{padding:14px 20px;display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--ink2);}
+  .arch .chips{margin-left:auto;flex-shrink:0;}
+  .arch .chips .lnk{white-space:nowrap;}
+  .vhist{padding:4px 20px 14px;}
+  .vhl{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
+  .vhl:first-child{border-top:none;}
+  .vhl i{width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:6px;flex-shrink:0;}
+  .vhl i.cli{background:var(--green);}
+  .vhl > div > span{display:block;font-size:12.5px;color:var(--ink3);}
+</style>
+
+<style>
+  /* ===== Reservas ===== */
+  .rs-wrap{display:flex;flex-direction:column;gap:16px;margin-top:16px;}
+  .rs-p{padding:18px 20px;}
+  .rs-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;}
+  .rs-s > span{display:block;font-size:12.5px;font-weight:600;color:var(--ink3);}
+  .rs-s > b{display:block;font-size:20px;font-weight:700;letter-spacing:-.01em;margin:3px 0 8px;}
+  .rs-s .bar{height:6px;border-radius:3px;background:#E6EAF0;overflow:hidden;}
+  .rs-s .bar i{display:block;height:100%;border-radius:3px;background:var(--green);}
+  .rs-s .bar i.blue{background:var(--blue);}
+  .rs-s > em{display:block;font-style:normal;font-size:12.5px;color:var(--ink3);margin-top:6px;}
+  .rs-nx{display:flex;align-items:center;gap:14px;margin-top:16px;padding:12px 14px;border-radius:12px;background:#F6F8FB;font-size:13.5px;}
+  .rs-nx.amb{background:#FFFAF0;box-shadow:inset 0 0 0 1px #F3D9A8;}
+  .rs-nx.ok{background:var(--green-t);}
+  .rs-nx > div{flex:1;min-width:0;}
+  .rs-nx b{display:block;font-weight:700;}
+  .rs-nx > div > span{display:block;color:var(--ink2);margin-top:2px;}
+  .rs-h,.rs-r{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1.05fr) minmax(0,1.1fr) 104px 150px;gap:16px;align-items:center;padding:0 20px;}
+  .rs-h{height:40px;font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);}
+  .rs-r{padding:14px 20px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .rs-r:last-child{border-bottom:none;}
+  .rs-r:hover{background:#FAFBFD;}
+  .rs-r.sel{background:var(--blue-t);}
+  .rs-sv{display:flex;gap:12px;align-items:center;min-width:0;}
+  .rs-sv .svi-ic{flex-shrink:0;}
+  .rs-c{min-width:0;}
+  .rs-c > b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rs-c > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rs-c > span.mono{color:var(--ink);font-size:12.5px;}
+  .rs-c > span.amb{color:var(--amber);font-weight:600;}
+  .rs-c > span.ok{color:var(--green);font-weight:600;}
+  .rs-d{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink2);}
+  .rs-d.ok{color:var(--green);} .rs-d.amb{color:var(--amber);}
+  .rs-e{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+  .rs-e .btn2{height:30px;}
+  .rs-e > span.tol{font-size:12px;color:var(--ink3);text-align:right;}
+  /* ===== Documentos ===== */
+  .dq-top{padding:16px 20px;display:flex;align-items:center;gap:16px;}
+  .dq-top h2{font-size:17px;font-weight:700;}
+  .dq-top > div:first-child > span{display:block;font-size:13px;color:var(--ink3);margin-top:2px;}
+  .dq-top .seg2{margin-left:auto;}
+  .dq-g .card-h{padding:14px 20px 4px;}
+  .dq-gh{display:flex;align-items:center;gap:10px;padding:14px 20px 6px;}
+  .dq-gh h3{font-size:15px;font-weight:700;}
+  .dq-gh > span{font-size:12.5px;color:var(--ink3);}
+  .dq-r{display:grid;grid-template-columns:30px minmax(0,1fr) 190px 128px 96px;gap:12px;align-items:center;padding:10px 20px;border-top:1px solid var(--line);}
+  .dq-gh + .dq-r{border-top:none;}
+  .dq-ic{width:30px;height:30px;border-radius:8px;background:#F2F4F8;color:var(--ink2);display:flex;align-items:center;justify-content:center;}
+  .dq-ic.int{background:#F6F2EA;color:#8A6A2E;}
+  .dq-n b{display:block;font-size:14px;font-weight:600;}
+  .dq-n > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:1px;}
+  .dq-v{font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:6px;}
+  .dq-v.int{color:#8A6A2E;font-weight:600;}
+  .dq-p{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;justify-self:start;}
+  .dq-p.pend{background:#EEF1F5;color:var(--ink2);}
+  .dq-p.rec{background:var(--amber-t);color:var(--amber);}
+  .dq-p.int{background:#EEF1F5;color:var(--ink2);}
+  .dq-p.pub{background:var(--green-t);color:var(--green);}
+  .dq-p.seen{background:var(--green);color:#fff;}
+  .dq-a{justify-self:end;}
+  .dq-a .btn2{height:30px;}
+  .dq-a .lnk{margin:0;}
+  /* cuadrícula de pases: viajero × tramo */
+  .pgr{margin:2px 20px 12px 62px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;}
+  .pgr-r{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px;gap:10px;align-items:center;padding:7px 12px;border-top:1px solid var(--line);font-size:13px;}
+  .pgr-r:first-child{border-top:none;background:#FAFBFD;font-size:12px;font-weight:700;color:var(--ink3);}
+  .pgr-r .av{width:24px;height:24px;font-size:10px;}
+  .pgr-n{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cel{height:24px;border-radius:7px;background:#F2F4F8;color:#8A93A3;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .cel.ok{background:var(--green-t);color:var(--green);}
+  /* subir documentos */
+  .drop{border-radius:14px;border:1.5px dashed #C5CCD8;background:#FAFBFD;padding:18px;display:flex;align-items:center;gap:14px;font-size:13.5px;color:var(--ink2);}
+  .drop svg{color:var(--blue);}
+  .drop b{display:block;color:var(--ink);font-size:14px;}
+  .upf{display:grid;grid-template-columns:30px minmax(0,1fr) 210px;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);}
+  .upf:first-child{border-top:none;}
+  .upf .dq-n > span.ok{color:var(--green);font-weight:600;}
+  .upf .dq-n > span.amb{color:var(--amber);font-weight:600;}
+  .upf .in{width:100%;justify-content:space-between;}
+  .upf .in svg{transform:rotate(180deg);color:var(--ink3);}
+  .upf .in.none{color:var(--ink3);box-shadow:inset 0 0 0 1.5px #F3D9A8;background:#FFFAF0;}
+  /* ===== Pagos ===== */
+  .pz-g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
+  .pz{padding:16px 20px;}
+  .pz-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .pz-h h3{font-size:15.5px;font-weight:700;}
+  .pz-h > span{font-size:12.5px;color:var(--ink3);font-weight:600;}
+  .pz-r{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .pz-r > div:first-child{flex:1;min-width:0;}
+  .pz-r b{display:block;font-size:14px;font-weight:600;}
+  .pz-r > div:first-child > span{display:block;font-size:12.5px;color:var(--ink3);margin-top:2px;}
+  .pz-r .pz-a{display:flex;align-items:center;gap:12px;}
+  .pz-r .pz-a > b{font-size:14px;min-width:84px;text-align:right;}
+  .pz-r.hl{margin:0 -12px;padding:12px;border-radius:12px;background:#FFFAF0;box-shadow:inset 0 0 0 1px #F3D9A8;border-top:none;}
+  .pz-r.hl + .pz-r{border-top:none;}
+  .pz-r .btn2{height:32px;}
+  .pz-cash{margin-top:10px;border-radius:12px;background:#F6F8FB;padding:12px 14px;}
+  .pz-cash .kv{padding:3px 0;}
+  .ckr{display:flex;align-items:center;gap:8px;font-size:13px;}
+  .ckr.ok{color:var(--green);font-weight:600;}
+  .cep{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;font-size:13.5px;}
+  .cep.wait{background:#F6F8FB;}
+  .cep.ok{background:var(--green-t);color:#0F5434;}
+  .cep b{display:block;}
+  .cep .btn2{margin-left:auto;}
+  .clue{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:#F6F8FB;font-size:12.5px;color:var(--ink2);}
+  .clue svg{flex-shrink:0;color:var(--ink3);margin-top:1px;}
+  .dw .dw-f{align-items:center;}
+  .dw .dw-f .btn2{height:40px;}
+  .dw .dw-f .mf-n{flex:1;}
+  .dw-sec > .ed-l{margin-bottom:8px;}
+  .dw-sec{display:flex;flex-direction:column;gap:10px;}
+  .dw-sec .kr{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:10px;align-items:center;font-size:13.5px;}
+  .dw-sec .kr > span:first-child{color:var(--ink2);}
+  .dw-dl{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;padding:6px 0;border-top:1px solid var(--line);}
+  .dw-dl:first-of-type{border-top:none;}
+</style>
+
+</helmet>
+
+<div class="app">
+  <div class="toast {{toastCls}}" role="status"><span>{{toastMsg}}</span><sc-if value="{{hasUndo}}" hint-placeholder-val="{{ false }}"><button class="t-undo" onClick="{{doUndo}}">Deshacer</button></sc-if></div>
+  <aside class="side" aria-label="Navegación">
+    <div class="brand"><img src="/_blob/9415e1981290d924b54d965a0e67aa4b" alt=""><b>airoo</b><span>Panel</span></div>
+    <nav class="nav">
+      <button class="nv {{navVj}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>Viajes<span class="cnt num">5</span></button>
+      <button class="nv "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Avisos<span class="cnt g num">7</span></button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>Clientes</button>
+      <button class="nv"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg>Finanzas</button>
+      <div class="nav-k">Catálogos</div>
+      <button class="nv {{navHt}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M15 9h4a2 2 0 0 1 2 2v10M2 21h20M7 7h4M7 11h4M7 15h4"/></svg>Hoteles</button>
+      <button class="nv {{navAc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg>Actividades</button>
+      <button class="nv {{navSv}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>Servicios</button>
+      <button class="nv {{navAe}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>Aerolíneas</button>
+      <button class="nv {{navPv}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.6-5h14.8L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/></svg>Proveedores</button>
+      <div class="nav-k">Agencia</div>
+      <button class="nv "><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Configuración</button>
+    </nav>
+    <div class="me"><span class="av">TÚ</span><div><div style="font-weight:600;font-size:13.5px;">Tu cuenta</div><div style="font-size:12px;color:var(--ink3);">Administrador</div></div></div>
+  </aside>
+
+  <main class="main">
+    <div class="tv-top">
+      <button class="crumb" onClick="{{back}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Viajes</button>
+      <sc-if value="{{hasDemo}}" hint-placeholder-val="{{ true }}"><div class="demo"><span>Escenario de diseño</span><div class="seg2"><sc-for list="{{scs}}" as="x" hint-placeholder-count="3"><button class="{{x.c}}" onClick="{{x.go}}">{{x.l}}</button></sc-for></div></div></sc-if>
+    </div>
+    <!-- Encabezado del viaje: el mismo en todas las vistas del viaje -->
+    <section class="card th">
+      <div class="th-r">
+        <div class="th-l">
+          <div class="th-t"><h1>Nataly Cervantes</h1><button class="fol-b" onClick="{{copyFolio}}" title="Copiar folio">AIR-2458</button><i class="fmt">{{fmtL}}</i></div>
+          <div class="th-s">Cancún · Mié 21 – Mar 27 oct (6 noches) · 4 adultos y 2 menores</div>
+        </div>
+        <div class="th-a">
+          <div class="who"><span class="av">TÚ</span><div><b>Tú</b><span>A cargo</span></div></div>
+          <button class="btn2" onClick="{{seeLink}}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Ver como Nataly</button>
+          <button class="btn2" onClick="{{wa}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>WhatsApp</button>
+          <button class="nv-b" onClick="{{more}}" aria-label="Más acciones">⋯</button>
+        </div>
+      </div>
+      <div class="stg-t"><sc-for list="{{stages}}" as="g" hint-placeholder-count="6"><div class="sg {{g.c}}"><i></i><span>{{g.l}}</span></div></sc-for></div>
+      <div class="stg-l"><b>{{stageL}}</b><span class="{{stageC}}">{{stageSub}}</span></div>
+      <nav class="ttabs" aria-label="Secciones del viaje"><sc-for list="{{ttabs}}" as="t" hint-placeholder-count="6"><button class="ttab {{t.c}}" onClick="{{t.go}}" title="{{t.tip}}">{{t.l}}<sc-if value="{{t.hasN}}" hint-placeholder-val="{{ false }}"><span class="num">{{t.n}}</span></sc-if></button></sc-for></nav>
+    </section>
+
+
+    <!-- ================= RESERVAS ================= -->
+    <sc-if value="{{tabRes}}" hint-placeholder-val="{{ true }}">
+      <div class="rs-wrap">
+        <section class="card rs-p">
+          <div class="rs-g">
+            <div class="rs-s"><span>Reservados</span><b class="num">{{pr.bk}}</b><div class="bar"><i style="width:{{pr.bkW}};"></i></div><em>{{pr.bkS}}</em></div>
+            <div class="rs-s"><span>Documentos para Nataly</span><b class="num">{{pr.dc}}</b><div class="bar"><i style="width:{{pr.dcW}};"></i></div><em>{{pr.dcS}}</em></div>
+            <div class="rs-s"><span>Pagado a proveedores</span><b class="num">{{pr.pp}}</b><div class="bar"><i class="blue" style="width:{{pr.ppW}};"></i></div><em>{{pr.ppS}}</em></div>
+          </div>
+          <div class="rs-nx {{nx.c}}">
+            <div><b>{{nx.t}}</b><span>{{nx.s}}</span></div>
+            <sc-if value="{{nx.hasBtn}}" hint-placeholder-val="{{ true }}"><button class="btn2 act lg" onClick="{{nx.go}}">{{nx.btn}}</button></sc-if>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="rs-h"><span>Servicio</span><span>Proveedor y clave</span><span>Pago al proveedor</span><span>Documentos</span><span style="text-align:right;">Estado</span></div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+            <div class="rs-r {{r.sel}}" onClick="{{r.open}}">
+              <div class="rs-sv">
+                <div class="svi-ic"><sc-if value="{{r.isH}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16M15 9h4a2 2 0 0 1 2 2v10M2 21h20M7 7h4M7 11h4M7 15h4"/></svg></sc-if><sc-if value="{{r.isA}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></sc-if><sc-if value="{{r.isT}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/></svg></sc-if><sc-if value="{{r.isV}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></sc-if><sc-if value="{{r.isS}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></sc-if></div>
+                <div class="rs-c"><b>{{r.title}}</b><span>{{r.sub}}</span></div>
+              </div>
+              <div class="rs-c"><b>{{r.sup}}</b><span class="{{r.keyC}}">{{r.key}}</span></div>
+              <div class="rs-c"><b>{{r.pay}}</b><span class="{{r.payC}}">{{r.payS}}</span></div>
+              <div class="rs-d {{r.docC}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg><span>{{r.doc}}</span></div>
+              <div class="rs-e">
+                <span class="stb {{r.stC}}">{{r.st}}</span>
+                <sc-if value="{{r.canReg}}" hint-placeholder-val="{{ false }}"><button class="btn2 act" onClick="{{r.reg}}">{{r.regL}}</button></sc-if>
+                <sc-if value="{{r.hasNote}}" hint-placeholder-val="{{ false }}"><span class="tol">{{r.note}}</span></sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </sc-if>
+
+    <!-- ================= DOCUMENTOS ================= -->
+    <sc-if value="{{tabDoc}}" hint-placeholder-val="{{ false }}">
+      <div class="rs-wrap">
+        <section class="card dq-top">
+          <div><h2>Documentos del viaje</h2><span>{{dq.sum}}</span></div>
+          <div class="seg2"><sc-for list="{{dq.filters}}" as="f" hint-placeholder-count="4"><button class="{{f.c}}" onClick="{{f.go}}">{{f.l}}</button></sc-for></div>
+          <button class="btn2 act" onClick="{{dq.upload}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Subir documentos</button>
+        </section>
+        <sc-for list="{{dq.groups}}" as="g" hint-placeholder-count="5">
+          <section class="card">
+            <div class="dq-gh"><h3>{{g.t}}</h3><span>{{g.s}}</span></div>
+            <sc-for list="{{g.docs}}" as="d" hint-placeholder-count="2">
+              <div>
+                <div class="dq-r">
+                  <span class="dq-ic {{d.icC}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
+                  <div class="dq-n"><b>{{d.n}}</b><span>{{d.meta}}</span></div>
+                  <div class="dq-v {{d.visC}}"><sc-if value="{{d.isInt}}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></sc-if><sc-if value="{{d.isCli}}" hint-placeholder-val="{{ true }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></sc-if><span>{{d.vis}}</span></div>
+                  <span class="dq-p {{d.pC}}">{{d.p}}</span>
+                  <div class="dq-a"><sc-if value="{{d.isBtn}}" hint-placeholder-val="{{ true }}"><button class="btn2 {{d.aC}}" onClick="{{d.go}}">{{d.a}}</button></sc-if><sc-if value="{{d.isLnk}}" hint-placeholder-val="{{ false }}"><button class="lnk" onClick="{{d.go}}">{{d.a}}</button></sc-if></div>
+                </div>
+                <sc-if value="{{d.gridOpen}}" hint-placeholder-val="{{ false }}">
+                  <div class="pgr">
+                    <div class="pgr-r"><span>Pasajero</span><span>Ida · VB 2124</span><span>Regreso · VB 2125</span></div>
+                    <sc-for list="{{pases}}" as="p" hint-placeholder-count="6"><div class="pgr-r"><span class="pgr-n"><span class="av">{{p.ini}}</span>{{p.n}}</span><span class="cel {{p.c}}">{{p.a}}</span><span class="cel {{p.c}}">{{p.b}}</span></div></sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ================= PAGOS ================= -->
+    <sc-if value="{{tabPay}}" hint-placeholder-val="{{ false }}">
+      <div class="rs-wrap pz-g">
+        <section class="card pz">
+          <div class="pz-h"><h3>Pagos de Nataly</h3><span class="num">Total {{total}} · pagos flexibles</span></div>
+          <div class="pbar2"><i style="width:{{cliW}};"></i></div><div class="pb-l num" style="margin-bottom:6px;">{{cliTxt}}</div>
+          <sc-for list="{{cliPays}}" as="p" hint-placeholder-count="3">
+            <div class="pz-r {{p.hl}}">
+              <div><b>{{p.l}}</b><span>{{p.s}}</span></div>
+              <div class="pz-a"><span class="stb {{p.c}}">{{p.st}}</span><b class="num">{{p.a}}</b></div>
+              <sc-if value="{{p.canOk}}" hint-placeholder-val="{{ false }}"><button class="btn2 act" onClick="{{p.go}}">Confirmar pago</button></sc-if>
+            </div>
+          </sc-for>
+          <div class="fx">Los pagos con tarjeta se confirman solos. Las transferencias se confirman aquí, contra el banco.</div>
+        </section>
+
+        <section class="card pz">
+          <div class="pz-h"><h3>Pagos a proveedores</h3><span class="vis"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Solo administradores</span></div>
+          <sc-for list="{{supPays}}" as="p" hint-placeholder-count="6">
+            <div class="pz-r">
+              <div><b>{{p.l}}</b><span class="{{p.sC}}">{{p.s}}</span></div>
+              <div class="pz-a"><span class="stb {{p.c}}">{{p.st}}</span><b class="num">{{p.a}}</b></div>
+            </div>
+          </sc-for>
+          <div class="pz-cash">
+            <div class="kv"><span>Cobrado a Nataly</span><b class="num">{{cash.in}}</b></div>
+            <div class="kv"><span>Pagado a proveedores</span><b class="num">{{cash.out}}</b></div>
+            <div class="kv tot"><span>{{cash.l}}</span><b class="num">{{cash.bal}}</b></div>
+          </div>
+          <button class="lnk" style="margin:8px 0 0 -4px;" onClick="{{toFin}}">Ver en Finanzas</button>
+        </section>
+      </div>
+    </sc-if>
+  </main>
+
+  <!-- ================= PANEL: REGISTRAR / VER RESERVA ================= -->
+  <div class="scrim {{dwC}}" onClick="{{dw.close}}"></div>
+  <aside class="dw {{dwC}}" aria-label="Reserva del servicio">
+    <div class="dw-h">
+      <div class="dw-nav">{{dw.nav}}</div>
+      <div class="dw-t"><h3>{{dw.title}}</h3><span class="stb {{dw.stC}}">{{dw.st}}</span><button class="dw-x" onClick="{{dw.close}}" aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+      <div class="dw-s">{{dw.sub}}</div>
+    </div>
+    <div class="dw-b">
+      <sc-if value="{{dw.isV}}" hint-placeholder-val="{{ false }}">
+        <div class="dw-sec"><div class="ed-l">Proveedor</div><div class="seg2"><sc-for list="{{dw.trSups}}" as="o" hint-placeholder-count="2"><button class="{{o.c}}" onClick="{{o.go}}">{{o.l}}</button></sc-for></div></div>
+      </sc-if>
+      <sc-if value="{{dw.notV}}" hint-placeholder-val="{{ true }}">
+        <div class="dw-sec"><div class="ed-l">Proveedor</div><span class="in w">{{dw.sup}}</span></div>
+      </sc-if>
+      <div class="dw-sec">
+        <div class="ed-l">{{dw.keysL}}</div>
+        <sc-for list="{{dw.keys}}" as="k" hint-placeholder-count="2"><div class="kr"><span>{{k.l}}</span><span class="in w mono">{{k.v}}</span></div></sc-for>
+        <div class="fx" style="margin:0;">{{dw.keysHint}}</div>
+      </div>
+      <sc-if value="{{dw.isH}}" hint-placeholder-val="{{ false }}">
+        <button class="step {{dw.verC}}" onClick="{{dw.togVer}}"><span class="ckb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Llamé al hotel y confirmó la reservación</b><span>Seadust · +52 998 881 8000. Nataly verá «Verificamos tu reservación por teléfono con el hotel».</span></div></button>
+      </sc-if>
+      <div class="dw-sec">
+        <div class="ed-l">Pago al proveedor</div>
+        <div class="seg2"><sc-for list="{{dw.pays}}" as="o" hint-placeholder-count="2"><button class="{{o.c}}" onClick="{{o.go}}">{{o.l}}</button></sc-for></div>
+        <sc-if value="{{dw.later}}" hint-placeholder-val="{{ true }}">
+          <div class="kr"><span>Pagar antes de</span><span class="in w num">{{dw.due}}</span></div>
+          <div class="kr"><span>Dónde</span><span class="in w">{{dw.where}}</span></div>
+          <div class="auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><span>{{dw.dueWhy}}</span></div>
+        </sc-if>
+        <sc-if value="{{dw.now}}" hint-placeholder-val="{{ false }}">
+          <div class="kr"><span>Pagado con</span><span class="in w">{{dw.with}}</span></div>
+        </sc-if>
+      </div>
+      <div class="dw-sec">
+        <div class="kr"><span>Costo neto real</span><span class="in w num">{{dw.net}}</span></div>
+        <div class="fx" style="margin:0;">Igual al aprobado en la validación. Si fue distinto, se cambia aquí y se ajusta la utilidad.</div>
+      </div>
+      <div class="dw-sec">
+        <div class="ed-l">Documentos que se esperan</div>
+        <sc-for list="{{dw.docs}}" as="d" hint-placeholder-count="2"><div class="dw-dl"><span>{{d.n}}</span><span class="dq-p {{d.pC}}">{{d.p}}</span></div></sc-for>
+        <div class="fx" style="margin:0;">Se suben desde Documentos cuando lleguen.</div>
+      </div>
+      <div class="clue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Nataly verá: {{dw.clientSees}}</span></div>
+    </div>
+    <div class="dw-f">
+      <button class="btn2" onClick="{{dw.close}}">Cancelar</button>
+      <button class="btn2 act" style="flex:1;justify-content:center;" onClick="{{dw.save}}">{{dw.saveL}}</button>
+    </div>
+  </aside>
+
+  <!-- ================= SUBIR DOCUMENTOS ================= -->
+  <div class="mdl-s {{mdlUp}}" role="dialog" aria-modal="true" aria-label="Subir documentos">
+    <div class="mdl wide">
+      <div class="mdl-h"><div><h3>Subir documentos</h3><p>Se asignan solos cuando el archivo trae un folio o clave que coincide con una sola reserva.</p></div><button class="dw-x" onClick="{{up.close}}" aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+      <div class="mdl-b">
+        <div class="drop"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><div><b>Los archivos se pueden arrastrar aquí</b>PDF, JPG o PNG · también puedes reenviarlos desde el correo</div></div>
+        <div>
+          <sc-for list="{{up.files}}" as="f" hint-placeholder-count="3">
+            <div class="upf">
+              <span class="dq-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span>
+              <div class="dq-n"><b>{{f.f}}</b><span class="{{f.c}}">{{f.why}}</span></div>
+              <span class="in {{f.inC}}" onClick="{{f.pick}}"><span>{{f.to}}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></span>
+            </div>
+          </sc-for>
+        </div>
+        <div class="fx" style="margin:0;">{{up.note}}</div>
+      </div>
+      <div class="mdl-f">
+        <span class="mf-n"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>{{up.wa}}</span>
+        <button class="btn2" onClick="{{up.save}}">Guardar sin publicar</button>
+        <button class="btn2 act" onClick="{{up.pub}}">Publicar y avisar a Nataly</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CONFIRMAR PAGO ================= -->
+  <div class="mdl-s {{mdlPay}}" role="dialog" aria-modal="true" aria-label="Confirmar pago">
+    <div class="mdl wide">
+      <div class="mdl-h"><div><h3>Confirmar pago del anticipo</h3><p>Nataly avisó hoy a las 11:02 AM que transfirió. Se busca en la banca de Airoo con la referencia AIR2458.</p></div><button class="dw-x" onClick="{{cp.close}}" aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+      <div class="mdl-b">
+        <div class="f2r">
+          <div class="fld"><div class="ed-l">Monto recibido</div><span class="in w num">$18,048.48</span><div class="ckr ok"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>Coincide con el anticipo</div></div>
+          <div class="fld"><div class="ed-l">Referencia</div><span class="in w mono">AIR2458</span><div class="ckr ok"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>Es la de este viaje</div></div>
+        </div>
+        <div class="f2r">
+          <div class="fld"><div class="ed-l">Fecha y hora del depósito</div><span class="in w num">Mié 30 sep, 10:58 AM</span></div>
+          <div class="fld"><div class="ed-l">Banco que envía</div><span class="in w">BBVA</span></div>
+        </div>
+        <div class="fld"><div class="ed-l">Clave de rastreo</div><span class="in w mono">MBAN01002609300045821739</span></div>
+        <sc-if value="{{cp.notSame}}" hint-placeholder-val="{{ true }}">
+          <div class="cep {{cp.cepC}}">
+            <sc-if value="{{cp.cepOk}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg></sc-if>
+            <div><b>{{cp.cepT}}</b><span>{{cp.cepS}}</span></div>
+            <sc-if value="{{cp.cepWait}}" hint-placeholder-val="{{ true }}"><button class="btn2" onClick="{{cp.check}}">Consultar en Banxico</button></sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{cp.showSame}}" hint-placeholder-val="{{ true }}"><button class="step {{cp.sameC}}" onClick="{{cp.togSame}}"><span class="ckb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><div><b>Viene del mismo banco que Airoo</b><span>Entre cuentas del mismo banco no hay CEP. Se confirma en el portal del banco y queda registrado quién lo verificó.</span></div></button></sc-if>
+        <div class="clue"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l1.9-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg><span>Nataly también mandó una captura por WhatsApp. Sirve para encontrar el depósito, no para confirmarlo: una imagen se puede editar.</span></div>
+      </div>
+      <div class="mdl-f">
+        <span class="mf-n"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Nataly verá «Pagado» en lugar de «Verificando» y recibe su recibo por WhatsApp</span>
+        <button class="btn2" onClick="{{cp.close}}">Cancelar</button>
+        <button class="btn2 act {{cp.okC}}" onClick="{{cp.ok}}">Confirmar pago</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = this.scenario('res');
+    this.timers = {};
+  }
+  componentWillUnmount() { Object.values(this.timers).forEach(clearTimeout); }
+  scenario(k) {
+    return { sc: k, tab: k === 'pay' ? 'pay' : 'res', payOk: k !== 'pay', booked: {}, docs: {}, mdl: '', drw: '', pay: 'now', ver: true, trSup: 'riv',
+      cep: '', same: false, filter: 'all', pg: true, toast: '', toastOn: false, undo: null };
+  }
+  toast(m, undo) { clearTimeout(this.timers.t); this.setState({ toast: m, toastOn: true, undo: undo || null }); this.timers.t = setTimeout(() => this.setState({ toastOn: false, undo: null }), undo ? 10000 : 2800); }
+
+  renderVals() {
+    const s = this.state;
+    const money = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
+    const SC = s.sc;
+    const CARD = 'Tarjeta Airoo ··4417';
+    // Servicios aprobados en la validación (versión 1)
+    const SV = [
+      { id: 'hotel', g: 'Hospedaje · Seadust', kind: 'hotel', short: 'Hospedaje', title: 'Seadust Cancún Family Resort', sub: '2 Suite Deluxe · Mié 21 – Mar 27 oct', sup: 'RateHawk', net: 21800,
+        keysL: 'Claves', keys: [['ID en RateHawk', 'RH-2026-88412'], ['Hab. 1 · Nataly Cervantes Ruiz', '5521884'], ['Hab. 2 · Ana Cervantes Ruiz', '5521885']], keysHint: 'Si la clave del hotel todavía no llega, se puede guardar sin ella: Nataly ve «En proceso».',
+        payDef: 'later', due: 'Mié 14 oct', dueWhy: 'Fecha que marcó la tarifa al reservar: la cancelación gratis termina el Jue 15 oct a las 11:59 PM. Airoo avisa un día antes de la fecha de pago.', with: CARD },
+      { id: 'air', g: 'Vuelo · VivaAerobus', kind: 'air', short: 'Vuelo', title: 'Vuelo redondo · VivaAerobus', sub: 'VB 2124 / VB 2125 · 6 pasajeros · Switch', sup: 'VivaAerobus', net: 2683,
+        keysL: 'Clave de reservación', keys: [['Clave', 'K7M2QX']], keysHint: 'La misma clave sirve para el check-in de los 6 pasajeros.',
+        payDef: 'now', paidTxt: 'Comprado en vivaaerobus.com', with: CARD },
+      { id: 'act', g: 'Xel-Há', kind: 'act', short: 'Xel-Há', title: 'Xel-Há · Todo incluido', sub: 'Jue 22 oct · 4 adultos y 2 menores', sup: 'Grupo Xcaret', net: 4364,
+        keysL: 'Folio', keys: [['Folio Xcaret', 'XH-8821374']], keysHint: 'Xcaret cobra al reservar.', payDef: 'now', paidTxt: 'Pagado al reservar', with: CARD },
+      { id: 'act2', g: 'Xcaret Plus', kind: 'act', short: 'Xcaret Plus', title: 'Xcaret Plus', sub: 'Sáb 24 oct · 4 adultos y 2 menores', sup: 'Grupo Xcaret', net: 5836,
+        keysL: 'Folio', keys: [['Folio Xcaret', 'XC-4410962']], keysHint: 'Xcaret cobra al reservar.', payDef: 'now', paidTxt: 'Pagado al reservar', with: CARD },
+      { id: 'tras', g: 'Traslado · Van adaptada', kind: 'tras', short: 'Traslado', title: 'Traslado privado · Van adaptada', sub: 'Aeropuerto ↔ Seadust · redondo', sup: 'Traslados Riviera', net: 2300,
+        keysL: 'Folio', keys: [['Folio', 'TR-1093']], keysHint: 'Chofer, vehículo y hora exacta llegan un día antes.',
+        payDef: 'later', due: 'Mar 20 oct', dueWhy: 'Acordado con Traslados Riviera: se paga un día antes del servicio, por transferencia a la cuenta verificada.', with: 'Transferencia · BBVA ··2201' },
+      { id: 'seg', g: 'Seguro · Assist Card', kind: 'seg', short: 'Seguro', title: 'Seguro de viaje Plus', sub: '6 viajeros · 21–27 oct', sup: 'Assist Card', net: 1080,
+        keysL: 'Póliza', keys: [['Póliza', 'AS-448120']], keysHint: 'Una póliza para los 6 viajeros.', payDef: 'now', paidTxt: 'Pagado al emitir', with: CARD }
+    ];
+    const byId = {}; SV.forEach((v) => { byId[v.id] = v; });
+    const base = SC === 'done' ? ['air', 'hotel', 'act', 'act2', 'tras', 'seg'] : SC === 'res' ? ['air', 'act', 'act2', 'seg'] : [];
+    const isBk = (id) => base.indexOf(id) >= 0 || !!s.booked[id];
+    const payMode = (v) => s.booked[v.id] ? s.booked[v.id].pay : v.payDef;
+    const isPaid = (v) => isBk(v.id) && payMode(v) === 'now';
+    const nBk = SV.filter((v) => isBk(v.id)).length;
+    // ---- Documentos esperados ----
+    const DOCS = [
+      { id: 'itin', svc: 'air', n: 'Confirmación de VivaAerobus', vis: 'Todos los viajeros', cli: true, wait: 'Al comprar el vuelo', b: 'seen' },
+      { id: 'pases', svc: 'air', n: 'Pases de abordar', vis: 'Cada pasajero el suyo', cli: true, grid: true, wait: 'Se generan al hacer check-in; lo hace Airoo en cuanto abre la aerolínea', b: 'pend' },
+      { id: 'fact', svc: 'air', n: 'Factura de VivaAerobus', vis: 'Solo el equipo', cli: false, wait: 'Al comprar el vuelo', b: 'rec' },
+      { id: 'hconf', svc: 'hotel', n: 'Confirmación del hotel', vis: 'Titular de cada habitación', cli: true, wait: 'Llega por correo de RateHawk al reservar', b: SC === 'done' ? 'pub' : 'pend' },
+      { id: 'rhpay', svc: 'hotel', n: 'Comprobante de pago a RateHawk', vis: 'Solo el equipo', cli: false, wait: 'Al pagar, antes del Mié 14 oct', b: 'pend' },
+      { id: 'bxh', svc: 'act', n: 'Bono Xel-Há', vis: 'Todos los viajeros', cli: true, wait: 'Llega al reservar', b: 'seen' },
+      { id: 'bxc', svc: 'act2', n: 'Bono Xcaret Plus', vis: 'Todos los viajeros', cli: true, wait: 'Llega antes del Vie 16 oct', b: 'pend' },
+      { id: 'chof', svc: 'tras', n: 'Datos del chofer', vis: 'Todos los viajeros', cli: true, wait: 'Llegan el Mar 20 oct, un día antes', b: 'pend' },
+      { id: 'pol', svc: 'seg', n: 'Póliza Assist Card', vis: 'Cada viajero la suya', cli: true, wait: 'Llega al emitir', b: 'pub' }
+    ];
+    const dSt = (d) => s.docs[d.id] || (base.indexOf(d.svc) >= 0 ? d.b : 'pend');
+    const ready = (d) => { const x = dSt(d); return x === 'pub' || x === 'seen'; };
+    const cliDocs = DOCS.filter((d) => d.cli);
+    const nReady = cliDocs.filter(ready).length;
+    const toPublish = DOCS.filter((d) => d.cli && dSt(d) === 'rec');
+    const P = { pend: ['Pendiente', 'pend'], rec: ['Sin publicar', 'rec'], int: ['Guardado', 'int'], pub: ['Publicado', 'pub'], seen: ['Visto', 'seen'] };
+    const pill = (d) => { const x = dSt(d); return x === 'rec' && !d.cli ? P.int : P[x]; };
+    const metaOf = (d) => { const x = dSt(d);
+      if (x === 'pend') return d.wait;
+      if (x === 'rec') return d.cli ? 'Recibido · Nataly todavía no lo ve' : 'PDF · no se publica';
+      if (x === 'pub') return s.docs[d.id] ? 'Publicado ahora · Nataly recibió el aviso' : 'Publicado · Nataly todavía no lo abre';
+      return 'Visto por Nataly · hoy 11:42 AM'; };
+    const setDoc = (id, st, msg) => { const prev = this.state.docs; const n = Object.assign({}, prev); n[id] = st; this.setState({ docs: n }); this.toast(msg, () => this.setState({ docs: prev })); };
+
+    // ---- Etapa ----
+    const STAGES = ['Cotización', 'Aprobada', 'Datos y pago', 'En reservación', 'Reservada', 'En viaje'];
+    const allBk = nBk === SV.length;
+    const stage = !s.payOk ? 2 : allBk ? 4 : 3;
+    const missing = cliDocs.filter((d) => !ready(d) && !d.grid);
+    const stageSub = stage === 2 ? 'Nataly avisó que pagó · por confirmar' : stage === 3 ? nBk + ' de ' + SV.length + ' reservados' : (missing.length ? 'Todo reservado · ' + missing.length + ' documentos por llegar' : '✓ Reserva completa');
+
+    // ---- Progreso y lo que sigue ----
+    const netAll = SV.reduce((a, v) => a + v.net, 0);
+    const paidSup = SV.filter(isPaid).reduce((a, v) => a + v.net, 0);
+    const later = SV.filter((v) => isBk(v.id) && payMode(v) === 'later');
+    const pend = SV.filter((v) => !isBk(v.id));
+    const pr = {
+      bk: nBk + ' de ' + SV.length, bkW: Math.round(nBk / SV.length * 100) + '%', bkS: !pend.length ? 'Todos con clave' : pend.length === SV.length ? 'Nada reservado todavía' : 'Falta ' + pend.map((v) => v.short).join(', '),
+      dc: nReady + ' de ' + cliDocs.length, dcW: Math.round(nReady / cliDocs.length * 100) + '%', dcS: toPublish.length ? toPublish.length + ' recibido sin publicar' : 'Los pases llegan con el check-in',
+      pp: money(paidSup) + ' de ' + money(netAll), ppW: Math.round(paidSup / netAll * 100) + '%', ppS: (() => { const u = SV.filter((v) => !isPaid(v)); const lt = u.filter((v) => payMode(v) === 'later').map((v) => v.sup + ' antes del ' + v.due); if (u.length > lt.length) lt.push(lt.length ? 'el resto al reservar' : 'Se paga al reservar'); return lt.join(' · ') || 'Sin pagos pendientes'; })()
+    };
+    let nx;
+    if (!s.payOk) nx = { c: 'amb', t: 'Nataly avisó que transfirió el anticipo', s: 'Falta confirmarlo contra el banco. Hasta entonces no se compra nada.', btn: 'Confirmar pago', go: () => this.setState({ tab: 'pay', mdl: 'pay', cep: '', same: false }) };
+    else if (pend.length) { const p0 = pend[0]; const air = pend.find((v) => v.kind === 'air');
+      nx = air ? { c: 'amb', t: 'Conviene empezar por el vuelo', s: 'La tarifa de VivaAerobus no se aparta: puede subir en cualquier momento. Después, lo demás.', btn: 'Registrar compra', go: () => this.openDw('air') }
+        : { c: '', t: 'Falta reservar ' + pend.map((v) => v.short).join(' y '), s: 'El vuelo, Xcaret y el seguro ya están. ' + (pend.some((v) => v.kind === 'hotel') ? 'El hotel se paga después, antes del Mié 14 oct.' : ''), btn: 'Registrar ' + p0.short.toLowerCase(), go: () => this.openDw(p0.id) }; }
+    else nx = { c: missing.length ? '' : 'ok', t: missing.length ? 'Todo reservado · ' + missing.length + ' documentos por llegar' : 'Todo reservado y con documentos', s: missing.length ? missing.map((d) => d.n + ' (' + d.wait.toLowerCase().replace('llega ', '').replace('llegan ', '') + ')').join(' · ') : 'Nataly ya ve todas sus claves y documentos.', btn: toPublish.length ? 'Publicar ' + toPublish.length : '', go: () => this.setState({ tab: 'doc' }) };
+    nx.hasBtn = !!nx.btn;
+
+    // ---- Filas de reservas ----
+    const ICON = (v) => ({ isH: v.kind === 'hotel', isA: v.kind === 'air', isT: v.kind === 'act', isV: v.kind === 'tras', isS: v.kind === 'seg' });
+    const rows = SV.map((v) => {
+      const bk = isBk(v.id), docs = DOCS.filter((d) => d.svc === v.id && d.cli), dr = docs.filter(ready).length;
+      const st = !s.payOk ? ['Esperando pago', 'gray'] : bk ? ['Reservado', 'ok'] : v.kind === 'air' ? ['Por comprar hoy', 'amb'] : ['Por reservar', 'amb'];
+      const pm = payMode(v);
+      return Object.assign(ICON(v), {
+        sel: s.drw === v.id ? 'sel' : '', title: v.title, sub: v.sub,
+        sup: v.id === 'tras' && bk && s.booked.tras && s.booked.tras.sup === 'otro' ? 'Otro proveedor' : v.sup,
+        key: bk ? v.keys.map((k) => k[1]).filter((x, i) => v.kind !== 'hotel' || i > 0).join(' · ') : 'Sin clave', keyC: bk ? 'mono' : '',
+        pay: !bk ? '—' : pm === 'now' ? (v.paidTxt || 'Pagado al reservar') : 'Pagar antes del ' + v.due,
+        payS: !bk ? (v.payDef === 'later' ? 'Se puede pagar después' : v.kind === 'air' ? 'Se paga al comprar' : 'Se paga al reservar') : pm === 'later' ? 'En ' + v.sup + ', con la forma de pago que ofrezca' : v.with.replace('Tarjeta Airoo ', 'Tarjeta '), payC: bk && pm === 'later' ? 'amb' : '',
+        doc: docs.length ? dr + ' de ' + docs.length : '—', docC: !bk ? '' : dr === docs.length ? 'ok' : 'amb',
+        st: st[0], stC: st[1],
+        canReg: s.payOk && !bk, regL: v.kind === 'air' ? 'Registrar compra' : 'Registrar', reg: () => this.openDw(v.id),
+        hasNote: !s.payOk, note: 'Tras confirmar el pago',
+        open: () => { if (s.payOk) this.openDw(v.id); else this.toast('Se habilita cuando el pago de Nataly esté confirmado'); }
+      });
+    });
+
+    // ---- Documentos ----
+    const FIL = [['all', 'Todos'], ['miss', 'Faltan'], ['cli', 'Para Nataly'], ['int', 'Internos']];
+    const pass = (d) => s.filter === 'all' || (s.filter === 'miss' && dSt(d) === 'pend') || (s.filter === 'cli' && d.cli) || (s.filter === 'int' && !d.cli);
+    const groups = SV.map((v) => ({ t: v.g, s: isBk(v.id) ? 'Reservado · ' + v.keys[v.kind === 'hotel' ? 1 : 0][1] : 'Sin reservar',
+      docs: DOCS.filter((d) => d.svc === v.id && pass(d)).map((d) => { const x = dSt(d), p = pill(d);
+        const act = x === 'pend' ? (d.grid ? [s.pg ? 'Ocultar' : 'Ver por pasajero', 'lnk'] : ['Subir', 'btn']) : x === 'rec' && d.cli ? ['Publicar', 'act'] : ['Ver', 'lnk'];
+        return { n: d.n + (d.grid ? ' · 0 de 12' : ''), meta: metaOf(d), vis: d.vis, visC: d.cli ? '' : 'int', isInt: !d.cli, isCli: d.cli, icC: d.cli ? '' : 'int', p: p[0], pC: p[1], grid: !!d.grid, gridOpen: !!d.grid && s.pg,
+          a: act[0], aC: act[1] === 'act' ? 'act' : '', isBtn: act[1] !== 'lnk', isLnk: act[1] === 'lnk',
+          go: () => { if (act[0] === 'Subir') this.setState({ mdl: 'up' }); else if (act[0] === 'Publicar') setDoc(d.id, 'pub', d.n + ' publicado · Nataly recibe un aviso por WhatsApp'); else if (d.grid) this.setState({ pg: !this.state.pg }); else this.toast('Abre ' + d.n); } }; }) })).filter((g) => g.docs.length);
+    const PAX = ['Nataly Cervantes Ruiz', 'Luis Pérez Gómez', 'Ana Cervantes Ruiz', 'Jorge Méndez Soto', 'Sofía Pérez Cervantes', 'Mateo Méndez Cervantes'];
+    const pases = PAX.map((n) => ({ n: n, ini: n.split(' ')[0][0] + n.split(' ')[1][0], a: 'Pendiente', b: 'Pendiente', c: '' }));
+    const dq = { sum: nReady + ' de ' + cliDocs.length + ' listos para Nataly' + (toPublish.length ? ' · ' + toPublish.length + ' sin publicar' : '') + ' · los internos no se publican',
+      filters: FIL.map(([k, l]) => ({ l: l, c: s.filter === k ? 'on' : '', go: () => this.setState({ filter: k }) })), groups: groups, upload: () => this.setState({ mdl: 'up' }) };
+
+    // ---- Subir documentos ----
+    const hBk = isBk('hotel');
+    const UP = [
+      { f: 'XC-4410962_bono.pdf', to: 'Bono Xcaret Plus', id: 'bxc', why: 'El folio XC-4410962 coincide con Xcaret Plus', ok: true },
+      { f: 'Confirmacion_Seadust_5521884.pdf', to: hBk ? 'Confirmación del hotel' : 'Elegir a qué pertenece', id: hBk ? 'hconf' : '', why: hBk ? 'La clave 5521884 coincide con Hab. 1 de Seadust' : 'La clave 5521884 todavía no está en ninguna reserva', ok: hBk },
+      { f: 'WhatsApp Image 2026-09-30 at 12.14.jpeg', to: 'Elegir a qué pertenece', id: '', why: 'No trae folio ni clave que se pueda leer', ok: false }
+    ];
+    const upOk = UP.filter((u) => u.ok);
+    const up = {
+      files: UP.map((u) => ({ f: u.f, to: u.to, why: u.why, c: u.ok ? 'ok' : 'amb', inC: u.ok ? '' : 'none', pick: () => this.toast('Falta elegir el servicio y el tipo de documento') })),
+      note: 'Los que no se asignan se quedan en «Sin asignar», arriba de Documentos, hasta que los acomodes.',
+      wa: 'Nataly recibe un solo WhatsApp con ' + upOk.length + (upOk.length === 1 ? ' documento nuevo' : ' documentos nuevos'),
+      save: () => { const prev = this.state.docs; const n = Object.assign({}, prev); upOk.forEach((u) => { n[u.id] = 'rec'; }); this.setState({ docs: n, mdl: '', tab: 'doc' }); this.toast(upOk.length + ' guardados sin publicar · 1 sin asignar', () => this.setState({ docs: prev })); },
+      pub: () => { const prev = this.state.docs; const n = Object.assign({}, prev); upOk.forEach((u) => { n[u.id] = 'pub'; }); this.setState({ docs: n, mdl: '', tab: 'doc' }); this.toast(upOk.length + ' publicados · Nataly recibió un aviso por WhatsApp · 1 sin asignar', () => this.setState({ docs: prev })); },
+      close: () => this.setState({ mdl: '' })
+    };
+
+    // ---- Pagos ----
+    const total = 42248.48, ant = 18048.48;
+    const cliPays = [
+      s.payOk ? { l: 'Anticipo', s: 'Pagado el Mié 30 sep, 10:58 AM · SPEI · confirmado con CEP', a: money(ant), c: 'ok', st: 'Pagado', hl: '', canOk: false }
+        : { l: 'Anticipo', s: 'Avisó que transfirió hoy a las 11:02 AM · SPEI · ref. AIR2458', a: money(ant), c: 'amb', st: 'Por confirmar', hl: 'hl', canOk: true, go: () => this.setState({ mdl: 'pay', cep: '', same: false }) },
+      { l: '2º pago', s: 'Primera mitad del hotel · vence Lun 5 oct', a: money(12100), c: 'gray', st: 'Programado', hl: '', canOk: false },
+      { l: 'Pago final', s: 'Segunda mitad del hotel · vence Lun 12 oct', a: money(12100), c: 'gray', st: 'Programado', hl: '', canOk: false }
+    ];
+    const supPays = SV.map((v) => { const bk = isBk(v.id), pm = payMode(v);
+      return { l: (v.id === 'act' || v.id === 'act2' ? v.sup + ' · ' + v.short : v.sup), a: money(v.net),
+        s: !bk ? 'Se registra al reservar' : pm === 'now' ? v.with + (base.indexOf(v.id) >= 0 ? ' · Mié 30 sep' : ' · hoy') : 'Pagar antes del ' + v.due + ' · en ' + v.sup, sC: bk && pm === 'later' ? 'amb' : '',
+        c: !bk ? 'gray' : pm === 'now' ? 'ok' : 'amb', st: !bk ? 'Sin reservar' : pm === 'now' ? 'Pagado' : 'Por pagar' }; });
+    const cashIn = s.payOk ? ant : 0;
+    const cp = {
+      notSame: !s.same, cepOk: s.cep === 'ok', cepWait: s.cep !== 'ok', cepC: s.cep === 'ok' ? 'ok' : 'wait',
+      cepT: s.cep === 'ok' ? 'Banxico: Liquidado' : 'Comprobante Electrónico de Pago (CEP)', cepS: s.cep === 'ok' ? ' Mié 30 sep, 10:58:41 AM · BBVA → cuenta de Airoo · $18,048.48' : ' Con la clave de rastreo, Banxico confirma que el dinero llegó.',
+      check: () => this.setState({ cep: 'ok' }),
+      showSame: s.cep !== 'ok', sameC: s.same ? 'on' : '', togSame: () => this.setState({ same: !this.state.same }),
+      okC: s.cep === 'ok' || s.same ? '' : 'dis',
+      ok: () => { if (!(this.state.cep === 'ok' || this.state.same)) { this.toast('Falta consultar el CEP o confirmar que se vio en el portal del banco'); return; }
+        this.setState({ payOk: true, mdl: '', tab: 'res' }); this.toast('Pago confirmado · Nataly ya ve «Pagado» · lo siguiente es comprar el vuelo', () => this.setState({ payOk: false, tab: 'pay' })); },
+      close: () => this.setState({ mdl: '' })
+    };
+
+    // ---- Panel de reserva ----
+    const dv = byId[s.drw] || SV[0];
+    const dvBk = isBk(dv.id);
+    const dwPay = s.pay;
+    const dw = {
+      nav: (dvBk ? 'Reservado · ' : 'Registrar · ') + dv.short, title: dv.title, sub: dv.sub, st: dvBk ? 'Reservado' : 'Por reservar', stC: dvBk ? 'ok' : 'amb',
+      isV: dv.kind === 'tras', notV: dv.kind !== 'tras', isH: dv.kind === 'hotel', sup: dv.sup,
+      trSups: [['riv', 'Traslados Riviera'], ['otro', 'Otro proveedor']].map(([k, l]) => ({ l: l, c: s.trSup === k ? 'on' : '', go: () => this.setState({ trSup: k }) })),
+      keysL: dv.keysL, keys: dv.keys.map((k) => ({ l: k[0], v: k[1] })), keysHint: dv.keysHint,
+      verC: s.ver ? 'on' : '', togVer: () => this.setState({ ver: !this.state.ver }),
+      pays: [['now', dv.kind === 'air' ? 'Comprado ya' : 'Pagado al reservar'], ['later', 'Pagar después']].map(([k, l]) => ({ l: l, c: dwPay === k ? 'on' : '', go: () => this.setState({ pay: k }) })),
+      later: dwPay === 'later', now: dwPay === 'now', due: (dv.due || 'Mar 20 oct') + ', 11:59 PM', dueWhy: dv.dueWhy || 'Lo acordado en esta reserva. Aparece en Finanzas → Por pagar con aviso 3 días antes.', with: dv.with, where: 'En ' + dv.sup + ', con la forma de pago que ofrezca',
+      net: money(dv.net),
+      docs: DOCS.filter((d) => d.svc === dv.id).map((d) => { const p = pill(d); return { n: d.n, p: p[0], pC: p[1] }; }),
+      clientSees: dv.kind === 'hotel' ? 'las claves por habitación' + (s.ver ? ' y «Verificamos tu reservación por teléfono con el hotel».' : '.') : dv.kind === 'air' ? 'la clave K7M2QX y «Nosotros hacemos tu check-in».' : dv.kind === 'tras' ? 'el folio y «Los datos del chofer llegan el Mar 20 oct».' : 'el folio y el bono cuando lo publiques.',
+      saveL: dvBk ? 'Guardar cambios' : 'Guardar y avisar a Nataly',
+      save: () => { if (dvBk && !s.booked[dv.id]) { this.setState({ drw: '' }); this.toast('Cambios guardados'); return; }
+        const prev = this.state.booked; const b = Object.assign({}, prev); b[dv.id] = { pay: this.state.pay, ver: this.state.ver, sup: this.state.trSup };
+        this.setState({ booked: b, drw: '' }); this.toast(dv.short + ' reservado · Nataly recibió el aviso por WhatsApp', () => this.setState({ booked: prev })); },
+      close: () => this.setState({ drw: '' })
+    };
+
+    // ---- Pestañas del viaje ----
+    const tabT = (m) => () => this.toast(m);
+    const go = (t) => () => this.setState({ tab: t });
+    const TT = [
+      { l: 'Resumen', go: tabT('Abre el resumen del viaje') },
+      { l: 'Validación', go: tabT('Validación cerrada hoy a las 9:44 AM · versión 1 sin cambios') },
+      { l: 'Reservas', k: 'res', n: s.payOk ? pend.length : 0, amb: true },
+      { l: 'Documentos', k: 'doc', n: toPublish.length, amb: true },
+      { l: 'Pagos', k: 'pay', n: s.payOk ? 0 : 1, amb: true },
+      { l: 'Historial', go: tabT('Historial completo del viaje') }
+    ].map((t) => ({ l: t.l, c: t.k === s.tab ? 'on' : '', tip: '', hasN: !!t.n, n: t.n || 0, go: t.k ? go(t.k) : t.go }));
+
+    return {
+      navVj: 'on', navHt: '', navPv: '', navAc: '', navSv: '', navAe: '',
+      toastCls: s.toastOn ? 'show' : '', toastMsg: s.toast, hasUndo: !!s.undo, doUndo: () => { const u = this.state.undo; clearTimeout(this.timers.t); this.setState({ toastOn: false, undo: null }); if (u) u(); },
+      hasDemo: true, fmtL: s.payOk ? 'Reservación' : 'Cotización',
+      scs: [['pay', 'Pago por confirmar'], ['res', 'En reservación'], ['done', 'Reservada']].map(([k, l]) => ({ l: l, c: SC === k ? 'on' : '', go: () => this.setState(this.scenario(k)) })),
+      stages: STAGES.map((l, i) => ({ l: l, c: i < stage ? 'past' : i === stage ? 'now' : '' })), stageL: STAGES[stage], stageSub: stageSub, stageC: stage === 2 ? 'hot' : stage === 4 && !missing.length ? 'ok' : '',
+      ttabs: TT,
+      tabRes: s.tab === 'res', tabDoc: s.tab === 'doc', tabPay: s.tab === 'pay',
+      pr: pr, nx: nx, rows: rows, dq: dq, pases: pases, up: up,
+      total: money(total), cliW: Math.round(cashIn / total * 100) + '%', cliTxt: money(cashIn) + ' de ' + money(total) + (s.payOk ? '' : ' · anticipo por confirmar'), cliPays: cliPays, supPays: supPays,
+      cash: { in: money(cashIn), out: money(paidSup), l: cashIn - paidSup >= 0 ? 'Saldo a favor del viaje' : 'Adelantado por Airoo', bal: money(Math.abs(cashIn - paidSup)) },
+      cp: cp, dw: dw, dwC: s.drw ? 'show' : '', mdlUp: s.mdl === 'up' ? 'show' : '', mdlPay: s.mdl === 'pay' ? 'show' : '',
+      toFin: () => this.toast('Abre Finanzas → Por pagar, filtrado por AIR-2458'),
+      back: () => this.toast('Regresa a Viajes'), seeLink: () => this.toast('Abre el enlace tal como lo ve Nataly'), wa: () => this.toast('Abriendo WhatsApp con Nataly'), copyFolio: () => this.toast('Folio copiado: AIR-2458'),
+      more: () => this.toast('Más acciones: duplicar viaje, cancelar viaje')
+    };
+  }
+  openDw(id) { const PD = { hotel: 'later', tras: 'later' }; const b = this.state.booked[id]; this.setState({ drw: id, pay: b ? b.pay : (PD[id] || 'now'), ver: b ? b.ver : true, trSup: b ? b.sup : 'riv' }); }
+}
+
+</script>
+</body>
+</html>
