@@ -78,3 +78,4 @@ Vercel corre `npm run vercel-build`: primero `scripts/arranque.ts` aplica las mi
    - `ALMACEN_FOTOS=supabase`, para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
    - `DUENO_CORREO` y `DUENO_NOMBRE`: quién es el Dueño en el primer arranque.
    - `NEXT_PUBLIC_SITE_URL` es opcional: sin ella se usa la dirección de producción de Vercel.
+3. Mientras una fase se prueba antes de unirla a main, en Vercel › Settings › Environments › Production › Branch Tracking va la rama de esa fase. Vercel solo deja elegir una rama que ya tenga un deploy.
