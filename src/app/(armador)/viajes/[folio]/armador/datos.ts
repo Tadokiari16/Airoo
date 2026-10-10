@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, desc, eq, isNull } from "drizzle-orm";
+import { asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import type { FixCotizacion, Opcion, PartidaArmador } from "@/lib/armador";
 import { fichasDe, type FichaArmador } from "@/lib/catalogo-armador";
@@ -13,6 +13,7 @@ import { cotizacionesActuales, opcionesDe, partidasDe } from "@/lib/viajes";
 import { cargarAjustes } from "@/app/(panel)/configuracion/datos";
 import { opcionesCiudad, type OpcionCiudad } from "@/app/(panel)/hoteles/datos";
 import type { ClaveSeccion } from "@/lib/armador-textos";
+import type { Aeropuerto } from "@/lib/vuelos";
 
 export type ProveedorOpcion = { id: string; nombre: string; tipo: "plataforma" | "directo"; categorias: string[] };
 
@@ -51,6 +52,10 @@ export type DatosArmador = {
   opciones: Opcion[];
   fichas: Record<string, FichaArmador>;
   proveedores: ProveedorOpcion[];
+  /** Aeropuertos de los vuelos de esta cotización; los demás llegan al buscarlos. */
+  aeropuertos: Record<string, Aeropuerto>;
+  /** Claves IATA de las aerolíneas del catálogo, para validar números de vuelo. */
+  aerolineas: string[];
   /** Para el alta mínima desde «Agregar servicio». */
   ciudades: OpcionCiudad[];
   agregaCiudades: boolean;
@@ -92,7 +97,24 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
     tipoCambioVigente("EUR"),
     opcionesCiudad(),
   ]);
-  const fichas = await fichasDe(partidas);
+  const claves = [...new Set(partidas.flatMap((p) => p.tramos.flatMap((t) => [t.origen, t.destino])).filter(Boolean))];
+  const [fichas, aeropuertos, aerolineas] = await Promise.all([
+    fichasDe(partidas),
+    claves.length
+      ? db
+          .select({
+            iata: schema.aeropuertos.iata,
+            nombre: schema.aeropuertos.nombre,
+            ciudad: schema.aeropuertos.ciudad,
+            pais: schema.aeropuertos.pais,
+            paisCodigo: schema.aeropuertos.paisCodigo,
+            zonaHoraria: schema.aeropuertos.zonaHoraria,
+          })
+          .from(schema.aeropuertos)
+          .where(inArray(schema.aeropuertos.iata, claves))
+      : Promise.resolve([] as Aeropuerto[]),
+    db.select({ iata: schema.aerolineas.iata }).from(schema.aerolineas),
+  ]);
   const hoy = hoyEnCancun();
   return {
     viaje: {
@@ -128,6 +150,8 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
     opciones,
     fichas,
     proveedores,
+    aeropuertos: Object.fromEntries(aeropuertos.map((a) => [a.iata, a])),
+    aerolineas: aerolineas.map((a) => a.iata),
     ciudades,
     agregaCiudades: puede(yo.rol, "configuracion"),
     editaCatalogo: puede(yo.rol, "editar_catalogos"),

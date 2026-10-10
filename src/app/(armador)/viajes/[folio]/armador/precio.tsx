@@ -16,7 +16,7 @@ const PAGOS = [
 const NOMBRE_MONEDA: Record<Moneda, string> = { MXN: "peso", USD: "dólar", EUR: "euro" };
 
 /**
- * El panel derecho de cada servicio: costo neto, dónde se reserva, moneda,
+ * El panel derecho de cada servicio: costo neto total, dónde se reserva, moneda,
  * utilidad, cómo se le paga al proveedor, precio y ganancia.
  */
 export function PanelPrecio({
@@ -28,8 +28,6 @@ export function PanelPrecio({
   utilidadBasePb,
   utilidadFijaPb,
   proveedores,
-  netoEditable,
-  subNeto,
   directo,
   alCambiar,
   alElegirProveedor,
@@ -43,9 +41,6 @@ export function PanelPrecio({
   /** Vuelos: la utilidad es fija por política. */
   utilidadFijaPb?: number;
   proveedores: ProveedorOpcion[];
-  /** Vuelo y servicios: un solo neto que se escribe aquí. Hotel y actividad lo suman de sus renglones. */
-  netoEditable: boolean;
-  subNeto: string;
   /** Cómo se llama reservar sin proveedor: «Directo», «Directo con el hotel». */
   directo: string | null;
   alCambiar: (cambio: Partial<PartidaArmador>) => void;
@@ -53,7 +48,6 @@ export function PanelPrecio({
 }) {
   const tc = tipoCambioDe(p.moneda, fx);
   const fixDeHoy = p.moneda === "USD" ? fixHoy.usd : p.moneda === "EUR" ? fixHoy.eur : null;
-  const renglon = p.renglones[0];
   const anticipo = calc.netoMxn !== null ? calc.netoMxn - calc.enDestino : null;
   const pp = (c: number | null) => (c !== null && personas > 0 ? `${formatoDinero(Math.round(c / personas))} por persona` : "");
 
@@ -62,30 +56,20 @@ export function PanelPrecio({
       <Fila
         etiqueta={
           <>
-            <OjoTachado /> Costo neto
+            <OjoTachado /> Costo neto total
           </>
         }
       >
-        {netoEditable && renglon ? (
-          <CampoDinero
-            etiqueta="Costo neto"
-            valor={renglon.netoUnitario}
-            moneda={p.moneda}
-            ambar
-            className="w-[150px]"
-            alCambiar={(c) =>
-              alCambiar({ renglones: p.renglones.map((r, i) => (i === 0 ? { ...r, netoUnitario: c } : r)) })
-            }
-          />
-        ) : (
-          <span
-            className={`num flex h-9 w-[150px] items-center justify-end rounded-[10px] px-2.5 text-[13.5px] font-semibold ${calc.neto === null ? "bg-ambar-tenue text-ambar" : "bg-tarjeta shadow-borde"}`}
-          >
-            {calc.neto === null ? "Falta" : formatoDinero(calc.neto, p.moneda)}
-          </span>
-        )}
+        <CampoDinero
+          etiqueta="Costo neto total"
+          valor={p.netoTotal}
+          moneda={p.moneda}
+          ambar
+          className="w-[150px]"
+          alCambiar={(c) => alCambiar({ netoTotal: c })}
+        />
       </Fila>
-      {subNeto ? <p className="-mt-2 text-right text-[11.5px] text-tinta-3">{subNeto}</p> : null}
+      <p className="-mt-2 text-right text-[11.5px] text-tinta-3">Lo que cobra el proveedor por todo el servicio.</p>
 
       <Fila etiqueta="Moneda">
         <div className="w-[150px]">

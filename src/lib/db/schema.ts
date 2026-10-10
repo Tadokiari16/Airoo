@@ -581,6 +581,19 @@ export const aerolineasIata = pgTable("aerolineas_iata", {
   pais: text(),
 }).enableRLS();
 
+// Aeropuertos con clave IATA y su zona horaria, para calcular la duración real
+// de cada vuelo. Fuente y licencia en scripts/aeropuertos-iata.mjs.
+export const aeropuertos = pgTable("aeropuertos", {
+  iata: text().primaryKey(),
+  nombre: text().notNull(),
+  ciudad: text().notNull(),
+  pais: text().notNull(),
+  paisCodigo: text().notNull(),
+  zonaHoraria: text().notNull(),
+  // Clave, ciudad (en español y en inglés) y nombre, sin acentos.
+  busqueda: text().notNull(),
+}).enableRLS();
+
 export const aerolineas = pgTable("aerolineas", {
   id: uuid().primaryKey().defaultRandom(),
   iata: text().notNull().unique(),
@@ -799,8 +812,8 @@ export const cotizacionOpciones = pgTable(
 export const tipoPartida = pgEnum("tipo_partida", ["hotel", "vuelo", "actividad", "servicio"]);
 export const pagoProveedor = pgEnum("pago_proveedor", ["al_reservar", "anticipo", "en_el_lugar"]);
 
-// Cada servicio cotizado. El neto es la suma de sus habitaciones (hotel) o de
-// sus renglones (vuelo, actividad, servicio), en la moneda de la tarifa.
+// Cada servicio cotizado, con un solo costo neto total en la moneda de la
+// tarifa: lo que cobra el proveedor por todo el servicio.
 export const partidas = pgTable(
   "partidas",
   {
@@ -826,6 +839,7 @@ export const partidas = pgTable(
     fechaInicio: date({ mode: "string" }),
     fechaFin: date({ mode: "string" }),
     moneda: moneda().notNull().default("MXN"),
+    netoTotalCentavos: integer(),
     tipoCambio: integer(),
     utilidadPb: integer().notNull(),
     // Falso: sigue la utilidad base de la cotización.
@@ -865,13 +879,12 @@ export const partidaHabitaciones = pgTable(
     cama: text(),
     adultos: integer().notNull().default(0),
     menores: integer().notNull().default(0),
-    netoCentavos: integer(),
     orden: integer().notNull().default(0),
   },
   (t) => [index().on(t.partidaId)],
 ).enableRLS();
 
-// Boletos, unidades o personas: «Adulto × 4 a $1,094». Sin boleto: un solo renglón.
+// Boletos de una actividad: «Adulto × 4». Sin precio: el costo neto es el total de la partida.
 export const partidaRenglones = pgTable(
   "partida_renglones",
   {
@@ -882,7 +895,6 @@ export const partidaRenglones = pgTable(
     concepto: text().notNull(),
     boletoId: uuid().references(() => actividadBoletos.id, { onDelete: "set null" }),
     cantidad: integer().notNull().default(1),
-    netoUnitarioCentavos: integer(),
     orden: integer().notNull().default(0),
   },
   (t) => [index().on(t.partidaId)],
@@ -890,7 +902,8 @@ export const partidaRenglones = pgTable(
 
 export const sentidoTramo = pgEnum("sentido_tramo", ["ida", "regreso"]);
 
-// Sin API de vuelos: ruta y horario se capturan a mano.
+// Sin API de vuelos: ruta y horario se capturan a mano. Cada tramo es un vuelo;
+// con escala, el sentido lleva varios tramos en orden.
 export const vueloTramos = pgTable(
   "vuelo_tramos",
   {
@@ -902,16 +915,14 @@ export const vueloTramos = pgTable(
     orden: integer().notNull().default(0),
     numero: text(),
     fecha: date({ mode: "string" }),
-    origen: text(),
-    destino: text(),
+    origen: text().references(() => aeropuertos.iata),
+    destino: text().references(() => aeropuertos.iata),
     terminalSalida: text(),
     terminalLlegada: text(),
     sale: time(),
     llega: time(),
-    // Llega al día siguiente.
-    llegaDiaSiguiente: boolean().notNull().default(false),
-    duracion: text(),
-    escalas: integer().notNull().default(0),
+    // Días después de la salida en que llega, en hora local del destino: 0, +1 o +2.
+    llegaDias: integer().notNull().default(0),
   },
   (t) => [index().on(t.partidaId)],
 ).enableRLS();

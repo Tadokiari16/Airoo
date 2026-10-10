@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MARGENES, type Pendiente } from "@/lib/armador";
+import { MARGENES } from "@/lib/armador";
+import type { Hallazgo } from "@/lib/revision";
 import { textoPorcentaje, type Pago, type Totales } from "@/lib/cotizacion";
 import { formatoDinero } from "@/lib/dinero";
 import { formatoDia } from "@/lib/fechas";
@@ -139,41 +140,100 @@ export function TotalPorOpcion({
   );
 }
 
-export function AntesDeEnviar({ pendientes, alIr }: { pendientes: Pendiente[]; alIr: (p: Pendiente) => void }) {
+const COLOR = { error: "text-rojo", falta: "text-ambar", aviso: "text-tinta-2" } as const;
+
+function Renglon({ h, alIr }: { h: Hallazgo; alIr?: (h: Hallazgo) => void }) {
+  return (
+    <li className="flex items-start gap-1.5 text-[12.5px]">
+      <span className={`mt-px shrink-0 ${h.nivel === "aviso" ? "text-ambar" : COLOR[h.nivel]}`}>
+        <IconoAviso tam={14} />
+      </span>
+      <span className={h.nivel === "aviso" ? "text-tinta-2" : `font-semibold ${COLOR[h.nivel]}`}>
+        {h.texto}
+        {alIr && h.partidaId ? (
+          <button
+            type="button"
+            onClick={() => alIr(h)}
+            className="ml-1 cursor-pointer font-normal whitespace-nowrap text-tinta-3 hover:text-azul-oscuro hover:underline"
+          >
+            · ir
+          </button>
+        ) : null}
+      </span>
+    </li>
+  );
+}
+
+/**
+ * Lo que impide enviar (errores y datos que faltan) y, aparte, los avisos:
+ * cosas raras que pueden estar bien y no impiden enviar.
+ */
+export function AntesDeEnviar({ hallazgos, alIr }: { hallazgos: Hallazgo[]; alIr: (h: Hallazgo) => void }) {
+  const bloquean = [...hallazgos.filter((h) => h.nivel === "error"), ...hallazgos.filter((h) => h.nivel === "falta")];
+  const avisos = hallazgos.filter((h) => h.nivel === "aviso");
   return (
     <section aria-label="Antes de enviar" className="rounded-tarjeta bg-tarjeta p-4 shadow-tarjeta">
       <h2 className="flex items-center gap-2 text-[14px] font-bold">
         Antes de enviar
-        {pendientes.length ? (
+        {bloquean.length ? (
           <span className="num inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ambar-tenue px-1.5 text-[11.5px] font-bold text-ambar">
-            {pendientes.length}
+            {bloquean.length}
           </span>
         ) : null}
       </h2>
-      {pendientes.length ? (
+      {bloquean.length ? (
         <ul className="mt-2 flex flex-col gap-1.5">
-          {pendientes.map((p, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-[12.5px]">
-              <span className="mt-px text-ambar">
-                <IconoAviso tam={14} />
-              </span>
-              <span className="font-semibold text-ambar">{p.texto}</span>
-              {p.partidaId ? (
-                <button
-                  type="button"
-                  onClick={() => alIr(p)}
-                  className="cursor-pointer whitespace-nowrap text-tinta-3 hover:text-azul-oscuro hover:underline"
-                >
-                  · ir
-                </button>
-              ) : null}
-            </li>
+          {bloquean.map((h, i) => (
+            <Renglon key={i} h={h} alIr={alIr} />
           ))}
         </ul>
       ) : (
         <p className="mt-1.5 text-[12.5px] font-semibold text-verde">Todo listo para enviar</p>
       )}
+      {avisos.length ? (
+        <div aria-label="Avisos" role="group" className="mt-3 border-t border-linea pt-2.5">
+          <p className="text-[12px] font-bold text-tinta-2">
+            {avisos.length === 1 ? "1 aviso" : `${avisos.length} avisos`}
+            <span className="font-normal text-tinta-3"> · no impiden enviar; vale la pena revisarlos</span>
+          </p>
+          <ul className="mt-1.5 flex flex-col gap-1.5">
+            {avisos.map((h, i) => (
+              <Renglon key={i} h={h} alIr={alIr} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+/** Errores y avisos dentro de la tarjeta de cada servicio. */
+export function Hallazgos({ hallazgos }: { hallazgos: Hallazgo[] }) {
+  if (!hallazgos.length) return null;
+  const errores = hallazgos.filter((h) => h.nivel === "error");
+  const avisos = hallazgos.filter((h) => h.nivel === "aviso");
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      {errores.length ? (
+        <div role="alert" className="rounded-[12px] bg-rojo-tenue px-3 py-2.5">
+          <p className="text-[12px] font-bold text-rojo">No se guarda hasta corregirlo</p>
+          <ul className="mt-1 flex flex-col gap-1">
+            {errores.map((h, i) => (
+              <Renglon key={i} h={h} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {avisos.length ? (
+        <div aria-label="Avisos del servicio" role="group" className="rounded-[12px] bg-ambar-tenue/60 px-3 py-2.5">
+          <ul className="flex flex-col gap-1">
+            {avisos.map((h, i) => (
+              <Renglon key={i} h={h} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

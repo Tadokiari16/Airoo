@@ -59,13 +59,15 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/lib/aerolineas.ts`: equipaje por tarifa, ventanas de check-in con su fuente y búsqueda en la lista IATA.
 - `src/lib/configuracion.ts`: los ajustes de la agencia con sus valores de fábrica, qué se acepta guardar en cada uno y la regla de las 24 h de la cuenta para recibir pagos (se calcula al leer, sin cron).
 - `scripts/aerolineas-iata.mjs`: genera la migración con la lista IATA de referencia a partir de los datos de [OpenFlights](https://openflights.org/data) (licencia [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)), con correcciones para las aerolíneas que cambiaron o dejaron de volar.
+- `scripts/aeropuertos-iata.mjs`: genera la migración con los aeropuertos que tienen clave IATA (7,917), con su ciudad, país y zona horaria, a partir de [mwgg/Airports](https://github.com/mwgg/Airports) (licencia MIT, texto en `scripts/aeropuertos-LICENCIA.txt`). Pone en español los nombres de las ciudades que Airoo usa más.
+- `src/lib/vuelos.ts` y `src/lib/revision.ts`: horarios de vuelo con la zona horaria de cada aeropuerto (duración, +1, conexiones) y lo que el armador revisa en cada servicio: errores que no dejan guardar, datos que faltan para enviar y avisos.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.
 - `src/app/(acceso)`: entrar, cambiar contraseña y aceptar invitación.
 - `src/app/(panel)`: el panel con la barra lateral (en celular, un menú arriba).
 - `src/lib/cotizacion.ts`: cálculo de cada partida y de los totales en centavos, plan de pagos (con el tope de días antes del viaje) y vigencia. Los totales no se guardan: se calculan.
-- `src/lib/armador.ts`, `src/lib/armador-textos.ts` y `src/lib/etapas.ts`: lo que el armador revisa antes de enviar, cómo se nombra cada partida y las etapas del viaje.
+- `src/lib/armador.ts`, `src/lib/armador-textos.ts` y `src/lib/etapas.ts`: lo que el armador maneja de cada partida, cómo se nombra y las etapas del viaje.
 - `src/app/(panel)/viajes`: lista de viajes, nuevo viaje y la vista del viaje.
 - `src/app/(armador)/viajes/[folio]/armador`: el armador de cotizaciones, a pantalla completa. Guarda cada servicio solo, unos instantes después del último cambio.
 - `src/lib/tipo-cambio.ts` y `src/app/api/tareas/tipo-cambio`: el FIX de Banxico del día (tarea diaria de Vercel) o capturado a mano.

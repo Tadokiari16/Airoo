@@ -76,6 +76,7 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
       fechaInicio: p.fechaInicio,
       fechaFin: p.fechaFin,
       moneda: p.moneda as Moneda,
+      netoTotal: p.netoTotalCentavos,
       utilidadPb: p.utilidadPb,
       utilidadManual: p.utilidadManual,
       detalle: (p.detalle ?? {}) as Detalle,
@@ -93,7 +94,6 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
           cama: h.cama,
           adultos: h.adultos,
           menores: h.menores,
-          neto: h.netoCentavos,
         })),
       renglones: rens
         .filter((r) => r.partidaId === p.id)
@@ -102,7 +102,6 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
           concepto: r.concepto,
           boletoId: r.boletoId,
           cantidad: r.cantidad,
-          netoUnitario: r.netoUnitarioCentavos,
         })),
       tramos: tramos
         .filter((t) => t.partidaId === p.id)
@@ -117,9 +116,7 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
           terminalLlegada: t.terminalLlegada ?? "",
           sale: hora(t.sale),
           llega: hora(t.llega),
-          llegaDiaSiguiente: t.llegaDiaSiguiente,
-          duracion: t.duracion ?? "",
-          escalas: t.escalas,
+          llegaDias: t.llegaDias,
         })),
       trayectos: trays
         .filter((t) => t.partidaId === p.id)

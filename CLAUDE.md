@@ -12,6 +12,7 @@ Los diseños están en `disenos/`:
 
 **Precios y dinero**
 - Los precios **siempre se capturan a mano en el armador**, en cada cotización. Ningún catálogo guarda precios.
+- Cada servicio (hotel, vuelo, actividad, traslado, seguro) lleva **un solo «Costo neto total»**, en la moneda de la tarifa: lo que cobra el proveedor por todo el servicio, no por habitación ni por persona. Si el proveedor da precio por persona, la asesora hace la multiplicación afuera; el sistema no lo pide así.
 - La moneda es de cada tarifa (MXN, USD o EUR), no del hotel ni del proveedor.
 - Tipo de cambio para cotizar: FIX de Banxico del día + colchón configurable (hoy 1.5%). Se guarda con fecha en la cotización.
 - Tolerancia de precio al validar: monto fijo de $300 MXN por servicio. Si sube menos, Airoo lo absorbe; si sube más, se manda versión 2 al cliente.

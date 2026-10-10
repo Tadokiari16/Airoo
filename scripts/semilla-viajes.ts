@@ -195,10 +195,10 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
     (await db.insert(schema.partidas).values({ ...p, cotizacionId: c1.id, creadoPor: duenoId }).returning())[0];
 
   const hoteles: [typeof seadust, string, string, number, string, string | null][] = [
-    // hotel, habitación, cama, neto por habitación, régimen, opción
-    [seadust, "Suite Deluxe", "2 dobles", 11_000_00, "AI", opciones[0].id],
-    [iberostar, "Deluxe vista al mar", "2 dobles", 20_318_18, "AI", opciones[1].id],
-    [adhara, "Deluxe con vista a la ciudad", "2 dobles", 8_500_00, "BB", opciones[2].id],
+    // hotel, habitación, cama, costo neto total (2 habitaciones), régimen, opción
+    [seadust, "Suite Deluxe", "2 dobles", 22_000_00, "AI", opciones[0].id],
+    [iberostar, "Deluxe vista al mar", "2 dobles", 40_636_36, "AI", opciones[1].id],
+    [adhara, "Deluxe con vista a la ciudad", "2 dobles", 17_000_00, "BB", opciones[2].id],
   ];
   for (const [i, [h, habitacion, cama, neto, regimen, opcionId]] of hoteles.entries()) {
     const p = await partida({
@@ -210,6 +210,7 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       regimen,
       fechaInicio: "2026-10-21",
       fechaFin: "2026-10-27",
+      netoTotalCentavos: neto,
       utilidadPb: 1000,
       reembolsable: true,
       cancelacionGratisHasta: "2026-10-15",
@@ -222,7 +223,6 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
         cama,
         adultos: 2,
         menores: 1,
-        netoCentavos: neto,
         orden,
       })),
     );
@@ -238,15 +238,10 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       tarifaId: switchT?.id ?? null,
       fechaInicio: "2026-10-21",
       fechaFin: "2026-10-27",
+      netoTotalCentavos: 2_683_00,
       utilidadPb: 250,
       utilidadManual: true,
       detalle: { redondo: true, pasajeros: 6, tua: "GDL $727 · CUN $382" },
-    });
-    await db.insert(schema.partidaRenglones).values({
-      partidaId: v.id,
-      concepto: "Vuelo redondo · 6 pasajeros",
-      cantidad: 1,
-      netoUnitarioCentavos: 2_683_00,
     });
     const tramos = await db
       .insert(schema.vueloTramos)
@@ -257,12 +252,12 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
           orden: 0,
           numero: "VB 2124",
           fecha: "2026-10-21",
-          origen: "Guadalajara (GDL)",
-          destino: "Cancún (CUN)",
+          origen: "GDL",
+          destino: "CUN",
           terminalLlegada: "T2",
+          // Hora local de cada aeropuerto: Guadalajara va una hora atrás de Cancún.
           sale: "16:55",
-          llega: "19:26",
-          duracion: "2 h 31 min",
+          llega: "20:26",
         },
         {
           partidaId: v.id,
@@ -270,12 +265,11 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
           orden: 1,
           numero: "VB 2125",
           fecha: "2026-10-27",
-          origen: "Cancún (CUN)",
-          destino: "Guadalajara (GDL)",
+          origen: "CUN",
+          destino: "GDL",
           terminalSalida: "T2",
           sale: "18:13",
           llega: "19:45",
-          duracion: "2 h 32 min",
         },
       ])
       .returning();
@@ -283,12 +277,12 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
     tramoRegreso = tramos[1].id;
   }
 
-  const actividades: [typeof xelha | undefined, string, string, number, number][] = [
-    // actividad, plan, fecha, neto adulto, neto niño
-    [xelha, "Todo incluido", "2026-10-22", 818_00, 546_00],
-    [xcaret, "Plus", "2026-10-24", 1_094_00, 730_18],
+  const actividades: [typeof xelha | undefined, string, string, number][] = [
+    // actividad, plan, fecha, costo neto total (4 adultos y 2 niños)
+    [xelha, "Todo incluido", "2026-10-22", 4_364_00],
+    [xcaret, "Plus", "2026-10-24", 5_836_36],
   ];
-  for (const [i, [a, nombrePlan, fecha, adulto, nino]] of actividades.entries()) {
+  for (const [i, [a, nombrePlan, fecha, neto]] of actividades.entries()) {
     if (!a) continue;
     const p = await partida({
       tipo: "actividad",
@@ -297,6 +291,7 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       planId: plan(a.id, nombrePlan),
       proveedorId: proveedor("Grupo Xcaret"),
       fechaInicio: fecha,
+      netoTotalCentavos: neto,
       utilidadPb: 1000,
       pagoProveedor: i === 0 ? "anticipo" : "al_reservar",
       anticipoProveedorPb: i === 0 ? 2500 : 0,
@@ -308,8 +303,8 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       },
     });
     await db.insert(schema.partidaRenglones).values([
-      { partidaId: p.id, concepto: "Adulto", boletoId: boleto(a.id, "Adulto"), cantidad: 4, netoUnitarioCentavos: adulto, orden: 0 },
-      { partidaId: p.id, concepto: "Niño", boletoId: boleto(a.id, "Niño"), cantidad: 2, netoUnitarioCentavos: nino, orden: 1 },
+      { partidaId: p.id, concepto: "Adulto", boletoId: boleto(a.id, "Adulto"), cantidad: 4, orden: 0 },
+      { partidaId: p.id, concepto: "Niño", boletoId: boleto(a.id, "Niño"), cantidad: 2, orden: 1 },
     ]);
   }
 
@@ -321,22 +316,17 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       varianteId: variante(traslado.id, "Van adaptada"),
       fechaInicio: "2026-10-21",
       fechaFin: "2026-10-27",
+      netoTotalCentavos: 2_400_00,
       utilidadPb: 1000,
       detalle: { recoleccion: "redondo", duracionAprox: "30–40 min", personas: 6 },
     });
-    await db.insert(schema.partidaRenglones).values({
-      partidaId: p.id,
-      concepto: "Van adaptada · redondo",
-      cantidad: 1,
-      netoUnitarioCentavos: 2_400_00,
-    });
     await db.insert(schema.partidaTrayectos).values([
-      { partidaId: p.id, orden: 0, desde: "Aeropuerto CUN", hasta: "Hotel", fecha: "2026-10-21", hora: "19:45", vueloTramoId: tramoIda },
+      { partidaId: p.id, orden: 0, desde: "Aeropuerto CUN", hasta: "Hotel", fecha: "2026-10-21", hora: "20:45", vueloTramoId: tramoIda },
       { partidaId: p.id, orden: 1, desde: "Hotel", hasta: "Aeropuerto CUN", fecha: "2026-10-27", hora: "15:30", vueloTramoId: tramoRegreso },
     ]);
   }
   if (seguro) {
-    const p = await partida({
+    await partida({
       tipo: "servicio",
       orden: 31,
       servicioId: seguro.id,
@@ -344,14 +334,10 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       proveedorId: proveedor("Assist Card"),
       fechaInicio: "2026-10-21",
       fechaFin: "2026-10-27",
+      // $180 por persona × 6: el sistema solo guarda el total.
+      netoTotalCentavos: 1_080_00,
       utilidadPb: 1000,
       detalle: { cobertura: "Nacional", personas: 6, mayores70: 0 },
-    });
-    await db.insert(schema.partidaRenglones).values({
-      partidaId: p.id,
-      concepto: "Plus · por persona",
-      cantidad: 6,
-      netoUnitarioCentavos: 180_00,
     });
   }
   await eventos(v1.id, [
@@ -397,6 +383,7 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
         regimen: tortugas.regimenes[0] ?? "BB",
         fechaInicio: "2026-11-12",
         fechaFin: "2026-11-15",
+        netoTotalCentavos: 18_500_00,
         utilidadPb: 1200,
         utilidadManual: true,
         reembolsable: true,
@@ -412,7 +399,6 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
         cama: "King",
         adultos: 2,
         menores: 0,
-        netoCentavos: 18_500_00,
       });
     await eventos(v2.id, [
       [120, "creado", "Se creó el viaje", null],
@@ -468,7 +454,6 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
         cama: "King",
         adultos: 2,
         menores: 0,
-        netoCentavos: null,
       });
     await eventos(v3.id, [
       [26, "creado", "Se creó el viaje", null],

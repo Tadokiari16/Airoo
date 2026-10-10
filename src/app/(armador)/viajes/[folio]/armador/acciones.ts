@@ -24,6 +24,9 @@ import { limpiar, normalizar } from "@/lib/texto";
 import { tipoCambioVigente } from "@/lib/tipo-cambio";
 import { anotarEnViaje, opcionesDe, partidasDe } from "@/lib/viajes";
 import { cargarAjustes } from "@/app/(panel)/configuracion/datos";
+import { erroresDe, type ContextoRevision } from "@/lib/revision";
+import type { Aeropuerto } from "@/lib/vuelos";
+import { hoyEnCancun } from "@/lib/fechas";
 import { aPuntosBase } from "@/lib/cotizacion";
 import { ultimoAcuerdo } from "./datos";
 
@@ -210,16 +213,21 @@ export async function vueloConocido(numero: string) {
     .orderBy(desc(schema.vueloTramos.fecha))
     .limit(1);
   if (!t) return null;
+  const claves = [t.origen, t.destino].filter((x): x is string => !!x);
+  const aeropuertos = claves.length
+    ? await db.select().from(schema.aeropuertos).where(inArray(schema.aeropuertos.iata, claves))
+    : [];
   return {
-    origen: t.origen ?? "",
-    destino: t.destino ?? "",
-    terminalSalida: t.terminalSalida ?? "",
-    terminalLlegada: t.terminalLlegada ?? "",
-    sale: t.sale?.slice(0, 5) ?? null,
-    llega: t.llega?.slice(0, 5) ?? null,
-    llegaDiaSiguiente: t.llegaDiaSiguiente,
-    duracion: t.duracion ?? "",
-    escalas: t.escalas,
+    tramo: {
+      origen: t.origen ?? "",
+      destino: t.destino ?? "",
+      terminalSalida: t.terminalSalida ?? "",
+      terminalLlegada: t.terminalLlegada ?? "",
+      sale: t.sale?.slice(0, 5) ?? null,
+      llega: t.llega?.slice(0, 5) ?? null,
+      llegaDias: t.llegaDias,
+    },
+    aeropuertos: aeropuertos as Aeropuerto[],
   };
 }
 
@@ -301,7 +309,6 @@ export async function agregarPartida(
         cama: null,
         adultos: h.adultos,
         menores: h.menores,
-        neto: null,
       }));
   }
   if (ficha.tipo === "actividad") {
@@ -320,11 +327,10 @@ export async function agregarPartida(
         concepto: b.nombre.split(" ")[0],
         boletoId: b.id,
         cantidad: i === 0 ? v.adultos : v.menores,
-        netoUnitario: null,
       }));
     } else {
       p.renglones = [
-        { id: nuevoId(), concepto: conBoletos[0]?.nombre.split(" ")[0] ?? "Por persona", boletoId: conBoletos[0]?.id ?? null, cantidad: personas, netoUnitario: null },
+        { id: nuevoId(), concepto: conBoletos[0]?.nombre.split(" ")[0] ?? "Por persona", boletoId: conBoletos[0]?.id ?? null, cantidad: personas },
       ];
     }
   }
@@ -339,7 +345,7 @@ export async function agregarPartida(
     if (ficha.tipoServicio === "traslado") {
       p.detalle = { personas, recoleccion: "redondo" };
       const vuelo = existentes.find((x) => x.tipo === "vuelo");
-      const ida = vuelo?.tramos.find((t) => t.sentido === "ida");
+      const ida = vuelo?.tramos.filter((t) => t.sentido === "ida").at(-1);
       const regreso = vuelo?.tramos.find((t) => t.sentido === "regreso");
       p.trayectos = [
         { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: v.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null },
@@ -347,21 +353,11 @@ export async function agregarPartida(
       ];
     }
     if (ficha.modeloCobro === "persona_dia" && ficha.tipoServicio === "seguro") p.detalle = { ...p.detalle, cobertura: "Nacional", mayores70: 0 };
-    const cantidad =
-      ficha.modeloCobro === "persona" || ficha.modeloCobro === "persona_dia"
-        ? personas
-        : ficha.modeloCobro === "dia"
-          ? Math.max(1, Math.round((Date.parse(v.fin) - Date.parse(v.inicio)) / 86_400_000))
-          : 1;
-    p.renglones = [
-      { id: nuevoId(), concepto: [variante?.nombre, "neto"].filter(Boolean).join(" · "), boletoId: null, cantidad, netoUnitario: null },
-    ];
   }
   if (ficha.tipo === "vuelo") {
     p.aerolineaId = ficha.id;
     p.tarifaId = ficha.tarifas[0]?.id ?? null;
     p.detalle = { redondo: true, pasajeros: personas };
-    p.renglones = [{ id: nuevoId(), concepto: "Vuelo", boletoId: null, cantidad: 1, netoUnitario: null }];
     const tramo = (sentido: "ida" | "regreso", fecha: string) => ({
       id: nuevoId(),
       sentido,
@@ -373,9 +369,7 @@ export async function agregarPartida(
       terminalLlegada: "",
       sale: null,
       llega: null,
-      llegaDiaSiguiente: false,
-      duracion: "",
-      escalas: 0,
+      llegaDias: 0,
     });
     p.tramos = [tramo("ida", v.inicio), tramo("regreso", v.fin)];
   }
@@ -419,7 +413,9 @@ export async function agregarPartida(
 
 const dia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable();
 const hora = z.string().regex(/^\d{2}:\d{2}$/).nullable();
-const centavos = z.number().int().min(0).max(100_000_000_00).nullable();
+// Montos en centavos: mayores a cero. Los centavos ya garantizan dos decimales.
+const centavos = z.number().int("El monto lleva hasta 2 decimales.").max(100_000_000_00).nullable();
+const iata = z.string().regex(/^([A-Z]{3})?$/, "El aeropuerto se elige de la lista, por su clave IATA.");
 const id = z.uuid();
 const texto = (max: number) => z.string().max(max).transform((v) => v.trim());
 
@@ -440,6 +436,7 @@ const Partida = z.object({
   fechaInicio: dia,
   fechaFin: dia,
   moneda: z.enum(MONEDAS),
+  netoTotal: centavos,
   utilidadPb: z.number().int().min(0).max(10_000),
   utilidadManual: z.boolean(),
   detalle: z.object({
@@ -469,7 +466,6 @@ const Partida = z.object({
         cama: z.enum(CAMAS).nullable(),
         adultos: z.number().int().min(0).max(12),
         menores: z.number().int().min(0).max(12),
-        neto: centavos,
       }),
     )
     .max(30),
@@ -480,7 +476,6 @@ const Partida = z.object({
         concepto: texto(120),
         boletoId: id.nullable(),
         cantidad: z.number().int().min(0).max(10_000),
-        netoUnitario: centavos,
       }),
     )
     .max(30),
@@ -491,18 +486,16 @@ const Partida = z.object({
         sentido: z.enum(["ida", "regreso"]),
         numero: texto(12),
         fecha: dia,
-        origen: texto(80),
-        destino: texto(80),
+        origen: iata,
+        destino: iata,
         terminalSalida: texto(10),
         terminalLlegada: texto(10),
         sale: hora,
         llega: hora,
-        llegaDiaSiguiente: z.boolean(),
-        duracion: texto(20),
-        escalas: z.number().int().min(0).max(5),
+        llegaDias: z.number().int().min(0).max(2),
       }),
     )
-    .max(8),
+    .max(12),
   trayectos: z
     .array(
       z.object({
@@ -538,6 +531,7 @@ async function escribirPartida(cotizacionId: string, p: PartidaArmador, quien: s
     fechaInicio: p.fechaInicio,
     fechaFin: p.fechaFin,
     moneda: p.moneda,
+    netoTotalCentavos: p.netoTotal,
     utilidadPb: p.utilidadPb,
     utilidadManual: p.utilidadManual,
     detalle: p.detalle,
@@ -577,14 +571,12 @@ async function escribirPartida(cotizacionId: string, p: PartidaArmador, quien: s
       cama: h.cama,
       adultos: h.adultos,
       menores: h.menores,
-      netoCentavos: h.neto,
       orden,
     }));
     await sincronizar(schema.partidaRenglones, p.renglones, (r, orden) => ({
       concepto: r.concepto || "Neto",
       boletoId: r.boletoId,
       cantidad: r.cantidad,
-      netoUnitarioCentavos: r.netoUnitario,
       orden,
     }));
     await sincronizar(schema.vueloTramos, p.tramos, (t, orden) => ({
@@ -598,9 +590,7 @@ async function escribirPartida(cotizacionId: string, p: PartidaArmador, quien: s
       terminalLlegada: t.terminalLlegada || null,
       sale: t.sale,
       llega: t.llega,
-      llegaDiaSiguiente: t.llegaDiaSiguiente,
-      duracion: t.duracion || null,
-      escalas: t.escalas,
+      llegaDias: t.llegaDias,
     }));
     await sincronizar(schema.partidaTrayectos, p.trayectos, (t, orden) => ({
       orden,
@@ -648,6 +638,14 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
     for (const t of p.trayectos) if (t.vueloTramoId && !ok.has(t.vueloTramoId)) t.vueloTramoId = null;
   }
 
+  // Lo que se contradice no se guarda: el armador ya lo muestra; aquí se revisa otra vez.
+  const errores = erroresDe(p, await contextoRevision(c, v, [p]));
+  if (errores.length) return { error: errores[0].texto };
+  if (p.aerolineaId) {
+    const [a] = await db.select({ id: schema.aerolineas.id }).from(schema.aerolineas).where(eq(schema.aerolineas.id, p.aerolineaId)).limit(1);
+    if (!a) return { error: "La aerolínea de este vuelo ya no está en el catálogo de Aerolíneas." };
+  }
+
   await escribirPartida(c.id, p, yo.id, false);
 
   // El FIX se fija con su fecha al capturar la primera tarifa en esa moneda.
@@ -667,6 +665,45 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
   await anotarEdicion(v.id, yo.id, p.tipo);
   revalidar(v.folio);
   return fx;
+}
+
+/** Lo que la revisión necesita, leído de la base: aeropuertos de los tramos y aerolíneas del catálogo. */
+async function contextoRevision(
+  c: typeof schema.cotizaciones.$inferSelect,
+  v: typeof schema.viajes.$inferSelect,
+  partidas: PartidaArmador[],
+): Promise<ContextoRevision> {
+  const claves = [...new Set(partidas.flatMap((p) => p.tramos.flatMap((t) => [t.origen, t.destino])).filter(Boolean))];
+  const [aeropuertos, aerolineas] = await Promise.all([
+    claves.length ? db.select().from(schema.aeropuertos).where(inArray(schema.aeropuertos.iata, claves)) : [],
+    db.select({ iata: schema.aerolineas.iata }).from(schema.aerolineas),
+  ]);
+  return {
+    viaje: { inicio: v.inicio, fin: v.fin, adultos: v.adultos, menores: v.menores, edadesMenores: v.edadesMenores },
+    hoy: hoyEnCancun(),
+    fx: { fixUsd: c.fixUsd, fixEur: c.fixEur, colchonPb: c.colchonPb },
+    aeropuertos: Object.fromEntries(aeropuertos.map((a) => [a.iata, a])),
+    aerolineas: aerolineas.map((a) => a.iata),
+    nombres: {},
+  };
+}
+
+/** El campo de aeropuerto: busca por clave, ciudad o nombre. «CUN», «Cancún», «MEX». */
+export async function buscarAeropuertos(texto: string): Promise<Aeropuerto[]> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "cotizar")) return [];
+  const q = normalizar(texto).replace(/[%_]/g, "");
+  if (q.length < 2) return [];
+  const t = schema.aeropuertos;
+  return db
+    .select({ iata: t.iata, nombre: t.nombre, ciudad: t.ciudad, pais: t.pais, paisCodigo: t.paisCodigo, zonaHoraria: t.zonaHoraria })
+    .from(t)
+    .where(sql`${t.iata} = ${q.toUpperCase()} or ${t.busqueda} like ${"%" + q + "%"}`)
+    .orderBy(
+      sql`case when ${t.iata} = ${q.toUpperCase()} then 0 when ${t.busqueda} like ${q + "%"} then 1 when ${t.paisCodigo} = 'MX' then 2 else 3 end`,
+      asc(t.iata),
+    )
+    .limit(8);
 }
 
 // ─── Quitar, opciones, ajustes y notas ──────────────────────────────────────

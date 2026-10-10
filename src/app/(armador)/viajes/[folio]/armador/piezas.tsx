@@ -65,14 +65,17 @@ export function CampoDinero({
   // Mientras se escribe se respeta el texto; fuera del campo se muestra el monto con formato.
   const [texto, setTexto] = useState(formato(valor));
   const [enfocado, setEnfocado] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const prefijo = moneda === "USD" ? "US$" : moneda === "EUR" ? "€" : "$";
   return (
+    <span className={`block ${className}`}>
     <label
-      className={`flex h-9 items-center gap-1 rounded-[10px] px-2.5 text-[13.5px] shadow-borde focus-within:shadow-[inset_0_0_0_1.5px_var(--color-azul)] ${ambar && valor === null ? "bg-ambar-tenue" : "bg-tarjeta"} ${className}`}
+      className={`flex h-9 items-center gap-1 rounded-[10px] px-2.5 text-[13.5px] shadow-borde focus-within:shadow-[inset_0_0_0_1.5px_var(--color-azul)] ${error ? "shadow-[inset_0_0_0_1.5px_var(--color-rojo)]" : ""} ${ambar && valor === null ? "bg-ambar-tenue" : "bg-tarjeta"}`}
     >
       <span className="text-tinta-3">{prefijo}</span>
       <input
         aria-label={etiqueta}
+        aria-invalid={error ? true : undefined}
         inputMode="decimal"
         value={enfocado ? texto : formato(valor)}
         placeholder="0.00"
@@ -82,13 +85,18 @@ export function CampoDinero({
         }}
         onChange={(e) => {
           setTexto(e.target.value);
-          const c = e.target.value.trim() ? aCentavos(e.target.value) : null;
-          if (c !== null || !e.target.value.trim()) alCambiar(c === null ? null : Math.max(0, c));
+          const vacio = !e.target.value.trim();
+          const c = vacio ? null : aCentavos(e.target.value);
+          // Un monto que no se entiende no se guarda: se queda el anterior y se dice por qué.
+          setError(vacio || c !== null ? null : "El monto lleva hasta 2 decimales, como 1,250.50.");
+          if (c !== null || vacio) alCambiar(c === null ? null : Math.max(0, c));
         }}
         onBlur={() => setEnfocado(false)}
         className="num w-full min-w-0 bg-transparent text-right font-semibold outline-none placeholder:font-normal placeholder:text-tinta-3/60"
       />
     </label>
+    {error ? <span role="alert" className="mt-1 block text-[11.5px] font-semibold text-rojo">{error}</span> : null}
+    </span>
   );
 }
 

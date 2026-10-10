@@ -9,11 +9,14 @@ import type {
   FichaHotelArmador,
   FichaServicioArmador,
 } from "@/lib/armador-fichas";
-import { formatoDinero } from "@/lib/dinero";
+import { formatoDia, sumarDias } from "@/lib/fechas";
+import { tiemposDeVuelo } from "@/lib/revision";
+import { horarioReal, leerNumeroVuelo, minutosEntre, nombreAeropuerto, textoDuracion, type Aeropuerto } from "@/lib/vuelos";
 import { REGIMENES, nombreRegimen } from "@/lib/hoteles";
 import { textoEdad } from "@/lib/actividades";
 import { agregarHabitacionHotel, vueloConocido } from "./acciones";
-import { CAJA, CampoDinero, CampoHora, Etiqueta, OjoTachado, Paso, Segmentos } from "./piezas";
+import { CampoAeropuerto } from "./campo-aeropuerto";
+import { CAJA, CampoHora, Etiqueta, OjoTachado, Paso, Segmentos } from "./piezas";
 
 type Cambiar = (cambio: Partial<PartidaArmador>) => void;
 type Viaje = { inicio: string; fin: string; adultos: number; menores: number };
@@ -75,7 +78,7 @@ export function EditorHotel({
             type="date"
             aria-label="Salida del hotel"
             value={p.fechaFin ?? ""}
-            min={p.fechaInicio ?? undefined}
+            min={p.fechaInicio ? sumarDias(p.fechaInicio, 1) : undefined}
             onChange={(e) => alCambiar({ fechaFin: e.target.value || null })}
             className={CAJA}
           />
@@ -90,11 +93,6 @@ export function EditorHotel({
               <th className="px-1.5 py-2">Habitación</th>
               <th className="w-[128px] px-1.5 py-2">Cama</th>
               <th className="w-[168px] px-1.5 py-2">Huéspedes</th>
-              <th className="w-[124px] px-1.5 py-2">
-                <span className="inline-flex items-center gap-1">
-                  <OjoTachado /> Neto
-                </span>
-              </th>
               <th className="w-8" />
             </tr>
           </thead>
@@ -152,15 +150,6 @@ export function EditorHotel({
                     </div>
                     {sin ? <p className="mt-1 text-[11.5px] font-semibold text-ambar">Asignar huéspedes</p> : null}
                   </td>
-                  <td className="px-1.5 py-2">
-                    <CampoDinero
-                      etiqueta={`Neto de la habitación ${i + 1}`}
-                      valor={h.neto}
-                      moneda={p.moneda}
-                      ambar
-                      alCambiar={(c) => hab(i, { neto: c })}
-                    />
-                  </td>
                   <td className="pr-2 text-center">
                     <button
                       type="button"
@@ -190,7 +179,6 @@ export function EditorHotel({
                       habitacionId: p.habitaciones.at(-1)?.habitacionId ?? ficha.habitaciones[0].id,
                       cama: p.habitaciones.at(-1)?.cama ?? null,
                       ...g,
-                      neto: null,
                     },
                   ],
                 });
@@ -211,7 +199,7 @@ export function EditorHotel({
               alCambiar({
                 habitaciones: [
                   ...p.habitaciones,
-                  { id: nuevoId(), habitacionId: r.id, cama: null, ...huespedesNuevaHabitacion(viaje, p.habitaciones), neto: null },
+                  { id: nuevoId(), habitacionId: r.id, cama: null, ...huespedesNuevaHabitacion(viaje, p.habitaciones) },
                 ],
               });
             }}
@@ -281,22 +269,50 @@ export function EditorHotel({
 
 // ─── Vuelo ──────────────────────────────────────────────────────────────────
 
+const LLEGA_DIAS = [
+  { valor: "0", etiqueta: "Mismo día" },
+  { valor: "1", etiqueta: "+1" },
+  { valor: "2", etiqueta: "+2" },
+];
+
 export function EditorVuelo({
   p,
   ficha,
   viaje,
+  aeropuertos,
+  alConocerAeropuertos,
   alCambiar,
   alAvisar,
 }: {
   p: PartidaArmador;
   ficha: FichaAerolineaArmador;
   viaje: Viaje;
+  aeropuertos: Record<string, Aeropuerto>;
+  alConocerAeropuertos: (a: Aeropuerto[]) => void;
   alCambiar: Cambiar;
   alAvisar: (t: string) => void;
 }) {
   const redondo = p.detalle.redondo !== false;
   const tramo = (id: string, cambio: Partial<TramoArmador>) =>
     alCambiar({ tramos: p.tramos.map((t) => (t.id === id ? { ...t, ...cambio } : t)) });
+  const tiempos = tiemposDeVuelo(p.tramos, aeropuertos);
+  const sentidos = (redondo ? (["ida", "regreso"] as const) : (["ida"] as const)).map((s) => ({
+    sentido: s,
+    tramos: p.tramos.filter((t) => t.sentido === s),
+  }));
+
+  const agregarEscala = (sentido: "ida" | "regreso") => {
+    const del = p.tramos.filter((t) => t.sentido === sentido);
+    const ultimo = del.at(-1);
+    const nuevo = {
+      ...tramoVacio(sentido, ultimo?.fecha ? sumarDias(ultimo.fecha, ultimo.llegaDias) : sentido === "ida" ? viaje.inicio : viaje.fin),
+      origen: ultimo?.destino ?? "",
+    };
+    // Las idas van antes que los regresos; dentro de cada sentido, en orden de vuelo.
+    const ida = p.tramos.filter((t) => t.sentido === "ida");
+    const regreso = p.tramos.filter((t) => t.sentido === "regreso");
+    alCambiar({ tramos: sentido === "ida" ? [...ida, nuevo, ...regreso] : [...ida, ...regreso, nuevo] });
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -317,7 +333,12 @@ export function EditorVuelo({
               alCambiar({
                 detalle: { ...p.detalle, redondo: r },
                 tramos: r
-                  ? [...ida, ...(regreso.length ? regreso : [tramoVacio("regreso", viaje.fin)])]
+                  ? [
+                      ...ida,
+                      ...(regreso.length
+                        ? regreso
+                        : [{ ...tramoVacio("regreso", viaje.fin), origen: ida.at(-1)?.destino ?? "", destino: ida[0]?.origen ?? "" }]),
+                    ]
                   : ida,
               });
             }}
@@ -352,115 +373,189 @@ export function EditorVuelo({
         </div>
       </div>
 
-      {p.tramos.map((t) => (
-        <fieldset key={t.id} className="rounded-[12px] p-3 shadow-borde">
-          <legend className="sr-only">{t.sentido === "ida" ? "Ida" : "Regreso"}</legend>
-          <div className="grid grid-cols-[70px_150px_120px_1fr] items-end gap-2.5">
-            <b className="pb-2 text-[14px]">{t.sentido === "ida" ? "Ida" : "Regreso"}</b>
-            <label>
-              <Etiqueta>Fecha</Etiqueta>
-              <input
-                type="date"
-                aria-label={`Fecha del vuelo de ${t.sentido}`}
-                value={t.fecha ?? ""}
-                onChange={(e) => tramo(t.id, { fecha: e.target.value || null })}
-                className={CAJA}
-              />
-            </label>
-            <label>
-              <Etiqueta>Número</Etiqueta>
-              <input
-                aria-label={`Número del vuelo de ${t.sentido}`}
-                value={t.numero}
-                placeholder={`${ficha.iata} 2124`}
-                onChange={(e) => tramo(t.id, { numero: e.target.value.toUpperCase() })}
-                onBlur={async () => {
-                  if (!t.numero.trim() || t.sale) return;
-                  const v = await vueloConocido(t.numero);
-                  if (v) {
-                    tramo(t.id, v);
-                    alAvisar("Ruta y horario copiados de un vuelo ya capturado en otro viaje");
-                  }
-                }}
-                className={`${CAJA} num font-semibold`}
-              />
-            </label>
-            <p className="pb-2 text-[11.5px] text-tinta-3">
-              Sin API de vuelos: la ruta y el horario se capturan a mano; si el número ya se usó en otro viaje, se copian.
-            </p>
-          </div>
-          <div className="mt-2.5 grid grid-cols-[1fr_120px_110px_120px_1fr] items-end gap-2.5">
-            <label>
-              <Etiqueta>Sale de</Etiqueta>
-              <input
-                aria-label={`Origen del vuelo de ${t.sentido}`}
-                value={t.origen}
-                placeholder="Guadalajara (GDL)"
-                onChange={(e) => tramo(t.id, { origen: e.target.value })}
-                className={CAJA}
-              />
-            </label>
-            <div>
-              <Etiqueta>Sale</Etiqueta>
-              <CampoHora etiqueta={`Hora de salida de ${t.sentido}`} valor={t.sale} alCambiar={(h) => tramo(t.id, { sale: h })} />
+      {sentidos.map(({ sentido, tramos }) => {
+        const titulo = sentido === "ida" ? "Ida" : "Regreso";
+        const primero = tramos[0] ? horarioReal(tramos[0], aeropuertos) : null;
+        const ultimo = tramos.at(-1) ? horarioReal(tramos.at(-1)!, aeropuertos) : null;
+        const ruta = tramos.length ? [tramos[0].origen, ...tramos.map((t) => t.destino)].map((x) => x || "—").join(" → ") : "";
+        const escalas = tramos.length - 1;
+        return (
+          <fieldset key={sentido} className="rounded-[12px] p-3 shadow-borde">
+            <legend className="sr-only">{titulo}</legend>
+            <div className="mb-2 flex flex-wrap items-baseline gap-x-2 text-[13px]">
+              <b className="text-[14px]">{titulo}</b>
+              <span className="num font-semibold text-tinta-2">{ruta}</span>
+              <span className="text-tinta-3">
+                · {escalas === 0 ? "Directo" : escalas === 1 ? "1 escala" : `${escalas} escalas`}
+                {escalas > 0 && primero && ultimo && ultimo.llega > primero.sale
+                  ? ` · ${textoDuracion(minutosEntre(primero.sale, ultimo.llega))} en total`
+                  : ""}
+              </span>
             </div>
-            <label>
-              <Etiqueta>Duración</Etiqueta>
-              <input
-                aria-label={`Duración del vuelo de ${t.sentido}`}
-                value={t.duracion}
-                placeholder="2 h 31 min"
-                onChange={(e) => tramo(t.id, { duracion: e.target.value })}
-                className={CAJA}
-              />
-            </label>
-            <div>
-              <Etiqueta>Llega</Etiqueta>
-              <CampoHora etiqueta={`Hora de llegada de ${t.sentido}`} valor={t.llega} alCambiar={(h) => tramo(t.id, { llega: h })} />
+
+            {tramos.map((t, i) => {
+              const tiempo = tiempos[t.id];
+              const nombre = `${sentido}${tramos.length > 1 ? ` tramo ${i + 1}` : ""}`;
+              const numeroMal = !!t.numero.trim() && !leerNumeroVuelo(t.numero);
+              return (
+                <div key={t.id}>
+                  {i > 0 ? (
+                    <p
+                      className={`my-2 flex items-center gap-2 text-[12px] ${tiempo?.conexion !== null && tiempo?.conexion !== undefined && tiempo.conexion <= 0 ? "font-semibold text-rojo" : "text-tinta-2"}`}
+                    >
+                      <span className="h-px flex-1 bg-linea" aria-hidden />
+                      Conexión en {nombreAeropuerto(aeropuertos[t.origen], t.origen || "—")}
+                      {tiempo?.conexion !== null && tiempo?.conexion !== undefined ? ` · ${textoDuracion(tiempo.conexion)}` : ""}
+                      <span className="h-px flex-1 bg-linea" aria-hidden />
+                    </p>
+                  ) : null}
+                  <div className="grid grid-cols-[120px_150px_1fr_auto] items-end gap-2.5">
+                    <label>
+                      <Etiqueta>{tramos.length > 1 ? `Tramo ${i + 1}` : "Número"}</Etiqueta>
+                      <input
+                        aria-label={`Número del vuelo de ${nombre}`}
+                        aria-invalid={numeroMal || undefined}
+                        value={t.numero}
+                        placeholder={`${ficha.iata} 2124`}
+                        onChange={(e) => tramo(t.id, { numero: e.target.value.toUpperCase() })}
+                        onBlur={async () => {
+                          const n = leerNumeroVuelo(t.numero);
+                          if (n && n.texto !== t.numero) tramo(t.id, { numero: n.texto });
+                          if (!n || t.sale) return;
+                          const v = await vueloConocido(n.texto);
+                          if (v) {
+                            alConocerAeropuertos(v.aeropuertos);
+                            tramo(t.id, { numero: n.texto, ...v.tramo });
+                            alAvisar("Ruta y horario copiados de un vuelo ya capturado en otro viaje");
+                          }
+                        }}
+                        className={`${CAJA} num font-semibold aria-[invalid=true]:shadow-[inset_0_0_0_1.5px_var(--color-rojo)]`}
+                      />
+                    </label>
+                    <label>
+                      <Etiqueta>Fecha de salida</Etiqueta>
+                      <input
+                        type="date"
+                        aria-label={`Fecha del vuelo de ${nombre}`}
+                        value={t.fecha ?? ""}
+                        onChange={(e) => tramo(t.id, { fecha: e.target.value || null })}
+                        className={CAJA}
+                      />
+                    </label>
+                    <p className="pb-2 text-[12px] text-tinta-3">
+                      {t.origen !== t.destino && tiempo?.duracion !== null && tiempo?.duracion !== undefined && tiempo.duracion > 0 ? (
+                        <>
+                          Duración <b className="num font-semibold text-tinta">{textoDuracion(tiempo.duracion)}</b>
+                        </>
+                      ) : (
+                        "La duración se calcula con la hora local de cada aeropuerto."
+                      )}
+                    </p>
+                    {tramos.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => alCambiar({ tramos: p.tramos.filter((x) => x.id !== t.id) })}
+                        className="cursor-pointer pb-2 text-[12.5px] font-semibold text-tinta-3 hover:text-rojo"
+                      >
+                        Quitar tramo
+                      </button>
+                    ) : (
+                      <span />
+                    )}
+                  </div>
+                  <div className="mt-2.5 grid grid-cols-[1fr_104px_1fr_104px_150px] items-end gap-2.5">
+                    <div>
+                      <Etiqueta>Sale de</Etiqueta>
+                      <CampoAeropuerto
+                        etiqueta={`Origen del vuelo de ${nombre}`}
+                        valor={t.origen}
+                        aeropuerto={aeropuertos[t.origen]}
+                        alElegir={(a) => {
+                          if (a) alConocerAeropuertos([a]);
+                          tramo(t.id, { origen: a?.iata ?? "" });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Etiqueta>Sale</Etiqueta>
+                      <CampoHora etiqueta={`Hora de salida de ${nombre}`} valor={t.sale} alCambiar={(h) => tramo(t.id, { sale: h })} />
+                    </div>
+                    <div>
+                      <Etiqueta>Llega a</Etiqueta>
+                      <CampoAeropuerto
+                        etiqueta={`Destino del vuelo de ${nombre}`}
+                        valor={t.destino}
+                        aeropuerto={aeropuertos[t.destino]}
+                        alElegir={(a) => {
+                          if (a) alConocerAeropuertos([a]);
+                          tramo(t.id, { destino: a?.iata ?? "" });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Etiqueta>Llega</Etiqueta>
+                      <CampoHora etiqueta={`Hora de llegada de ${nombre}`} valor={t.llega} alCambiar={(h) => tramo(t.id, { llega: h })} />
+                    </div>
+                    <div>
+                      <Etiqueta ayuda="hora local">Día de llegada</Etiqueta>
+                      <Segmentos
+                        chico
+                        etiqueta={`Día de llegada de ${nombre}`}
+                        opciones={LLEGA_DIAS}
+                        valor={String(t.llegaDias)}
+                        alCambiar={(v) => tramo(t.id, { llegaDias: Number(v) })}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-2 grid grid-cols-[150px_150px_1fr] items-center gap-2.5">
+                    <input
+                      aria-label={`Terminal de salida de ${nombre}`}
+                      value={t.terminalSalida}
+                      placeholder="Terminal de salida"
+                      onChange={(e) => tramo(t.id, { terminalSalida: e.target.value })}
+                      className={`${CAJA} h-8 text-[12.5px]`}
+                    />
+                    <input
+                      aria-label={`Terminal de llegada de ${nombre}`}
+                      value={t.terminalLlegada}
+                      placeholder="Terminal de llegada"
+                      onChange={(e) => tramo(t.id, { terminalLlegada: e.target.value })}
+                      className={`${CAJA} h-8 text-[12.5px]`}
+                    />
+                    {t.llegaDias > 0 && t.fecha ? (
+                      <span className="text-[12px] text-tinta-2">
+                        Llega el {formatoDia(sumarDias(t.fecha, t.llegaDias))}{" "}
+                        <span className="rounded-md bg-azul-tenue px-1.5 py-px text-[11px] font-bold text-azul-oscuro">
+                          +{t.llegaDias}
+                        </span>
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="mt-2.5 flex items-center gap-3 border-t border-linea pt-2">
+              <button
+                type="button"
+                disabled={p.tramos.length >= 12}
+                onClick={() => agregarEscala(sentido)}
+                className="cursor-pointer text-[12.5px] font-semibold text-azul-oscuro hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                + Agregar escala
+              </button>
+              <span className="text-[11.5px] text-tinta-3">
+                El tramo nuevo sale del aeropuerto donde llega el anterior.
+              </span>
             </div>
-            <label>
-              <Etiqueta>Llega a</Etiqueta>
-              <input
-                aria-label={`Destino del vuelo de ${t.sentido}`}
-                value={t.destino}
-                placeholder="Cancún (CUN)"
-                onChange={(e) => tramo(t.id, { destino: e.target.value })}
-                className={CAJA}
-              />
-            </label>
-          </div>
-          <div className="mt-2.5 flex flex-wrap items-center gap-3">
-            <div className="w-[220px]">
-              <Segmentos
-                chico
-                etiqueta={`Escalas de ${t.sentido}`}
-                opciones={[
-                  { valor: "0", etiqueta: "Directo" },
-                  { valor: "1", etiqueta: "Con escalas" },
-                ]}
-                valor={t.escalas ? "1" : "0"}
-                alCambiar={(v) => tramo(t.id, { escalas: Number(v) })}
-              />
-            </div>
-            <label className="flex items-center gap-1.5 text-[12.5px] text-tinta-2">
-              <input
-                type="checkbox"
-                checked={t.llegaDiaSiguiente}
-                onChange={(e) => tramo(t.id, { llegaDiaSiguiente: e.target.checked })}
-                className="accent-[var(--color-azul)]"
-              />
-              Llega al día siguiente
-            </label>
-            <input
-              aria-label={`Terminal de llegada de ${t.sentido}`}
-              value={t.terminalLlegada}
-              placeholder="Terminal de llegada"
-              onChange={(e) => tramo(t.id, { terminalLlegada: e.target.value })}
-              className={`${CAJA} w-[160px]`}
-            />
-          </div>
-        </fieldset>
-      ))}
+          </fieldset>
+        );
+      })}
+
+      <p className="text-[11.5px] text-tinta-3">
+        Sin API de vuelos: la ruta y el horario se capturan a mano, en la hora local de cada aeropuerto. Si el número ya se
+        usó en otro viaje, se copian.
+      </p>
 
       <label>
         <Etiqueta ayuda="importe ya pagado en el aeropuerto de salida; aparece en la confirmación de reserva">
@@ -490,9 +585,7 @@ export function tramoVacio(sentido: "ida" | "regreso", fecha: string): TramoArma
     terminalLlegada: "",
     sale: null,
     llega: null,
-    llegaDiaSiguiente: false,
-    duracion: "",
-    escalas: 0,
+    llegaDias: 0,
   };
 }
 
@@ -572,12 +665,6 @@ export function EditorActividad({
             <tr>
               <th className="px-3 py-2">{ficha.boletos.length ? "Boleto" : "Concepto"}</th>
               <th className="w-[130px] px-1.5 py-2">Cantidad</th>
-              <th className="w-[140px] px-1.5 py-2">
-                <span className="inline-flex items-center gap-1">
-                  <OjoTachado /> Neto c/u
-                </span>
-              </th>
-              <th className="w-[110px] px-3 py-2 text-right">Subtotal</th>
               <th className="w-8" />
             </tr>
           </thead>
@@ -592,18 +679,6 @@ export function EditorActividad({
                   </td>
                   <td className="px-1.5 py-2">
                     <Paso etiqueta={`Cantidad de ${r.concepto}`} valor={r.cantidad} max={60} alCambiar={(n) => ren(i, { cantidad: n })} />
-                  </td>
-                  <td className="px-1.5 py-2">
-                    <CampoDinero
-                      etiqueta={`Neto de ${r.concepto}`}
-                      valor={r.netoUnitario}
-                      moneda={p.moneda}
-                      ambar
-                      alCambiar={(c) => ren(i, { netoUnitario: c })}
-                    />
-                  </td>
-                  <td className="num px-3 py-2 text-right font-semibold">
-                    {r.netoUnitario !== null ? formatoDinero(r.netoUnitario * r.cantidad, p.moneda) : "—"}
                   </td>
                   <td className="pr-2 text-center">
                     {p.renglones.length > 1 ? (
@@ -632,7 +707,7 @@ export function EditorActividad({
                   alCambiar({
                     renglones: [
                       ...p.renglones,
-                      { id: nuevoId(), concepto: b.nombre.split(" ")[0], boletoId: b.id, cantidad: 1, netoUnitario: b.gratis ? 0 : null },
+                      { id: nuevoId(), concepto: b.nombre.split(" ")[0], boletoId: b.id, cantidad: 1 },
                     ],
                   })
                 }
@@ -644,11 +719,12 @@ export function EditorActividad({
           </div>
         ) : null}
       </div>
-      {ficha.boletos.length && viaje.menores > 0 ? (
-        <p className="-mt-1.5 text-[11.5px] text-tinta-3">
-          Las edades vienen del catálogo: un menor que pasa la edad del boleto de niño cuenta como adulto.
-        </p>
-      ) : null}
+      <p className="-mt-1.5 text-[11.5px] text-tinta-3">
+        Los boletos dicen cuántas personas van; el costo neto total, a la derecha, cubre a todas.
+        {ficha.boletos.length && viaje.menores > 0
+          ? " Las edades vienen del catálogo: un menor que pasa la edad del boleto de niño cuenta como adulto."
+          : ""}
+      </p>
 
       <label>
         <Etiqueta ayuda="el cliente lo ve en «Ver inclusiones»">Detalle de inclusiones</Etiqueta>
@@ -688,14 +764,11 @@ export function EditorServicio({
 }) {
   const traslado = ficha.tipoServicio === "traslado";
   const variante = ficha.variantes.find((v) => v.id === p.varianteId);
-  const renglon = p.renglones[0];
-  const cantidad = (n: number) =>
-    alCambiar({ renglones: p.renglones.map((r, i) => (i === 0 ? { ...r, cantidad: n } : r)) });
   const personas = p.detalle.personas ?? viaje.adultos + viaje.menores;
 
   const recoleccion = p.detalle.recoleccion ?? "redondo";
   const cambiarRecoleccion = (r: "ida" | "regreso" | "redondo") => {
-    const ida = tramosVuelo.find((t) => t.sentido === "ida");
+    const ida = tramosVuelo.filter((t) => t.sentido === "ida").at(-1);
     const regreso = tramosVuelo.find((t) => t.sentido === "regreso");
     const actual = (desde: string) => p.trayectos.find((t) => t.desde.startsWith(desde));
     const trayectos = [];
@@ -804,21 +877,22 @@ export function EditorServicio({
               <Etiqueta>Personas</Etiqueta>
               <Paso
                 etiqueta="Personas"
-                valor={renglon?.cantidad ?? 0}
+                valor={personas}
                 min={1}
                 max={60}
-                alCambiar={(n) => {
-                  alCambiar({
-                    detalle: { ...p.detalle, personas: n },
-                    renglones: p.renglones.map((r, i) => (i === 0 ? { ...r, cantidad: n } : r)),
-                  });
-                }}
+                alCambiar={(n) => alCambiar({ detalle: { ...p.detalle, personas: n } })}
               />
             </div>
           ) : ficha.modeloCobro === "unidad" || ficha.modeloCobro === "dia" ? (
             <div>
               <Etiqueta>{ficha.modeloCobro === "dia" ? "Días" : "Cantidad"}</Etiqueta>
-              <Paso etiqueta={ficha.modeloCobro === "dia" ? "Días" : "Cantidad"} valor={renglon?.cantidad ?? 1} min={1} max={400} alCambiar={cantidad} />
+              <Paso
+                etiqueta={ficha.modeloCobro === "dia" ? "Días" : "Cantidad"}
+                valor={p.detalle.dias ?? 1}
+                min={1}
+                max={400}
+                alCambiar={(n) => alCambiar({ detalle: { ...p.detalle, dias: n } })}
+              />
             </div>
           ) : null}
           {ficha.tipoServicio === "seguro" ? (

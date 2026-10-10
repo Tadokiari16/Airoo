@@ -5,17 +5,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   aCalculo,
   calcular,
-  pendientes as calcularPendientes,
   personasDe,
   vistasDeOpcion,
   type FixCotizacion,
   type Opcion,
   type PartidaArmador,
-  type Pendiente,
 } from "@/lib/armador";
+import { erroresDe, revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/revision";
+import type { Aeropuerto } from "@/lib/vuelos";
 import { idCatalogo, type FichaArmador } from "@/lib/armador-fichas";
 import { lineasPartida, nombreCorto, nombrePartida, SECCIONES, type ClaveSeccion } from "@/lib/armador-textos";
-import { noches, partidasDeOpcion, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
+import { partidasDeOpcion, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
 import { formatoDinero } from "@/lib/dinero";
 import { Boton } from "@/components/ui/boton";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -43,7 +43,7 @@ import type { DatosArmador, ProveedorOpcion } from "./datos";
 import { AgregarServicio, type Colocacion } from "./agregar";
 import { EditorActividad, EditorHotel, EditorServicio, EditorVuelo } from "./editores";
 import { PanelPrecio } from "./precio";
-import { AjustesCotizacion, AntesDeEnviar, TotalPorOpcion, type VistaOpcion } from "./totales";
+import { AjustesCotizacion, AntesDeEnviar, Hallazgos, TotalPorOpcion, type VistaOpcion } from "./totales";
 
 const ESPERA_GUARDADO = 700;
 
@@ -100,6 +100,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   const [aviso, setAviso] = useState<string | null>(null);
   const [guardado, setGuardado] = useState<EstadoGuardado>({ pendientes: 0, error: null, alguno: false });
   const [resaltada, setResaltada] = useState<string | null>(null);
+  const [aeropuertos, setAeropuertos] = useState<Record<string, Aeropuerto>>(datos.aeropuertos);
 
   // ─── Guardado automático, una partida a la vez ────────────────────────────
   const ultimas = useRef(new Map<string, PartidaArmador>());
@@ -144,13 +145,18 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     return () => window.removeEventListener("beforeunload", antes);
   }, []);
 
+  // La revisión más reciente, para decidir al cambiar si la partida se puede guardar.
+  const contexto = useRef<ContextoRevision | null>(null);
+
   const cambiar = useCallback(
     (id: string, cambio: Partial<PartidaArmador>) => {
       setPartidas((todas) =>
         todas.map((p) => {
           if (p.id !== id) return p;
           const nueva = { ...p, ...cambio, detalle: { ...p.detalle, ...(cambio.detalle ?? {}) } };
-          programar(nueva);
+          // Con un error (origen igual a destino, llegada antes de la salida…) no se guarda:
+          // el servidor lo rechazaría. Se guarda en cuanto se corrige.
+          if (!contexto.current || erroresDe(nueva, contexto.current).length === 0) programar(nueva);
           return nueva;
         }),
       );
@@ -177,14 +183,35 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   }, [fichas]);
 
   const nombres = useMemo(
-    () => ({ partida: Object.fromEntries(partidas.map((p) => [p.id, nombreCorto(p, fichaDe(p))])) }),
+    () => Object.fromEntries(partidas.map((p) => [p.id, nombreCorto(p, fichaDe(p))])),
     [partidas, fichaDe],
   );
 
-  const lista = useMemo(
-    () => calcularPendientes(partidas, viaje, fx, nombres),
-    [partidas, viaje, fx, nombres],
+  const ctx: ContextoRevision = useMemo(
+    () => ({
+      viaje: {
+        inicio: viaje.inicio,
+        fin: viaje.fin,
+        adultos: viaje.adultos,
+        menores: viaje.menores,
+        edadesMenores: viaje.edadesMenores,
+      },
+      hoy: reglas.hoy,
+      fx,
+      aeropuertos,
+      aerolineas: datos.aerolineas,
+      nombres,
+    }),
+    [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres],
   );
+  useEffect(() => {
+    contexto.current = ctx;
+  }, [ctx]);
+
+  const hallazgos = useMemo(() => revisarCotizacion(partidas, ctx), [partidas, ctx]);
+  const errores = hallazgos.filter((h) => h.nivel === "error");
+  const bloquean = hallazgos.filter((h) => h.nivel !== "aviso");
+  const deLaPartida = (id: string) => hallazgos.filter((h) => h.partidaId === id && h.nivel !== "falta");
 
   const ajustesTotales = {
     cargoServicio: datos.cotizacion.cargoServicio,
@@ -208,7 +235,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
         hoy: reglas.hoy,
         diasAntesViaje: reglas.diasAntesViaje,
       }),
-      falta: sinNeto ? `${nombres.partida[sinNeto.id]} todavía no tiene costo neto` : null,
+      falta: sinNeto ? `${nombres[sinNeto.id]} todavía no tiene costo neto` : null,
     };
   });
 
@@ -303,6 +330,11 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       utilidadBasePb={ajustes.utilidadBasePb}
       partidas={partidas}
       tramosVuelo={tramosVuelo}
+      hallazgos={deLaPartida(p.id)}
+      aeropuertos={aeropuertos}
+      alConocerAeropuertos={(lista) =>
+        setAeropuertos((a) => ({ ...a, ...Object.fromEntries(lista.map((x) => [x.iata, x])) }))
+      }
       resaltada={resaltada === p.id}
       opcion={p.opcionId ? opciones.find((o) => o.id === p.opcionId) : undefined}
       alCambiar={(c) => cambiar(p.id, c)}
@@ -321,7 +353,9 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     />
   );
 
-  const textoGuardado = guardado.error
+  const textoGuardado = errores.length
+    ? `Sin guardar: ${errores.length === 1 ? "hay un error por corregir" : `hay ${errores.length} errores por corregir`}`
+    : guardado.error
     ? guardado.error
     : guardado.pendientes > 0
       ? "Guardando…"
@@ -351,7 +385,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
         </div>
         <span
           aria-live="polite"
-          className={`ml-auto text-[12.5px] ${guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
+          className={`ml-auto text-[12.5px] ${errores.length || guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
         >
           {textoGuardado}
         </span>
@@ -362,9 +396,9 @@ export function Armador({ datos }: { datos: DatosArmador }) {
           className="inline-flex h-[34px] cursor-not-allowed items-center gap-2 rounded-[10px] bg-azul/45 px-3.5 text-[13px] font-semibold text-white"
         >
           Revisar y enviar
-          {lista.length ? (
+          {bloquean.length ? (
             <span className="num inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/90 px-1.5 text-[11.5px] font-bold text-azul-oscuro">
-              {lista.length}
+              {bloquean.length}
             </span>
           ) : null}
         </button>
@@ -415,7 +449,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                               className={`cursor-pointer rounded-[9px] px-3 py-1.5 text-left ${on ? "bg-tarjeta shadow-[0_1px_2px_rgba(17,26,43,.12)]" : "hover:bg-tarjeta/60"}`}
                             >
                               <span className="flex items-center gap-1.5 text-[13px] font-semibold">
-                                {h ? nombres.partida[h.id] : "Opción"}
+                                {h ? nombres[h.id] : "Opción"}
                                 {o.recomendada ? (
                                   <span className="rounded-full bg-azul-tenue px-1.5 text-[10.5px] font-bold text-azul-oscuro">
                                     Recomendada
@@ -475,7 +509,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
             conIva={ajustes.conIva}
             ivaPb={datos.cotizacion.ivaPb}
           />
-          <AntesDeEnviar pendientes={lista} alIr={(p: Pendiente) => p.partidaId && irA(p.partidaId)} />
+          <AntesDeEnviar hallazgos={hallazgos} alIr={(h: Hallazgo) => h.partidaId && irA(h.partidaId)} />
           <AjustesCotizacion
             validaHasta={ajustes.validaHasta}
             maxima={maxima}
@@ -542,6 +576,9 @@ function TarjetaPartida({
   utilidadBasePb,
   partidas,
   tramosVuelo,
+  hallazgos,
+  aeropuertos,
+  alConocerAeropuertos,
   resaltada,
   opcion,
   alCambiar,
@@ -558,6 +595,10 @@ function TarjetaPartida({
   utilidadBasePb: number;
   partidas: PartidaArmador[];
   tramosVuelo: PartidaArmador["tramos"];
+  /** Errores y avisos de esta partida; lo que falta se ve en «Antes de enviar». */
+  hallazgos: Hallazgo[];
+  aeropuertos: Record<string, Aeropuerto>;
+  alConocerAeropuertos: (a: Aeropuerto[]) => void;
   resaltada: boolean;
   opcion: Opcion | undefined;
   alCambiar: (c: Partial<PartidaArmador>) => void;
@@ -575,23 +616,6 @@ function TarjetaPartida({
   const lugar = ficha?.lugar ?? "";
   const porCompletar = ficha && "porCompletar" in ficha && ficha.porCompletar;
   const viajeEditor = { inicio: viaje.inicio, fin: viaje.fin, adultos: viaje.adultos, menores: viaje.menores };
-
-  let subNeto = "";
-  if (p.tipo === "hotel") {
-    const n = p.fechaInicio && p.fechaFin ? noches(p.fechaInicio, p.fechaFin) : 0;
-    subNeto = `${n} ${n === 1 ? "noche" : "noches"} · ${p.habitaciones.length} ${p.habitaciones.length === 1 ? "habitación" : "habitaciones"}`;
-  } else if (p.tipo === "vuelo") {
-    subNeto = `${p.detalle.pasajeros ?? 0} pasajeros · ${p.detalle.redondo === false ? "sencillo" : "redondo"}`;
-  } else if (p.tipo === "actividad") {
-    const n = personasDe(p);
-    subNeto = `${n} ${n === 1 ? "persona" : "personas"}`;
-  } else {
-    const r = p.renglones[0];
-    subNeto =
-      r && r.cantidad > 1 && r.netoUnitario !== null && calc.neto !== null
-        ? `× ${r.cantidad} = ${formatoDinero(calc.neto, p.moneda)}`
-        : (r?.concepto ?? "");
-  }
 
   const ocupadas = Object.fromEntries(
     partidas
@@ -662,7 +686,15 @@ function TarjetaPartida({
               alAgregarHabitacion={alAgregarHabitacion}
             />
           ) : ficha?.tipo === "vuelo" ? (
-            <EditorVuelo p={p} ficha={ficha} viaje={viajeEditor} alCambiar={alCambiar} alAvisar={alAvisar} />
+            <EditorVuelo
+              p={p}
+              ficha={ficha}
+              viaje={viajeEditor}
+              aeropuertos={aeropuertos}
+              alConocerAeropuertos={alConocerAeropuertos}
+              alCambiar={alCambiar}
+              alAvisar={alAvisar}
+            />
           ) : ficha?.tipo === "actividad" ? (
             <EditorActividad p={p} ficha={ficha} viaje={viajeEditor} ocupadas={ocupadas} alCambiar={alCambiar} />
           ) : ficha?.tipo === "servicio" ? (
@@ -670,6 +702,7 @@ function TarjetaPartida({
           ) : (
             <p className="text-[13px] text-tinta-3">Este registro ya no está en el catálogo.</p>
           )}
+          <Hallazgos hallazgos={hallazgos} />
         </div>
         <PanelPrecio
           p={p}
@@ -680,8 +713,6 @@ function TarjetaPartida({
           utilidadBasePb={utilidadBasePb}
           utilidadFijaPb={p.tipo === "vuelo" ? reglas.utilidadVuelosPb : undefined}
           proveedores={proveedoresPara(p.tipo, datos.proveedores)}
-          netoEditable={p.tipo === "vuelo" || p.tipo === "servicio"}
-          subNeto={subNeto}
           directo={
             p.tipo === "hotel"
               ? "Directo con el hotel"
