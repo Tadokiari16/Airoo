@@ -89,6 +89,8 @@ export function ListaHoteles({
 
   useEffect(() => {
     const url = new URL(window.location.href);
+    // Al abrir una ficha la lista puede volver a pintarse; la URL ya es de la ficha.
+    if (url.pathname !== "/hoteles") return;
     if (sel) url.searchParams.set("h", sel);
     else url.searchParams.delete("h");
     window.history.replaceState(null, "", url);

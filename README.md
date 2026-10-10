@@ -54,6 +54,8 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/lib/hoteles.ts`: qué le falta a la ficha de un hotel (los 9 puntos), cargos y Tripadvisor.
 - `src/lib/actividades.ts`: tipos de actividad, los 8 bloques opcionales, qué bloques sugiere cada tipo (al cambiarlo no se apaga ninguno) y qué va a pedir el armador.
 - `src/app/(panel)/fotos-acciones.ts`: subir, ordenar, encuadrar y quitar fotos; las comparten hoteles y actividades.
+- `src/lib/servicios.ts`: tipos de servicio, modelo de cobro sugerido por tipo, cómo se llaman sus variantes (unidades, planes, tipos) y qué le falta a la ficha.
+- `src/app/(panel)/proveedores/donde-reservar.tsx`: el bloque «Dónde se puede reservar» que comparten actividades y servicios.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.

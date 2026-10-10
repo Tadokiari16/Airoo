@@ -55,6 +55,8 @@ export function ListaProveedores({
   // La liga lleva el proveedor abierto (?p=…) para poder compartirla.
   useEffect(() => {
     const url = new URL(window.location.href);
+    // Al abrir una ficha la lista puede volver a pintarse; la URL ya es de la ficha.
+    if (url.pathname !== "/proveedores") return;
     if (sel) url.searchParams.set("p", sel);
     else url.searchParams.delete("p");
     window.history.replaceState(null, "", url);

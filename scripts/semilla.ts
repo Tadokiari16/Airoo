@@ -16,6 +16,7 @@ import { iniciales, normalizar } from "../src/lib/texto";
 import { createCipheriv, randomBytes } from "node:crypto";
 import { sembrarHoteles } from "./semilla-hoteles";
 import { sembrarActividades } from "./semilla-actividades";
+import { sembrarServicios } from "./semilla-servicios";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
@@ -112,6 +113,7 @@ async function main() {
   await sembrarProveedores(db, yo!.id);
   await sembrarHoteles(db, admin, yo!.id);
   await sembrarActividades(db, admin, yo!.id);
+  await sembrarServicios(db, yo!.id);
 
   await conexion.end();
   console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);

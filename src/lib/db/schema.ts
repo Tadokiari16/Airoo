@@ -524,6 +524,10 @@ export const servicios = pgTable(
     destino: text(),
     ciudadId: uuid().references(() => ciudades.id),
     modeloCobro: modeloCobro().notNull(),
+    // Cómo se calcula en palabras: «Mayores de 70 años cotizan aparte».
+    notaCobro: text(),
+    // Sin proveedor fijo: se elige en cada cotización. No cuenta como faltante.
+    variaPorReserva: boolean().notNull().default(false),
     descripcion: text(),
     clienteRecibe: text(),
     enViajeConfirmado: text(),

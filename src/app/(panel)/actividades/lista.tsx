@@ -101,6 +101,8 @@ export function ListaActividades({
 
   useEffect(() => {
     const url = new URL(window.location.href);
+    // Al abrir una ficha la lista puede volver a pintarse; la URL ya es de la ficha.
+    if (url.pathname !== "/actividades") return;
     if (sel) url.searchParams.set("a", sel);
     else url.searchParams.delete("a");
     window.history.replaceState(null, "", url);
