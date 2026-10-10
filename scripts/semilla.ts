@@ -26,14 +26,36 @@ if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
   process.exit(1);
 }
 
-const CONTRASENA = process.env.SEMILLA_CONTRASENA ?? "airoo-local-2026";
+// --produccion: el primer arranque en Supabase (lo corre scripts/arranque.ts).
+// Crea solo al Dueño, con el correo de DUENO_CORREO y una contraseña al azar
+// que nadie conoce: entra con «¿Olvidaste tu contraseña?». No crea la cuenta
+// de cobro ni las formas de pago de ejemplo; los catálogos de ejemplo sí, para
+// probar las pantallas (se pueden eliminar porque nunca se usaron).
+const PRODUCCION = process.argv.includes("--produccion");
 
-const EQUIPO = [
-  { nombre: "Luis", correo: "dueno@airoo.local", rol: "dueno" },
-  { nombre: "Asesora 1", correo: "asesora1@airoo.local", rol: "asesora" },
-  { nombre: "Asesora 2", correo: "asesora2@airoo.local", rol: "asesora" },
-  { nombre: "Contador", correo: "contador@airoo.local", rol: "contador" },
-] as const;
+const CONTRASENA = PRODUCCION
+  ? randomBytes(24).toString("base64url")
+  : (process.env.SEMILLA_CONTRASENA ?? "airoo-local-2026");
+
+type Persona = { nombre: string; correo: string; rol: "dueno" | "asesora" | "contador" };
+const EQUIPO: Persona[] = PRODUCCION
+  ? [
+      {
+        nombre: process.env.DUENO_NOMBRE?.trim() || "Dueño",
+        correo: (process.env.DUENO_CORREO ?? "").trim().toLowerCase(),
+        rol: "dueno",
+      },
+    ]
+  : [
+      { nombre: "Luis", correo: "dueno@airoo.local", rol: "dueno" },
+      { nombre: "Asesora 1", correo: "asesora1@airoo.local", rol: "asesora" },
+      { nombre: "Asesora 2", correo: "asesora2@airoo.local", rol: "asesora" },
+      { nombre: "Contador", correo: "contador@airoo.local", rol: "contador" },
+    ];
+if (PRODUCCION && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(EQUIPO[0].correo)) {
+  console.error("Falta DUENO_CORREO: el correo con el que va a entrar el dueño.");
+  process.exit(1);
+}
 
 const CIUDADES: [string, string, string][] = [
   ["Cancún", "Quintana Roo", "México"],
@@ -57,7 +79,7 @@ const CIUDADES: [string, string, string][] = [
 // Reglas vigentes de CLAUDE.md y del prototipo de Configuración.
 const AJUSTES: Record<string, unknown> = {
   ...AJUSTES_INICIALES,
-  agencia: { ...AJUSTES_INICIALES.agencia, whatsapp: "+52 998 100 0000" },
+  agencia: { ...AJUSTES_INICIALES.agencia, whatsapp: PRODUCCION ? "" : "+52 998 100 0000" },
 };
 
 // Cuenta ficticia donde reciben los pagos de los clientes, y con qué paga Airoo.
@@ -124,7 +146,7 @@ async function main() {
     .select({ id: schema.cuentasCobroAiroo.id })
     .from(schema.cuentasCobroAiroo)
     .limit(1);
-  if (!hayCuenta) {
+  if (!hayCuenta && !PRODUCCION) {
     await db.insert(schema.cuentasCobroAiroo).values({
       banco: CUENTA_COBRO.banco,
       clabeCifrada: cifrar(CUENTA_COBRO.clabe),
@@ -138,7 +160,11 @@ async function main() {
   }
 
   await conexion.end();
-  console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);
+  console.log(
+    PRODUCCION
+      ? `Listo. El dueño (${EQUIPO[0].correo}) entra con «¿Olvidaste tu contraseña?».`
+      : `Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`,
+  );
 }
 
 // ─── Proveedores ─────────────────────────────────────────────────────────────

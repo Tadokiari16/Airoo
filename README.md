@@ -66,9 +66,15 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/app/(panel)`: el panel con la barra lateral.
 - `src/app/fuentes`: tipografías guardadas en el repo (Plus Jakarta Sans en el panel; Gilroy para la vista del cliente).
 
-## Producción (cuando se cree el proyecto en Supabase y Vercel)
+## Producción (Supabase + Vercel)
 
-1. Crear el proyecto en Supabase y correr `npx supabase link` y `npx supabase db push`.
-2. En Supabase › Authentication: desactivar el registro público, poner la URL del sitio y pegar la plantilla de `supabase/templates/recuperar.html` en «Reset password» y la de `supabase/templates/codigo.html` en «Magic link» (es el código para confirmar el cambio de la cuenta de cobro; lleva solo el código, sin liga para entrar).
-3. En Vercel, conectar el repo y poner las variables de `.env.example` con los valores del proyecto (la de `DATABASE_URL` es la del pooler en modo transacción). `LLAVE_CIFRADO` se genera nueva con `openssl rand -base64 32` y no se comparte: con ella se cifran los números de cuenta de los proveedores. `ALMACEN_FOTOS=supabase` para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
-4. Correr la semilla solo si se quieren datos de ejemplo (`npm run semilla -- --forzar`).
+Vercel corre `npm run vercel-build`: primero `scripts/arranque.ts` aplica las migraciones pendientes y, si la base no tiene a nadie (primer arranque), siembra en modo producción: el Dueño con el correo de `DUENO_CORREO` (y una contraseña al azar; entra con «¿Olvidaste tu contraseña?»), ciudades, ajustes y catálogos de ejemplo. Después corre `next build`. No hace falta la CLI de Supabase.
+
+1. En Supabase › Authentication: desactivar el registro público, poner la URL del sitio y pegar la plantilla de `supabase/templates/recuperar.html` en «Reset password» y la de `supabase/templates/codigo.html` en «Magic link» (es el código para confirmar el cambio de la cuenta de cobro; lleva solo el código, sin liga para entrar).
+2. En Vercel, conectar el repo y poner estas variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (la «publishable»), `SUPABASE_SERVICE_ROLE_KEY` (la «secret»).
+   - `DATABASE_URL`: la del pooler en modo transacción (puerto 6543), con la contraseña de la base.
+   - `LLAVE_CIFRADO`: 32 bytes en base64, nueva y sin compartir; con ella se cifran los números de cuenta. Se puede generar en el SQL Editor de Supabase con `select encode(gen_random_bytes(32), 'base64');`.
+   - `ALMACEN_FOTOS=supabase`, para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
+   - `DUENO_CORREO` y `DUENO_NOMBRE`: quién es el Dueño en el primer arranque.
+   - `NEXT_PUBLIC_SITE_URL` es opcional: sin ella se usa la dirección de producción de Vercel.

@@ -9,6 +9,7 @@ import { NOMBRE_ROL } from "@/lib/permisos";
 import { usuarioCon } from "@/lib/sesion";
 import { supabaseAdmin } from "@/lib/supabase/servidor";
 import { limpiar } from "@/lib/texto";
+import { urlSitio } from "@/lib/sitio";
 
 const VIGENCIA_HORAS = 24;
 const RUTA = "/configuracion/equipo";
@@ -30,7 +31,7 @@ const Invitacion = z.object({
 });
 
 function ligaDeInvitacion(tokenHash: string) {
-  const u = new URL("/auth/confirmar", process.env.NEXT_PUBLIC_SITE_URL);
+  const u = new URL("/auth/confirmar", urlSitio());
   u.searchParams.set("token_hash", tokenHash);
   u.searchParams.set("type", "invite");
   u.searchParams.set("next", "/bienvenida");
