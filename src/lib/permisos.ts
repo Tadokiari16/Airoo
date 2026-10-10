@@ -50,8 +50,3 @@ export function puedeVerCostos(rol: Rol, usuarioId: string, aCargoId: string | n
   if (rol === "asesora") return aCargoId === usuarioId;
   return true;
 }
-
-/** Texto que aparece debajo del nombre en «Tu cuenta». */
-export function etiquetaCuenta(rol: Rol): string {
-  return rol === "dueno" ? "Administrador" : NOMBRE_ROL[rol];
-}

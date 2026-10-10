@@ -31,7 +31,7 @@ test("Dueño ve todo el panel", async ({ page }) => {
     "Configuración",
   ])
     await expect(nav.getByRole("link", { name: s, exact: true })).toBeVisible();
-  await expect(nav.getByText("Administrador")).toBeVisible();
+  await expect(nav.getByText("Dueño", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: /^Buen(os|as) (días|tardes|noches)$/ })).toBeVisible();
   await expect(page.getByText("Todavía no hay viajes")).toBeVisible();
   await page.screenshot({ path: "test-results/panel-dueno.png", fullPage: true });

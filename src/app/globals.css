@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Gilroy se aplica en un contenedor (no en <html>), así que la utilidad lee la variable ahí mismo. */
+@theme inline {
+  --font-cliente: var(--fuente-cliente), system-ui, sans-serif;
+}
+
 /* Colores y medidas tomados de los prototipos (disenos/html). */
 @theme {
   --font-panel: var(--fuente-panel), system-ui, sans-serif;

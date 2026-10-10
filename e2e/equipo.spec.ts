@@ -3,8 +3,8 @@ import { CONTRASENA, CORREOS, entrarComo, navegacion } from "./ayuda";
 
 test("invitar, aceptar con contraseña, cambiar rol y quitar acceso", async ({ page, browser, context }) => {
   const sufijo = Date.now().toString(36);
-  const correo = `karla.${sufijo}@airoo.local`;
-  const nombre = `Karla ${sufijo}`;
+  const correo = `asesora3.${sufijo}@airoo.local`;
+  const nombre = `Asesora 3 ${sufijo}`;
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await entrarComo(page, CORREOS.dueno);
   await page.goto("/configuracion/equipo");

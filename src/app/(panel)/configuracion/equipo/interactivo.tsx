@@ -71,7 +71,7 @@ function FormularioInvitar({ alTerminar }: { alTerminar: () => void }) {
   return (
     <form action={accion} className="flex flex-col gap-4">
       <p className="text-tinta-2">La invitación llega por correo o WhatsApp y entra con el rol elegido.</p>
-      <Campo etiqueta="Nombre" name="nombre" placeholder="Ej. Karla Méndez" required />
+      <Campo etiqueta="Nombre" name="nombre" placeholder="Ej. Asesora 3" required />
       <Campo
         etiqueta="Correo"
         name="correo"
