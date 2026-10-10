@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { viajesPorRegistro } from "@/lib/catalogos";
 import { historialDe } from "@/lib/bitacora";
 import {
   queSePide,
@@ -76,6 +77,7 @@ export async function cargarServicios(soloId?: string): Promise<Servicio[]> {
   if (filas.length === 0) return [];
   const ids = filas.map((f) => f.s.id);
 
+  const usadoEnViajes = await viajesPorRegistro("servicioId");
   const [variantes, ligas, contactos] = await Promise.all([
     db
       .select()
@@ -162,7 +164,7 @@ export async function cargarServicios(soloId?: string): Promise<Servicio[]> {
       pide: queSePide({ tipo: x.tipo, modeloCobro: x.modeloCobro, variantes: susVariantes.length }),
       archivado: !!x.archivadoEn,
       motivoArchivo: x.motivoArchivo,
-      viajes: 0,
+      viajes: usadoEnViajes.get(x.id) ?? 0,
       desde: formatoMesAnio(x.creadoEn),
       editado: `${editor ?? "El equipo"} · ${formatoFechaCorta(x.actualizadoEn)}`,
       busqueda: normalizar(

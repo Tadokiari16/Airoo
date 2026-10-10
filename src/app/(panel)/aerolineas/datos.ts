@@ -1,6 +1,7 @@
 import "server-only";
 import { asc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
+import { viajesPorRegistro } from "@/lib/catalogos";
 import { historialDe } from "@/lib/bitacora";
 import { RUTAS, type AerolineaIata, type Fuente, type Ruta, type Tarifa } from "@/lib/aerolineas";
 import { formatoFechaCorta, formatoMesAnio } from "@/lib/fechas";
@@ -39,6 +40,7 @@ export async function cargarAerolineas(): Promise<Aerolinea[]> {
   const filas = await db.select().from(a).orderBy(asc(a.nombre));
   if (filas.length === 0) return [];
   const ids = filas.map((f) => f.id);
+  const usadoEnViajes = await viajesPorRegistro("aerolineaId");
   const [tarifas, ventanas] = await Promise.all([
     db
       .select()
@@ -88,7 +90,7 @@ export async function cargarAerolineas(): Promise<Aerolinea[]> {
       checkin,
       archivado: !!x.archivadoEn,
       motivoArchivo: x.motivoArchivo,
-      viajes: 0,
+      viajes: usadoEnViajes.get(x.id) ?? 0,
       desde: formatoMesAnio(x.creadoEn),
       busqueda: normalizar(`${x.iata} ${x.nombre} ${susTarifas.map((t) => t.nombre).join(" ")}`),
     };

@@ -2,6 +2,7 @@ import "server-only";
 import { asc, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, schema } from "@/lib/db";
+import { viajesPorRegistro } from "@/lib/catalogos";
 import { formatoFechaCorta } from "@/lib/fechas";
 import { normalizar } from "@/lib/texto";
 import type { TipoCuenta } from "@/lib/cuentas";
@@ -79,6 +80,7 @@ export async function listaProveedores(): Promise<Proveedor[]> {
     );
     return new Map(r.map((f) => [f.proveedor_id, f.n]));
   };
+  const usadoEnViajes = await viajesPorRegistro("proveedorId");
   const [hoteles, actividades, servicios] = await Promise.all([
     usos("hotel_proveedores"),
     usos("actividad_proveedores"),
@@ -128,7 +130,7 @@ export async function listaProveedores(): Promise<Proveedor[]> {
         hoteles: hoteles.get(p.id) ?? 0,
         actividades: actividades.get(p.id) ?? 0,
         servicios: servicios.get(p.id) ?? 0,
-        viajes: 0,
+        viajes: usadoEnViajes.get(p.id) ?? 0,
       },
       busqueda: normalizar([p.nombre, ...suyos.map((c) => c.nombre)].join(" ")),
     };

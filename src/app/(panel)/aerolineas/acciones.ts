@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
+import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
 import { limpiarIata, RUTAS, textoFuente, type Fuente, type Ruta } from "@/lib/aerolineas";
 import { usuarioCon } from "@/lib/sesion";
@@ -240,10 +241,7 @@ export async function archivarAerolinea(
 }
 
 /** Viajes que usan la aerolínea. Los vuelos de cotización llegan en la Fase 2. */
-async function viajesDeAerolinea(id: string): Promise<number> {
-  void id;
-  return 0;
-}
+const viajesDeAerolinea = (id: string) => viajesQueUsan("aerolineaId", id);
 
 export async function eliminarAerolinea(id: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("eliminar_catalogos");

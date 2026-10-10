@@ -42,6 +42,12 @@ export async function buscarParecidas(nombre: string): Promise<Parecida[]> {
  * Fase 1 se suman hoteles, actividades y servicios, y en la Fase 2 los viajes.
  */
 export async function usosDeCiudad(ciudadId: string): Promise<number> {
-  void ciudadId;
-  return 0;
+  const [f] = await db.execute<{ n: number }>(sql`
+    select (
+      (select count(*) from hoteles where ciudad_id = ${ciudadId}) +
+      (select count(*) from actividades where ciudad_id = ${ciudadId}) +
+      (select count(*) from servicios where ciudad_id = ${ciudadId}) +
+      (select count(*) from viajes where ciudad_destino_id = ${ciudadId} or ciudad_salida_id = ${ciudadId})
+    )::int as n`);
+  return Number(f?.n ?? 0);
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { and, eq, inArray, isNull, max, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
+import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
 import { aCentavos, MONEDAS } from "@/lib/dinero";
 import { CLAVES_REGIMEN, idTripadvisor, SE_COBRA } from "@/lib/hoteles";
@@ -476,10 +477,7 @@ export async function archivarHotel(id: string, archivar: boolean, motivo = ""):
 }
 
 /** Viajes que usan el hotel. Las partidas de cotización llegan en la Fase 2. */
-async function viajesDeHotel(id: string): Promise<number> {
-  void id;
-  return 0;
-}
+const viajesDeHotel = (id: string) => viajesQueUsan("hotelId", id);
 
 export async function eliminarHotel(id: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("eliminar_catalogos");
