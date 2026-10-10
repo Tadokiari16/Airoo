@@ -17,12 +17,18 @@ import {
   Seccion,
   Segmentos,
   leerNumero,
+  useAvisar,
   useGuardarAjuste,
+  GUARDADO,
 } from "../controles";
+import { guardarTipoCambioManual } from "../acciones";
+import { aDiezmilesimos } from "@/lib/banxico";
+import { textoTipoCambio } from "@/lib/cotizacion";
 
-// El FIX del día llega en la Fase 2 (tarea diaria de Banxico). Mientras, el
-// ejemplo usa el del prototipo.
+// Sin FIX guardado, el ejemplo usa el del prototipo.
 const FIX_EJEMPLO = 18.42;
+
+type Fx = { fecha: string; dia: string; diezmilesimos: number; fuente: "banxico" | "manual" } | null;
 
 const pesos = (c: number) => (c % 100 ? (c / 100).toFixed(2) : String(c / 100));
 
@@ -31,12 +37,45 @@ export function Precios({
   cargo,
   tolerancia,
   colchon,
+  usd,
+  eur,
+  conBanxico,
 }: {
   ganancia: Ajustes["ganancia_defecto"];
   cargo: number;
   tolerancia: number;
   colchon: number;
+  usd: Fx;
+  eur: Fx;
+  conBanxico: boolean;
 }) {
+  const avisar = useAvisar();
+  const fix = usd ? usd.diezmilesimos / 10_000 : FIX_EJEMPLO;
+  const capturar = (moneda: "USD" | "EUR", titulo: string, actual: Fx) => (
+    <Fila
+      titulo={titulo}
+      sub={
+        actual
+          ? `${actual.dia} · ${actual.fuente === "banxico" ? "de Banxico" : "capturado a mano"}`
+          : "Todavía no hay ninguno guardado"
+      }
+      id={`fix-${moneda}`}
+    >
+      <CampoAjuste
+        id={`fix-${moneda}`}
+        valor={actual?.diezmilesimos ?? null}
+        texto={(v) => (v === null ? "" : textoTipoCambio(v))}
+        leer={(s) => aDiezmilesimos(s.replace(/[$\s]/g, ""))}
+        prefijo="$"
+        alGuardar={async (v) => {
+          if (v === null) return { error: "Falta el tipo de cambio." };
+          const r = await guardarTipoCambioManual(moneda, v);
+          if ("ok" in r) avisar(GUARDADO);
+          return r;
+        }}
+      />
+    </Fila>
+  );
   const guardar = useGuardarAjuste();
   const [limite, setLimite] = useState(tolerancia);
   const [fx, setFx] = useState(colchon);
@@ -129,9 +168,14 @@ export function Precios({
             }}
           />
         </Fila>
+        {capturar("USD", "Dólar de hoy", usd)}
+        {capturar("EUR", "Euro de hoy", eur)}
         <Ejemplo>
-          Ejemplo: FIX <b className="num">{FIX_EJEMPLO.toFixed(2)}</b> + {textoPorcentaje(fx)} ={" "}
-          <b className="num">{tipoCambioConColchon(FIX_EJEMPLO, fx)}</b> por dólar. El cliente ve el precio en
+          {conBanxico
+            ? "Se trae de Banxico cada día hábil después de que lo publica. Si no llega, se puede capturar aquí. "
+            : "Todavía no hay conexión con Banxico: el tipo de cambio de cada día se captura aquí. "}
+          Ejemplo: FIX <b className="num">{fix.toFixed(2)}</b> + {textoPorcentaje(fx)} ={" "}
+          <b className="num">{tipoCambioConColchon(fix, fx)}</b> por dólar. El cliente ve el precio en
           pesos con la etiqueta «Tarifa en USD».
         </Ejemplo>
       </Seccion>

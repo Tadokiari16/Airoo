@@ -9,7 +9,9 @@ import { anotar } from "@/lib/bitacora";
 import { cifrar } from "@/lib/cifrado";
 import { errorNumeroCuenta, soloDigitos } from "@/lib/cuentas";
 import { activaDesde, ESQUEMAS, textoBitacora, type ClaveEditable } from "@/lib/configuracion";
-import { formatoFechaHora } from "@/lib/fechas";
+import { formatoDia, formatoFechaHora, hoyEnCancun } from "@/lib/fechas";
+import { textoTipoCambio } from "@/lib/cotizacion";
+import { guardarTipoCambio } from "@/lib/tipo-cambio";
 import { usuarioCon } from "@/lib/sesion";
 import { limpiar } from "@/lib/texto";
 
@@ -220,5 +222,24 @@ export async function activarFormaPago(id: string, activa: boolean): Promise<Res
     entidadId: id,
   });
   revalidatePath("/configuracion/pagos-proveedores");
+  return { ok: true };
+}
+
+// ---- Tipo de cambio a mano ----
+
+/** Cuando Banxico no llega (sin token o sin servicio), el Dueño captura el de hoy. */
+export async function guardarTipoCambioManual(moneda: "USD" | "EUR", diezmilesimos: number): Promise<Resultado> {
+  const yo = await usuarioCon("capturar_tipo_cambio");
+  if (!yo) return { error: "Solo el dueño captura el tipo de cambio." };
+  if (!Number.isInteger(diezmilesimos) || diezmilesimos < 1_0000 || diezmilesimos > 100_0000)
+    return { error: "El tipo de cambio va en pesos, por ejemplo 18.42." };
+  const fecha = hoyEnCancun();
+  await guardarTipoCambio({ moneda, fecha, diezmilesimos }, "manual", yo.id);
+  await anotar({
+    quien: yo.id,
+    texto: `Tipo de cambio capturado a mano: ${moneda === "USD" ? "dólar" : "euro"} ${textoTipoCambio(diezmilesimos)} (${formatoDia(fecha)})`,
+    entidad: "tipos_cambio",
+  });
+  revalidatePath("/configuracion/precios");
   return { ok: true };
 }

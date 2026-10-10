@@ -57,6 +57,13 @@
       "when": 1791644616473,
       "tag": "20261010150336_aerolineas_iata",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791654787928,
+      "tag": "20261010175307_fase2_viajes",
+      "breakpoints": true
     }
   ]
 }
