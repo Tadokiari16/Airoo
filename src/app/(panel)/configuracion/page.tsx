@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function Configuracion() {
-  redirect("/configuracion/equipo");
+  redirect("/configuracion/precios");
 }

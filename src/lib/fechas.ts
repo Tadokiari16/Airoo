@@ -74,3 +74,15 @@ export function saludo(fecha: Date): string {
   if (h < 19) return "Buenas tardes";
   return "Buenas noches";
 }
+
+/** «3 sep 2026», para historiales («Verificada por Luis · 3 sep 2026»). */
+export function formatoFechaCorta(fecha: Date): string {
+  const p = partesEnCancun(fecha);
+  return `${p.dia} ${MESES[p.mes]} ${p.anio}`;
+}
+
+/** «oct 2026», para «desde oct 2026». */
+export function formatoMesAnio(fecha: Date): string {
+  const p = partesEnCancun(fecha);
+  return `${MESES[p.mes]} ${p.anio}`;
+}

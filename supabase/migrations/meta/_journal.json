@@ -15,6 +15,48 @@
       "when": 1791621693308,
       "tag": "20261010084133_fase0_busqueda",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791625022696,
+      "tag": "20261010093702_fase1_catalogos",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791625024215,
+      "tag": "20261010093704_fase1_busqueda",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791626639765,
+      "tag": "20261010100359_hoteles_sin_cargos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791626641215,
+      "tag": "20261010100401_almacen_fotos",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791630471933,
+      "tag": "20261010110751_servicios_cobro",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791644616473,
+      "tag": "20261010150336_aerolineas_iata",
+      "breakpoints": true
     }
   ]
 }

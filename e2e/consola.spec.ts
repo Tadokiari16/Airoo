@@ -16,6 +16,7 @@ test("las pantallas del panel cargan sin errores en la consola", async ({ page }
     "/clientes",
     "/finanzas",
     "/hoteles",
+    "/actividades",
     "/proveedores",
     "/configuracion/equipo",
     "/configuracion/ciudades",
@@ -24,5 +25,15 @@ test("las pantallas del panel cargan sin errores en la consola", async ({ page }
     await page.goto(ruta);
     await page.waitForLoadState("networkidle");
   }
+  await page.goto("/hoteles");
+  await page.getByRole("row", { name: "Seadust Cancún Family Resort" }).click();
+  await page.getByRole("link", { name: "Abrir ficha" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Seadust Cancún Family Resort" })).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await page.goto("/actividades");
+  await page.getByRole("row", { name: "Parque Xcaret" }).click();
+  await page.getByRole("link", { name: "Abrir ficha" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Parque Xcaret" })).toBeVisible();
+  await page.waitForLoadState("networkidle");
   expect(errores).toEqual([]);
 });

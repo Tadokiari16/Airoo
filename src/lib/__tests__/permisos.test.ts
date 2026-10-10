@@ -44,3 +44,32 @@ describe("costos y utilidad", () => {
     expect(puedeVerCostos("contador", "c", "a2")).toBe(true);
   });
 });
+
+describe("catálogos (Fase 1)", () => {
+  it("Dueño y Asesora editan, archivan y reactivan; el Contador no", () => {
+    for (const p of ["editar_catalogos", "archivar_catalogos"] as const) {
+      expect(puede("dueno", p)).toBe(true);
+      expect(puede("asesora", p)).toBe(true);
+      expect(puede("contador", p)).toBe(false);
+    }
+  });
+  it("Solo el Dueño elimina y une duplicados", () => {
+    expect(puede("dueno", "eliminar_catalogos")).toBe(true);
+    expect(puede("asesora", "eliminar_catalogos")).toBe(false);
+    expect(puede("contador", "eliminar_catalogos")).toBe(false);
+  });
+  it("Solo el Dueño agrega, aprueba o rechaza cuentas de proveedores", () => {
+    expect(puede("dueno", "cuentas_proveedor")).toBe(true);
+    expect(puede("asesora", "cuentas_proveedor")).toBe(false);
+    expect(puede("contador", "cuentas_proveedor")).toBe(false);
+  });
+  it("Dueño y Contador ven la cuenta completa; la Asesora solo enmascarada", () => {
+    expect(puede("dueno", "ver_cuenta_completa")).toBe(true);
+    expect(puede("contador", "ver_cuenta_completa")).toBe(true);
+    expect(puede("asesora", "ver_cuenta_completa")).toBe(false);
+  });
+  it("El Contador ve Proveedores pero no los demás catálogos", () => {
+    expect(puede("contador", "ver_proveedores")).toBe(true);
+    expect(puede("contador", "ver_catalogos")).toBe(false);
+  });
+});

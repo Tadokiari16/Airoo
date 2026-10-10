@@ -48,3 +48,6 @@ next-env.d.ts
 # supabase local
 supabase/.branches
 supabase/.temp
+
+# fotos guardadas en local (ALMACEN_FOTOS=local)
+/.almacen/

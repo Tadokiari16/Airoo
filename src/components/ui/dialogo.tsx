@@ -8,11 +8,15 @@ export function Dialogo({
   abierto,
   alCerrar,
   titulo,
+  sub,
+  ancho = 480,
   children,
 }: {
   abierto: boolean;
   alCerrar: () => void;
   titulo: string;
+  sub?: ReactNode;
+  ancho?: number;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -28,10 +32,14 @@ export function Dialogo({
       ref={ref}
       onClose={alCerrar}
       aria-label={titulo}
-      className="m-auto w-[min(480px,calc(100vw-32px))] rounded-tarjeta bg-tarjeta p-0 text-tinta shadow-menu backdrop:bg-tinta/30"
+      style={{ width: `min(${ancho}px, calc(100vw - 32px))` }}
+      className="m-auto max-h-[calc(100dvh-48px)] rounded-tarjeta bg-tarjeta p-0 text-tinta shadow-menu backdrop:bg-tinta/30"
     >
       <div className="flex items-start justify-between gap-4 px-6 pt-5">
-        <h2 className="text-[17px] font-bold">{titulo}</h2>
+        <div>
+          <h2 className="text-[17px] font-bold">{titulo}</h2>
+          {sub ? <p className="mt-1 text-[13.5px] text-tinta-2">{sub}</p> : null}
+        </div>
         <button
           type="button"
           onClick={alCerrar}

@@ -249,6 +249,12 @@ otp_expiry = 86400
 subject = "Cambia tu contraseña de Airoo"
 content_path = "./supabase/templates/recuperar.html"
 
+# El código de 6 dígitos para confirmar el cambio de la cuenta de cobro.
+# Lleva solo el código, sin liga para entrar.
+[auth.email.template.magic_link]
+subject = "Código para confirmar el cambio de cuenta de Airoo"
+content_path = "./supabase/templates/codigo.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
