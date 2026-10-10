@@ -121,3 +121,51 @@ export const IconoCopiar = (p: P) => (
     <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
   </Base>
 );
+export const IconoArriba = (p: P) => (
+  <Base strokeWidth={2} {...p}>
+    <path d="M6 15l6-6 6 6" />
+  </Base>
+);
+export const IconoAbajo = (p: P) => (
+  <Base strokeWidth={2} {...p}>
+    <path d="M6 9l6 6 6-6" />
+  </Base>
+);
+export const IconoExterno = (p: P) => (
+  <Base {...p}>
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </Base>
+);
+export const IconoWhatsapp = (p: P) => (
+  <Base {...p}>
+    <path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z" />
+  </Base>
+);
+export const IconoCorreo = (p: P) => (
+  <Base {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 7l9 6 9-6" />
+  </Base>
+);
+export const IconoCandado = (p: P) => (
+  <Base {...p}>
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </Base>
+);
+export const IconoTelefono = (p: P) => (
+  <Base {...p}>
+    <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" />
+  </Base>
+);
+export const IconoOjo = (p: P) => (
+  <Base {...p}>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </Base>
+);
+export const IconoPalomita = (p: P) => (
+  <Base strokeWidth={2.2} {...p}>
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </Base>
+);

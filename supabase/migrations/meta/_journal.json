@@ -15,6 +15,20 @@
       "when": 1791621693308,
       "tag": "20261010084133_fase0_busqueda",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791625022696,
+      "tag": "20261010093702_fase1_catalogos",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791625024215,
+      "tag": "20261010093704_fase1_busqueda",
+      "breakpoints": true
     }
   ]
 }

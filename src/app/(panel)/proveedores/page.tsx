@@ -1,24 +1,27 @@
 import type { Metadata } from "next";
-import { usuarioCon } from "@/lib/sesion";
-import { Encabezado } from "../encabezado";
+import { usuarioActual } from "@/lib/sesion";
+import { puede } from "@/lib/permisos";
 import { SinAcceso } from "../sin-acceso";
-import { Tarjeta, Vacio } from "@/components/ui/tarjeta";
+import { listaProveedores } from "./datos";
+import { ListaProveedores } from "./lista";
 
 export const metadata: Metadata = { title: "Proveedores" };
 
-export default async function Proveedores() {
-  if (!(await usuarioCon("ver_proveedores"))) return <SinAcceso />;
+export default async function Proveedores({ searchParams }: { searchParams: Promise<{ p?: string }> }) {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_proveedores")) return <SinAcceso />;
+  const [proveedores, { p }] = await Promise.all([listaProveedores(), searchParams]);
   return (
-    <>
-      <Encabezado titulo="Proveedores">
-        Con quién reservas, a quién llamar y dónde recibe cada uno. Lo que se acuerda en cada reserva, y lo
-        pendiente de pago, vive en el viaje y en Finanzas.
-      </Encabezado>
-      <Tarjeta>
-        <Vacio titulo="Todavía no hay proveedores">
-          Plataformas y proveedores directos, con sus contactos y las cuentas donde reciben.
-        </Vacio>
-      </Tarjeta>
-    </>
+    <ListaProveedores
+      proveedores={proveedores}
+      inicial={p ?? null}
+      permisos={{
+        editar: puede(yo.rol, "editar_catalogos"),
+        archivar: puede(yo.rol, "archivar_catalogos"),
+        eliminar: puede(yo.rol, "eliminar_catalogos"),
+        cuentas: puede(yo.rol, "cuentas_proveedor"),
+        verCompleta: puede(yo.rol, "ver_cuenta_completa"),
+      }}
+    />
   );
 }
