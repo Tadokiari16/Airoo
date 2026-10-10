@@ -169,3 +169,54 @@ export const IconoPalomita = (p: P) => (
     <path d="M5 12.5l4.5 4.5L19 7.5" />
   </Base>
 );
+
+export const IconoSubir = (p: P) => (
+  <Base {...p}>
+    <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+  </Base>
+);
+
+export const IconoFoto = (p: P) => (
+  <Base {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="2.5" />
+    <circle cx="9" cy="9.5" r="1.8" />
+    <path d="m21 16-5-5-9 9" />
+  </Base>
+);
+
+export const IconoEtiqueta = (p: P) => (
+  <Base {...p}>
+    <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" />
+    <circle cx="7.5" cy="7.5" r="1.3" />
+  </Base>
+);
+
+export const IconoBasura = (p: P) => (
+  <Base {...p}>
+    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+  </Base>
+);
+
+export const IconoAtras = (p: P) => (
+  <Base {...p}>
+    <path d="M19 12H5M11 6l-6 6 6 6" />
+  </Base>
+);
+
+export const IconoHistorial = (p: P) => (
+  <Base {...p}>
+    <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2" />
+  </Base>
+);
+
+export const IconoChevron = (p: P) => (
+  <Base {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Base>
+);
+
+export const IconoEncuadre = (p: P) => (
+  <Base {...p}>
+    <path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14" />
+  </Base>
+);

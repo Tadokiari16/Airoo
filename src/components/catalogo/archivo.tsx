@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Boton } from "@/components/ui/boton";
 import { Dialogo } from "@/components/ui/dialogo";
 
-export type Confirmacion = "archivar" | "eliminar" | null;
+export type Confirmacion = "archivar" | "reactivar" | "eliminar" | null;
 
 export function ConfirmarArchivo({
   confirmacion,
@@ -15,21 +15,47 @@ export function ConfirmarArchivo({
   alCerrar,
   alArchivar,
   alEliminar,
+  alReactivar,
   archivar,
+  reactivar,
   eliminar,
+  objeto,
 }: {
   confirmacion: Confirmacion;
   nombre: string;
   alCerrar: () => void;
   alArchivar: (motivo: string) => void;
   alEliminar: () => void;
+  alReactivar?: () => void;
   /** Qué pasa al archivar, en frases cortas. */
   archivar: string[];
   /** Por qué se puede eliminar, o por qué no. */
   eliminar: { permitido: boolean; texto: string };
+  /** Qué pasa al reactivar; sin esto se reactiva sin preguntar. */
+  reactivar?: { texto: string; lista: string[] };
+  /** «hotel», «proveedor»: va en el botón («Archivar hotel»). */
+  objeto?: string;
 }) {
   const [motivo, setMotivo] = useState("");
   const esEliminar = confirmacion === "eliminar";
+  const conObjeto = (verbo: string) => (objeto ? `${verbo} ${objeto}` : verbo);
+  if (confirmacion === "reactivar") {
+    return (
+      <Dialogo abierto alCerrar={alCerrar} titulo={`¿Reactivar ${nombre}?`} sub={reactivar?.texto}>
+        <ul className="list-disc space-y-1 pl-5 text-tinta-2">
+          {reactivar?.lista.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+        <div className="mt-5 flex justify-end gap-2">
+          <Boton variante="secundario" onClick={alCerrar}>
+            Cancelar
+          </Boton>
+          <Boton onClick={alReactivar}>{conObjeto("Reactivar")}</Boton>
+        </div>
+      </Dialogo>
+    );
+  }
   return (
     <Dialogo
       abierto={confirmacion !== null}
@@ -66,11 +92,11 @@ export function ConfirmarArchivo({
         {esEliminar ? (
           eliminar.permitido ? (
             <Boton variante="peligro" onClick={alEliminar}>
-              Eliminar
+              {conObjeto("Eliminar")}
             </Boton>
           ) : null
         ) : (
-          <Boton onClick={() => alArchivar(motivo)}>Archivar</Boton>
+          <Boton onClick={() => alArchivar(motivo)}>{conObjeto("Archivar")}</Boton>
         )}
       </div>
     </Dialogo>

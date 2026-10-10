@@ -29,6 +29,20 @@
       "when": 1791625024215,
       "tag": "20261010093704_fase1_busqueda",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791626639765,
+      "tag": "20261010100359_hoteles_sin_cargos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791626641215,
+      "tag": "20261010100401_almacen_fotos",
+      "breakpoints": true
     }
   ]
 }

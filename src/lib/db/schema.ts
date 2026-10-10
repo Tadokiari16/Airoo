@@ -276,6 +276,8 @@ export const hoteles = pgTable(
     correoReservaciones: text(),
     notaInterna: text(),
     soloAdultos: boolean().notNull().default(false),
+    // Marcado a mano cuando el hotel no cobra nada aparte (para no dejar la ficha pendiente).
+    sinCargos: boolean().notNull().default(false),
     unidoA: uuid().references((): AnyPgColumn => hoteles.id, { onDelete: "set null" }),
     ...archivo(),
     ...autoria(),

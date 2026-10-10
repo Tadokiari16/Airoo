@@ -1,6 +1,6 @@
 // Datos de ejemplo para trabajar en local: el equipo de los prototipos,
-// la lista de ciudades, los ajustes de CLAUDE.md y los proveedores de los
-// prototipos. Los negocios llevan su nombre real; las personas de contacto,
+// la lista de ciudades, los ajustes de CLAUDE.md y los proveedores y hoteles
+// de los prototipos. Los negocios llevan su nombre real; las personas de contacto,
 // nombres genéricos y teléfonos ficticios.
 //   npm run semilla
 // Solo corre contra una base local, salvo que se pase --forzar.
@@ -14,6 +14,7 @@ import postgres from "postgres";
 import * as schema from "../src/lib/db/schema";
 import { iniciales, normalizar } from "../src/lib/texto";
 import { createCipheriv, randomBytes } from "node:crypto";
+import { sembrarHoteles } from "./semilla-hoteles";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
@@ -107,6 +108,7 @@ async function main() {
       (u) => u.email === EQUIPO[0].correo,
     );
   await sembrarProveedores(db, yo!.id);
+  await sembrarHoteles(db, admin, yo!.id);
 
   await conexion.end();
   console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);
@@ -404,16 +406,14 @@ async function sembrarProveedores(db: Db, duenoId: string) {
         creadoPor: duenoId,
       })
       .returning({ id: schema.proveedores.id });
-    await db
-      .insert(schema.proveedorContactos)
-      .values(
-        p.contactos.map((c, i) => ({
-          ...c,
-          proveedorId: nuevo.id,
-          principal: i === 0,
-          creadoEn: new Date(Date.now() + i),
-        })),
-      );
+    await db.insert(schema.proveedorContactos).values(
+      p.contactos.map((c, i) => ({
+        ...c,
+        proveedorId: nuevo.id,
+        principal: i === 0,
+        creadoEn: new Date(Date.now() + i),
+      })),
+    );
     if (p.cuenta) {
       const c = p.cuenta;
       const [actual] = await db

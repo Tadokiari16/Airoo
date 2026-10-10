@@ -14,6 +14,7 @@ export function PanelLateral({
   titulo,
   insignia,
   sub,
+  cabecera,
   acciones,
   pie,
   children,
@@ -25,6 +26,8 @@ export function PanelLateral({
   titulo: string;
   insignia?: ReactNode;
   sub?: ReactNode;
+  /** Algo más bajo el título, como las fotos del hotel. */
+  cabecera?: ReactNode;
   acciones?: ReactNode;
   pie?: ReactNode;
   children: ReactNode;
@@ -81,6 +84,7 @@ export function PanelLateral({
           {insignia}
         </div>
         {sub ? <p className="mt-[3px] text-[13.5px] text-tinta-2">{sub}</p> : null}
+        {cabecera}
       </div>
       {acciones ? (
         <div className="flex flex-wrap gap-2 border-y border-linea bg-[#fafbfd] px-5 py-2.5">{acciones}</div>

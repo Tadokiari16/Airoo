@@ -49,7 +49,9 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 
 - `src/lib/permisos.ts`: qué puede hacer cada rol. Es el único lugar donde se decide.
 - `src/lib/cuentas.ts` y `src/lib/cifrado.ts`: reglas de las cuentas de proveedores (CLABE, tarjeta, verificación por llamada) y su cifrado.
-- `src/components/catalogo`: piezas compartidas de los catálogos (pestañas, tabla, panel lateral, archivar y eliminar).
+- `src/components/catalogo`: piezas compartidas de los catálogos (pestañas, tabla, panel lateral, archivar y eliminar, fotos con encuadre 16:9).
+- `src/lib/fotos.ts`, `src/lib/imagenes.ts` y `src/lib/almacen.ts`: reglas de la portada, los dos tamaños webp de cada foto y dónde se guardan (carpeta `.almacen` en local, bucket público `fotos` de Supabase en producción, según `ALMACEN_FOTOS`).
+- `src/lib/hoteles.ts`: qué le falta a la ficha de un hotel (los 9 puntos), cargos y Tripadvisor.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.
@@ -61,5 +63,5 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 
 1. Crear el proyecto en Supabase y correr `npx supabase link` y `npx supabase db push`.
 2. En Supabase › Authentication: desactivar el registro público, poner la URL del sitio y pegar la plantilla de `supabase/templates/recuperar.html` en «Reset password».
-3. En Vercel, conectar el repo y poner las variables de `.env.example` con los valores del proyecto (la de `DATABASE_URL` es la del pooler en modo transacción). `LLAVE_CIFRADO` se genera nueva con `openssl rand -base64 32` y no se comparte: con ella se cifran los números de cuenta de los proveedores.
+3. En Vercel, conectar el repo y poner las variables de `.env.example` con los valores del proyecto (la de `DATABASE_URL` es la del pooler en modo transacción). `LLAVE_CIFRADO` se genera nueva con `openssl rand -base64 32` y no se comparte: con ella se cifran los números de cuenta de los proveedores. `ALMACEN_FOTOS=supabase` para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
 4. Correr la semilla solo si se quieren datos de ejemplo (`npm run semilla -- --forzar`).
