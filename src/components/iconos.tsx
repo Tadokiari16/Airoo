@@ -220,3 +220,10 @@ export const IconoEncuadre = (p: P) => (
     <path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14" />
   </Base>
 );
+
+export const IconoTarjeta = (p: P) => (
+  <Base strokeWidth={2.2} tam={15} {...p}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path d="M2 10h20" />
+  </Base>
+);

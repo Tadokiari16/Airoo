@@ -18,6 +18,7 @@ import { sembrarHoteles } from "./semilla-hoteles";
 import { sembrarActividades } from "./semilla-actividades";
 import { sembrarServicios } from "./semilla-servicios";
 import { sembrarAerolineas } from "./semilla-aerolineas";
+import { AJUSTES_INICIALES } from "../src/lib/configuracion";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
@@ -53,17 +54,18 @@ const CIUDADES: [string, string, string][] = [
   ["Kioto", "Kioto", "Japón"],
 ];
 
-// Reglas vigentes de CLAUDE.md. Las pantallas para cambiarlas llegan en la Fase 1.
+// Reglas vigentes de CLAUDE.md y del prototipo de Configuración.
 const AJUSTES: Record<string, unknown> = {
-  tolerancia_precio: { centavos: 30000, moneda: "MXN", por: "servicio" },
-  colchon_tipo_cambio: { porcentaje: 1.5 },
-  plazo_datos_y_pago: { horas: 3 },
-  aviso_pago_proveedor: { dias_antes: 1 },
-  comision_airoo: { porcentaje_de_utilidad: 35 },
-  credito_airoo: { meses_vigencia: 12 },
-  llegar_aeropuerto: { nacional_horas: 2, internacional_horas: 3 },
-  agencia: { nombre_comercial: "Airoo", horario: "Lun–Sáb · 9 AM – 7 PM" },
+  ...AJUSTES_INICIALES,
+  agencia: { ...AJUSTES_INICIALES.agencia, whatsapp: "+52 998 100 0000" },
 };
+
+// Cuenta ficticia donde reciben los pagos de los clientes, y con qué paga Airoo.
+const CUENTA_COBRO = { banco: "BBVA", clabe: "012180000900003390" };
+const FORMAS_PAGO = [
+  { tipo: "tarjeta", nombre: "Tarjeta Airoo", banco: "BBVA", ultimos4: "4417", uso: "Crédito" },
+  { tipo: "cuenta", nombre: "Cuenta Airoo", banco: "BBVA", ultimos4: "3390", uso: "Transferencias SPEI" },
+] as const;
 
 async function main() {
   const admin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -117,6 +119,23 @@ async function main() {
   await sembrarActividades(db, admin, yo!.id);
   await sembrarServicios(db, yo!.id);
   await sembrarAerolineas(db, yo!.id);
+
+  const [hayCuenta] = await db
+    .select({ id: schema.cuentasCobroAiroo.id })
+    .from(schema.cuentasCobroAiroo)
+    .limit(1);
+  if (!hayCuenta) {
+    await db.insert(schema.cuentasCobroAiroo).values({
+      banco: CUENTA_COBRO.banco,
+      clabeCifrada: cifrar(CUENTA_COBRO.clabe),
+      ultimos4: CUENTA_COBRO.clabe.slice(-4),
+      principal: true,
+      estado: "verificada",
+      activaDesde: new Date(),
+      creadoPor: yo!.id,
+    });
+    await db.insert(schema.formasPagoAiroo).values(FORMAS_PAGO.map((f) => ({ ...f, creadoPor: yo!.id })));
+  }
 
   await conexion.end();
   console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);

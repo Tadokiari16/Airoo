@@ -57,6 +57,7 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/lib/servicios.ts`: tipos de servicio, modelo de cobro sugerido por tipo, cómo se llaman sus variantes (unidades, planes, tipos) y qué le falta a la ficha.
 - `src/app/(panel)/proveedores/donde-reservar.tsx`: el bloque «Dónde se puede reservar» que comparten actividades y servicios.
 - `src/lib/aerolineas.ts`: equipaje por tarifa, ventanas de check-in con su fuente y búsqueda en la lista IATA.
+- `src/lib/configuracion.ts`: los ajustes de la agencia con sus valores de fábrica, qué se acepta guardar en cada uno y la regla de las 24 h de la cuenta para recibir pagos (se calcula al leer, sin cron).
 - `scripts/aerolineas-iata.mjs`: genera la migración con la lista IATA de referencia a partir de los datos de [OpenFlights](https://openflights.org/data) (licencia [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)), con correcciones para las aerolíneas que cambiaron o dejaron de volar.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
@@ -68,6 +69,6 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 ## Producción (cuando se cree el proyecto en Supabase y Vercel)
 
 1. Crear el proyecto en Supabase y correr `npx supabase link` y `npx supabase db push`.
-2. En Supabase › Authentication: desactivar el registro público, poner la URL del sitio y pegar la plantilla de `supabase/templates/recuperar.html` en «Reset password».
+2. En Supabase › Authentication: desactivar el registro público, poner la URL del sitio y pegar la plantilla de `supabase/templates/recuperar.html` en «Reset password» y la de `supabase/templates/codigo.html` en «Magic link» (es el código para confirmar el cambio de la cuenta de cobro; lleva solo el código, sin liga para entrar).
 3. En Vercel, conectar el repo y poner las variables de `.env.example` con los valores del proyecto (la de `DATABASE_URL` es la del pooler en modo transacción). `LLAVE_CIFRADO` se genera nueva con `openssl rand -base64 32` y no se comparte: con ella se cifran los números de cuenta de los proveedores. `ALMACEN_FOTOS=supabase` para que las fotos vayan al bucket `fotos` (lo crea la migración `almacen_fotos`).
 4. Correr la semilla solo si se quieren datos de ejemplo (`npm run semilla -- --forzar`).
