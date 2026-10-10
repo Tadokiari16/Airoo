@@ -17,6 +17,7 @@ import { createCipheriv, randomBytes } from "node:crypto";
 import { sembrarHoteles } from "./semilla-hoteles";
 import { sembrarActividades } from "./semilla-actividades";
 import { sembrarServicios } from "./semilla-servicios";
+import { sembrarAerolineas } from "./semilla-aerolineas";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 if (!/127\.0\.0\.1|localhost/.test(url) && !process.argv.includes("--forzar")) {
@@ -60,6 +61,7 @@ const AJUSTES: Record<string, unknown> = {
   aviso_pago_proveedor: { dias_antes: 1 },
   comision_airoo: { porcentaje_de_utilidad: 35 },
   credito_airoo: { meses_vigencia: 12 },
+  llegar_aeropuerto: { nacional_horas: 2, internacional_horas: 3 },
   agencia: { nombre_comercial: "Airoo", horario: "Lun–Sáb · 9 AM – 7 PM" },
 };
 
@@ -114,6 +116,7 @@ async function main() {
   await sembrarHoteles(db, admin, yo!.id);
   await sembrarActividades(db, admin, yo!.id);
   await sembrarServicios(db, yo!.id);
+  await sembrarAerolineas(db, yo!.id);
 
   await conexion.end();
   console.log(`Listo. Equipo: ${EQUIPO.map((e) => e.correo).join(", ")} · contraseña: ${CONTRASENA}`);

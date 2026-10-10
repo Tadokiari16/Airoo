@@ -56,6 +56,8 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/app/(panel)/fotos-acciones.ts`: subir, ordenar, encuadrar y quitar fotos; las comparten hoteles y actividades.
 - `src/lib/servicios.ts`: tipos de servicio, modelo de cobro sugerido por tipo, cómo se llaman sus variantes (unidades, planes, tipos) y qué le falta a la ficha.
 - `src/app/(panel)/proveedores/donde-reservar.tsx`: el bloque «Dónde se puede reservar» que comparten actividades y servicios.
+- `src/lib/aerolineas.ts`: equipaje por tarifa, ventanas de check-in con su fuente y búsqueda en la lista IATA.
+- `scripts/aerolineas-iata.mjs`: genera la migración con la lista IATA de referencia a partir de los datos de [OpenFlights](https://openflights.org/data) (licencia [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)), con correcciones para las aerolíneas que cambiaron o dejaron de volar.
 - `src/lib/sesion.ts`: quién está usando el panel (verifica la sesión con Supabase y lee su perfil).
 - `src/lib/db/schema.ts`: tablas. Todas tienen RLS encendido y sin políticas, así que nadie las lee por la API pública de Supabase; el panel las lee desde el servidor.
 - `src/proxy.ts`: renueva la sesión y manda a «Entrar» a quien no tiene sesión.
