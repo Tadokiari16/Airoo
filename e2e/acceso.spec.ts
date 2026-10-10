@@ -49,6 +49,24 @@ test("Asesora no ve Finanzas ni Configuración", async ({ page }) => {
   await expect(page.getByText("Esta sección no está disponible para tu rol")).toBeVisible();
 });
 
+test("Asesora no entra a Configuración ni por liga directa", async ({ page }) => {
+  await entrarComo(page, CORREOS.asesora);
+  await expect(navegacion(page).getByRole("link", { name: "Configuración" })).toHaveCount(0);
+  for (const ruta of [
+    "/configuracion",
+    "/configuracion/equipo",
+    "/configuracion/ciudades",
+    "/configuracion/bitacora",
+  ]) {
+    await page.goto(ruta);
+    await expect(page.getByText("Esta sección no está disponible para tu rol")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Invitar|Agregar ciudad/ })).toHaveCount(0);
+  }
+  await page.screenshot({ path: "test-results/asesora-sin-acceso.png" });
+  const csv = await page.request.get("/configuracion/bitacora/exportar");
+  expect(csv.status()).toBe(403);
+});
+
 test("Contador ve Finanzas y Proveedores, sin catálogos de cotizar", async ({ page }) => {
   await entrarComo(page, CORREOS.contador);
   const nav = navegacion(page);

@@ -54,7 +54,7 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
         className="sticky top-0 flex h-dvh w-[232px] self-start shrink-0 flex-col gap-[22px] border-r border-linea bg-tarjeta px-3.5 py-5"
       >
         <div className="flex items-center gap-2.5 px-2 py-1">
-          <Image src="/marca/airoo-icono.png" alt="" width={30} height={30} priority />
+          <Image src="/marca/airoo-icono.png" alt="" width={30} height={30} className="size-[30px]" priority />
           <b className="text-[19px] font-bold tracking-[-0.02em]">airoo</b>
           <span className="ml-auto rounded-md border border-linea px-1.5 py-px text-[11.5px] font-semibold text-tinta-3">
             Panel
