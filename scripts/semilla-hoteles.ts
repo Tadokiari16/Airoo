@@ -449,14 +449,12 @@ export async function sembrarHoteles(db: Db, admin: SupabaseClient, duenoId: str
         .insert(schema.hotelProveedores)
         .values({ hotelId: h.id, proveedorId: proveedor(p), idExterno });
     }
-    await db
-      .insert(schema.bitacora)
-      .values({
-        quien: duenoId,
-        texto: `Hotel agregado: ${s.nombre} (${s.ciudad})`,
-        entidad: "hoteles",
-        entidadId: h.id,
-        cuando: new Date("2026-03-01T12:00:00-06:00"),
-      });
+    await db.insert(schema.bitacora).values({
+      quien: duenoId,
+      texto: `Hotel agregado: ${s.nombre} (${s.ciudad})`,
+      entidad: "hoteles",
+      entidadId: h.id,
+      cuando: new Date("2026-03-01T12:00:00-06:00"),
+    });
   }
 }

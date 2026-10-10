@@ -25,25 +25,25 @@ npm run dev                     # http://localhost:3000
 
 Cuentas de ejemplo (contraseña `airoo-local-2026`):
 
-| Correo | Rol |
-|---|---|
-| dueno@airoo.local | Dueño |
-| asesora1@airoo.local | Asesora |
-| asesora2@airoo.local | Asesora |
+| Correo               | Rol      |
+| -------------------- | -------- |
+| dueno@airoo.local    | Dueño    |
+| asesora1@airoo.local | Asesora  |
+| asesora2@airoo.local | Asesora  |
 | contador@airoo.local | Contador |
 
 Los correos que manda Supabase local (cambio de contraseña) se ven en http://127.0.0.1:54324.
 
 ## Comandos
 
-| Comando | Qué hace |
-|---|---|
-| `npm run dev` | Panel en modo desarrollo |
-| `npm run typecheck` · `npm run lint` | Revisión de tipos y estilo |
-| `npm test` | Pruebas de reglas (dinero, fechas, permisos) |
-| `npm run test:e2e` | Pruebas en navegador; requieren Supabase local y la semilla |
-| `npm run db:generar` | Genera la migración a partir de `src/lib/db/schema.ts` |
-| `npm run db:reiniciar` | Borra la base local y vuelve a aplicar las migraciones |
+| Comando                              | Qué hace                                                    |
+| ------------------------------------ | ----------------------------------------------------------- |
+| `npm run dev`                        | Panel en modo desarrollo                                    |
+| `npm run typecheck` · `npm run lint` | Revisión de tipos y estilo                                  |
+| `npm test`                           | Pruebas de reglas (dinero, fechas, permisos)                |
+| `npm run test:e2e`                   | Pruebas en navegador; requieren Supabase local y la semilla |
+| `npm run db:generar`                 | Genera la migración a partir de `src/lib/db/schema.ts`      |
+| `npm run db:reiniciar`               | Borra la base local y vuelve a aplicar las migraciones      |
 
 ## Cómo está armado
 
