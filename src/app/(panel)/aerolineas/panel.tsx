@@ -1,7 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { RUTAS, textoFuente, textoLlegarAntes, type Fuente, type Ruta } from "@/lib/aerolineas";
+import {
+  CAMBIOS,
+  MAX_PIEZAS,
+  nombreCambios,
+  RUTAS,
+  textoFuente,
+  textoLlegarAntes,
+  textoMaleta,
+  type Cambios,
+  type Fuente,
+  type Maleta,
+  type Ruta,
+} from "@/lib/aerolineas";
+import { Interruptor } from "@/components/ui/interruptor";
 import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
 import { IconoBasura, IconoCandado, IconoExterno, IconoMas, IconoPalomita } from "@/components/iconos";
@@ -16,6 +29,7 @@ const BOTON_LIGA =
   "inline-flex h-[34px] items-center gap-1.5 rounded-[10px] bg-tarjeta px-3 text-[13px] font-semibold shadow-borde hover:bg-suave";
 const ENTRADA =
   "h-9 w-full min-w-0 rounded-[10px] bg-tarjeta px-2.5 text-[13.5px] shadow-borde outline-none focus:shadow-[inset_0_0_0_1.5px_var(--color-azul)] placeholder:text-tinta-3";
+const ANGOSTA = ENTRADA.replace("w-full ", "");
 const TH = "pb-1 text-left text-[11px] font-bold tracking-[0.05em] text-tinta-3 uppercase";
 
 const SOLO_EQUIPO = (
@@ -24,7 +38,15 @@ const SOLO_EQUIPO = (
   </span>
 );
 
-type TarifaEditable = { clave: string; nombre: string; mano: string; documentada: string; cambios: string };
+type TarifaEditable = {
+  clave: string;
+  id: string | null;
+  nombre: string;
+  mano: Maleta;
+  documentado: Maleta;
+  cambios: Cambios | null;
+  articuloPersonal: boolean;
+};
 type VentanaEditable = { ruta: Ruta; abre: string; cierra: string; fuente: Fuente; fuenteTexto: string };
 
 /** Las aerolíneas se consultan y se editan aquí mismo; no tienen ficha aparte. */
@@ -187,10 +209,15 @@ export function PanelAerolinea({
                 <tbody>
                   {a.tarifas.map((t) => (
                     <tr key={t.id} className="border-t border-linea">
-                      <td className="py-1.5 pr-2 align-top font-semibold">{t.nombre}</td>
-                      <td className="py-1.5 pr-2 align-top text-tinta-2">{t.mano ?? "—"}</td>
-                      <td className="py-1.5 pr-2 align-top text-tinta-2">{t.documentada ?? "—"}</td>
-                      <td className="py-1.5 align-top text-tinta-2">{t.cambios ?? "—"}</td>
+                      <td className="py-1.5 pr-2 align-top">
+                        <b className="font-semibold">{t.nombre}</b>
+                        <span className="block text-[12px] text-tinta-3">
+                          {t.articuloPersonal ? "Con artículo personal" : "Sin artículo personal"}
+                        </span>
+                      </td>
+                      <td className="py-1.5 pr-2 align-top text-tinta-2">{textoMaleta(t.mano)}</td>
+                      <td className="py-1.5 pr-2 align-top text-tinta-2">{textoMaleta(t.documentado)}</td>
+                      <td className="py-1.5 align-top text-tinta-2">{nombreCambios(t.cambios)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,8 +226,7 @@ export function PanelAerolinea({
               <p className="text-[13.5px] text-tinta-3">Sin tarifas todavía. Se agregan con «Editar».</p>
             )}
             <p className="mt-1.5 text-[12.5px] text-tinta-3">
-              Todas incluyen artículo personal. El equipaje se muestra como etiquetas en la tarjeta del vuelo;
-              si la tarifa no lo incluye, se dice.
+              El equipaje se muestra como etiquetas en la tarjeta del vuelo; si la tarifa no lo incluye, se dice.
             </p>
           </Seccion>
 
@@ -253,23 +279,8 @@ export function PanelAerolinea({
           <Seccion titulo="Reglas que no son de la aerolínea">
             <Dato etiqueta="Llegar antes">
               {textoLlegarAntes(llegarAntes)}
-              <span className="block text-[12.5px] font-medium text-tinta-3">Regla general del sistema</span>
-            </Dato>
-            <Dato etiqueta="TUA">
-              Ya viene pagada en el boleto
               <span className="block text-[12.5px] font-medium text-tinta-3">
-                Se muestra como informativa
-              </span>
-            </Dato>
-          </Seccion>
-
-          <Seccion titulo="Cómo se compra" accion={SOLO_EQUIPO}>
-            <Dato etiqueta="Dónde">{a.comoSeCompra ?? "—"}</Dato>
-            {a.sitio ? <Dato etiqueta="Sitio">{a.sitio}</Dato> : null}
-            <Dato etiqueta="Cuándo">
-              En cuanto paga el cliente
-              <span className="block text-[12.5px] font-medium text-tinta-3">
-                La tarifa puede cambiar en horas
+                Se cambia en Configuración › Datos y horario
               </span>
             </Dato>
           </Seccion>
@@ -333,15 +344,16 @@ function Edicion({
 }) {
   const [nombre, setNombre] = useState(a.nombre);
   const [sitio, setSitio] = useState(a.sitio ?? "");
-  const [comoSeCompra, setComoSeCompra] = useState(a.comoSeCompra ?? "");
   const [nota, setNota] = useState(a.notaInterna ?? "");
   const [tarifas, setTarifas] = useState<TarifaEditable[]>(() =>
     a.tarifas.map((t) => ({
       clave: t.id,
+      id: t.id,
       nombre: t.nombre,
-      mano: t.mano ?? "",
-      documentada: t.documentada ?? "",
-      cambios: t.cambios ?? "",
+      mano: t.mano,
+      documentado: t.documentado,
+      cambios: t.cambios,
+      articuloPersonal: t.articuloPersonal,
     })),
   );
   const [ventanas, setVentanas] = useState<VentanaEditable[]>(() =>
@@ -367,13 +379,14 @@ function Edicion({
         alGuardar({
           nombre,
           sitio,
-          comoSeCompra,
           notaInterna: nota,
           tarifas: tarifas.map((t) => ({
+            id: t.id,
             nombre: t.nombre,
             mano: t.mano,
-            documentada: t.documentada,
+            documentado: t.documentado,
             cambios: t.cambios,
+            articuloPersonal: t.articuloPersonal,
           })),
           checkin: ventanas,
         });
@@ -400,6 +413,15 @@ function Edicion({
             <input value={a.iata} disabled className={`${ENTRADA} text-tinta-3`} />
           </label>
         </div>
+        <label className="mt-2 flex flex-col gap-1 text-[12.5px] font-semibold">
+          Sitio
+          <input
+            value={sitio}
+            onChange={(e) => setSitio(e.target.value)}
+            placeholder="vivaaerobus.com"
+            className={ENTRADA}
+          />
+        </label>
       </Seccion>
 
       <Seccion
@@ -407,72 +429,65 @@ function Edicion({
         extra={<span className="text-azul-oscuro">En la propuesta y en el viaje</span>}
       >
         {tarifas.length ? (
-          <table className="w-full table-fixed text-[13.5px]">
-            <thead>
-              <tr>
-                <th className={`${TH} w-[23%]`}>Tarifa</th>
-                <th className={`${TH} w-[19%]`}>Mano</th>
-                <th className={`${TH} w-[25%]`}>Documentada</th>
-                <th className={TH}>Cambios</th>
-                <th className="w-8" />
-              </tr>
-            </thead>
-            <tbody>
-              {tarifas.map((t, i) => {
-                const n = t.nombre || `tarifa ${i + 1}`;
-                return (
-                  <tr key={t.clave}>
-                    <td className="py-1 pr-1.5">
-                      <input
-                        aria-label={`Nombre, tarifa ${i + 1}`}
-                        value={t.nombre}
-                        onChange={(e) => ponerTarifa(i, { nombre: e.target.value })}
-                        placeholder="Ej. Light"
-                        className={ENTRADA}
+          <div className="flex flex-col gap-2.5">
+            {tarifas.map((t, i) => {
+              const n = t.nombre || `tarifa ${i + 1}`;
+              return (
+                <fieldset key={t.clave} aria-label={`Tarifa ${n}`} className="rounded-[12px] p-2.5 shadow-borde">
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      aria-label={`Nombre, tarifa ${i + 1}`}
+                      value={t.nombre}
+                      onChange={(e) => ponerTarifa(i, { nombre: e.target.value })}
+                      placeholder="Ej. Light"
+                      className={`${ENTRADA} font-semibold`}
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Quitar ${n}`}
+                      onClick={() => setTarifas(tarifas.filter((_, j) => j !== i))}
+                      className="inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-tinta-3 hover:bg-suave hover:text-rojo"
+                    >
+                      <IconoBasura tam={14} />
+                    </button>
+                  </div>
+                  <div className="mt-2 grid grid-cols-[84px_minmax(0,1fr)] items-center gap-x-2 gap-y-1.5 text-[13px]">
+                    <span className="font-semibold text-tinta-2">Mano</span>
+                    <CampoMaleta etiqueta={`Mano, ${n}`} valor={t.mano} alCambiar={(m) => ponerTarifa(i, { mano: m })} />
+                    <span className="font-semibold text-tinta-2">Documentada</span>
+                    <CampoMaleta
+                      etiqueta={`Documentada, ${n}`}
+                      valor={t.documentado}
+                      alCambiar={(m) => ponerTarifa(i, { documentado: m })}
+                    />
+                    <span className="font-semibold text-tinta-2">Cambios</span>
+                    <select
+                      aria-label={`Cambios, ${n}`}
+                      value={t.cambios ?? ""}
+                      onChange={(e) => ponerTarifa(i, { cambios: (e.target.value || null) as Cambios | null })}
+                      className={ENTRADA}
+                    >
+                      <option value="">Sin elegir</option>
+                      {CAMBIOS.map((c) => (
+                        <option key={c.valor} value={c.valor}>
+                          {c.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="font-semibold text-tinta-2">Artículo personal</span>
+                    <span className="flex items-center gap-2">
+                      <Interruptor
+                        etiqueta={`Artículo personal, ${n}`}
+                        encendido={t.articuloPersonal}
+                        alCambiar={() => ponerTarifa(i, { articuloPersonal: !t.articuloPersonal })}
                       />
-                    </td>
-                    <td className="py-1 pr-1.5">
-                      <input
-                        aria-label={`Mano, ${n}`}
-                        value={t.mano}
-                        onChange={(e) => ponerTarifa(i, { mano: e.target.value })}
-                        placeholder="—"
-                        className={ENTRADA}
-                      />
-                    </td>
-                    <td className="py-1 pr-1.5">
-                      <input
-                        aria-label={`Documentada, ${n}`}
-                        value={t.documentada}
-                        onChange={(e) => ponerTarifa(i, { documentada: e.target.value })}
-                        placeholder="—"
-                        className={ENTRADA}
-                      />
-                    </td>
-                    <td className="py-1 pr-1.5">
-                      <input
-                        aria-label={`Cambios, ${n}`}
-                        value={t.cambios}
-                        onChange={(e) => ponerTarifa(i, { cambios: e.target.value })}
-                        placeholder="—"
-                        className={ENTRADA}
-                      />
-                    </td>
-                    <td className="py-1 text-right">
-                      <button
-                        type="button"
-                        aria-label={`Quitar ${n}`}
-                        onClick={() => setTarifas(tarifas.filter((_, j) => j !== i))}
-                        className="inline-flex size-8 cursor-pointer items-center justify-center rounded-lg text-tinta-3 hover:bg-suave hover:text-rojo"
-                      >
-                        <IconoBasura tam={14} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <span className="text-tinta-3">{t.articuloPersonal ? "Incluido" : "No incluido"}</span>
+                    </span>
+                  </div>
+                </fieldset>
+              );
+            })}
+          </div>
         ) : (
           <p className="text-[13px] text-tinta-3">Sin tarifas todavía.</p>
         )}
@@ -481,7 +496,15 @@ function Edicion({
           onClick={() =>
             setTarifas([
               ...tarifas,
-              { clave: crypto.randomUUID(), nombre: "", mano: "", documentada: "", cambios: "" },
+              {
+                clave: crypto.randomUUID(),
+                id: null,
+                nombre: "",
+                mano: { piezas: 0, kg: null },
+                documentado: { piezas: 0, kg: null },
+                cambios: null,
+                articuloPersonal: true,
+              },
             ])
           }
           className="mt-1.5 inline-flex cursor-pointer items-center gap-1.5 text-[13px] font-semibold text-azul-oscuro hover:underline"
@@ -489,8 +512,8 @@ function Edicion({
           <IconoMas tam={15} /> Agregar tarifa
         </button>
         <p className="mt-1.5 text-[12.5px] text-tinta-3">
-          Equipaje en kilos («10 kg»); vacío si la tarifa no lo incluye. Cambios: «Sin cambios», «Con cargo» o
-          «Sin cargo». El artículo personal va en todas.
+          El equipaje es «No incluye» o piezas con sus kilos. El artículo personal viene encendido; se apaga en
+          las tarifas que no lo incluyen.
         </p>
       </Seccion>
 
@@ -557,22 +580,6 @@ function Edicion({
         </div>
       </Seccion>
 
-      <Seccion titulo="Cómo se compra" accion={SOLO_EQUIPO}>
-        <label className="flex flex-col gap-1 text-[12.5px] font-semibold">
-          Dónde
-          <input value={comoSeCompra} onChange={(e) => setComoSeCompra(e.target.value)} className={ENTRADA} />
-        </label>
-        <label className="mt-2 flex flex-col gap-1 text-[12.5px] font-semibold">
-          Sitio
-          <input
-            value={sitio}
-            onChange={(e) => setSitio(e.target.value)}
-            placeholder="vivaaerobus.com"
-            className={ENTRADA}
-          />
-        </label>
-      </Seccion>
-
       <Seccion titulo="Nota interna" accion={SOLO_EQUIPO}>
         <textarea
           aria-label="Nota interna"
@@ -593,5 +600,53 @@ function Edicion({
         </button>
       ) : null}
     </form>
+  );
+}
+
+/** Equipaje de una tarifa: «No incluye» o piezas con sus kilos. */
+function CampoMaleta({
+  etiqueta,
+  valor,
+  alCambiar,
+}: {
+  etiqueta: string;
+  valor: Maleta;
+  alCambiar: (m: Maleta) => void;
+}) {
+  return (
+    <span className="flex min-w-0 items-center gap-1.5">
+      <select
+        aria-label={`${etiqueta}: piezas`}
+        value={valor.piezas}
+        onChange={(e) => {
+          const piezas = Number(e.target.value);
+          alCambiar({ piezas, kg: piezas ? valor.kg : null });
+        }}
+        className={`${ANGOSTA} w-[124px] shrink-0`}
+      >
+        <option value={0}>No incluye</option>
+        {Array.from({ length: MAX_PIEZAS }, (_, i) => i + 1).map((n) => (
+          <option key={n} value={n}>
+            {n === 1 ? "1 pieza" : `${n} piezas`}
+          </option>
+        ))}
+      </select>
+      {valor.piezas ? (
+        <span className="flex items-center gap-1.5">
+          <input
+            aria-label={`${etiqueta}: kilos por pieza`}
+            inputMode="numeric"
+            value={valor.kg ?? ""}
+            onChange={(e) => {
+              const t = e.target.value.replace(/\D/g, "").slice(0, 2);
+              alCambiar({ piezas: valor.piezas, kg: t ? Number(t) : null });
+            }}
+            placeholder="10"
+            className={`${ANGOSTA} num w-12 text-right`}
+          />
+          <span className="whitespace-nowrap text-tinta-3">kg{valor.piezas > 1 ? " c/u" : ""}</span>
+        </span>
+      ) : null}
+    </span>
   );
 }

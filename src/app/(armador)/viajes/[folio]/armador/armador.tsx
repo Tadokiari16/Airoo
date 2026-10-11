@@ -5,17 +5,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   aCalculo,
   calcular,
-  personasDe,
   vistasDeOpcion,
   type FixCotizacion,
   type Opcion,
   type PartidaArmador,
 } from "@/lib/armador";
-import { erroresDe, revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/revision";
+import { revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/revision";
 import type { Aeropuerto } from "@/lib/vuelos";
 import { idCatalogo, type FichaArmador } from "@/lib/armador-fichas";
 import { lineasPartida, nombreCorto, nombrePartida, SECCIONES, type ClaveSeccion } from "@/lib/armador-textos";
-import { partidasDeOpcion, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
+import { bebesDe, partidasDeOpcion, pasajerosConPrecio, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
 import { formatoDinero } from "@/lib/dinero";
 import { Boton } from "@/components/ui/boton";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -29,7 +28,9 @@ import {
   IconoHoteles,
   IconoMas,
   IconoServicios,
+  IconoTraslados,
 } from "@/components/iconos";
+import { hotelesDelViaje } from "@/lib/traslados";
 import {
   acuerdoPropuesto,
   eliminarPartida,
@@ -42,22 +43,27 @@ import {
 import type { DatosArmador, ProveedorOpcion } from "./datos";
 import { AgregarServicio, type Colocacion } from "./agregar";
 import { EditorActividad, EditorHotel, EditorServicio, EditorVuelo } from "./editores";
+import { EditorTraslado } from "./traslado";
 import { PanelPrecio } from "./precio";
 import { AjustesCotizacion, AntesDeEnviar, Hallazgos, TotalPorOpcion, type VistaOpcion } from "./totales";
 
 const ESPERA_GUARDADO = 700;
 
-const AGREGAR: Record<ClaveSeccion, string> = {
-  hospedaje: "Agregar hotel",
-  vuelos: "Agregar vuelo",
-  actividades: "Agregar actividad o excursión",
-  servicios: "Agregar servicio",
+const AGREGAR: Record<ClaveSeccion, { tipo: TipoPartida; texto: string }[]> = {
+  hospedaje: [{ tipo: "hotel", texto: "Agregar hotel" }],
+  vuelos: [{ tipo: "vuelo", texto: "Agregar vuelo" }],
+  actividades: [{ tipo: "actividad", texto: "Agregar actividad o excursión" }],
+  servicios: [
+    { tipo: "traslado", texto: "Agregar traslado" },
+    { tipo: "servicio", texto: "Agregar servicio" },
+  ],
 };
 
 const ICONO: Record<TipoPartida, (p: { tam?: number }) => React.ReactNode> = {
   hotel: IconoHoteles,
   vuelo: IconoAerolineas,
   actividad: IconoActividades,
+  traslado: IconoTraslados,
   servicio: IconoServicios,
 };
 
@@ -66,7 +72,8 @@ const CATEGORIAS: Record<TipoPartida, string[]> = {
   hotel: ["Hoteles"],
   vuelo: [],
   actividad: ["Tours y parques"],
-  servicio: ["Traslados", "Seguros", "Otro"],
+  traslado: ["Traslados"],
+  servicio: ["Seguros", "Otro"],
 };
 
 const proveedoresPara = (tipo: TipoPartida, todos: ProveedorOpcion[]) =>
@@ -82,6 +89,8 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   const { viaje, reglas } = datos;
   const cotizacionId = datos.cotizacion.id;
   const personas = viaje.adultos + viaje.menores;
+  const bebes = bebesDe(viaje.edadesMenores, viaje.menores);
+  const pagan = pasajerosConPrecio(viaje.adultos, viaje.menores, viaje.edadesMenores);
 
   const [partidas, setPartidas] = useState(datos.partidas);
   const [opciones, setOpciones] = useState(datos.opciones);
@@ -145,18 +154,14 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     return () => window.removeEventListener("beforeunload", antes);
   }, []);
 
-  // La revisión más reciente, para decidir al cambiar si la partida se puede guardar.
-  const contexto = useRef<ContextoRevision | null>(null);
-
   const cambiar = useCallback(
     (id: string, cambio: Partial<PartidaArmador>) => {
       setPartidas((todas) =>
         todas.map((p) => {
           if (p.id !== id) return p;
           const nueva = { ...p, ...cambio, detalle: { ...p.detalle, ...(cambio.detalle ?? {}) } };
-          // Con un error (origen igual a destino, llegada antes de la salida…) no se guarda:
-          // el servidor lo rechazaría. Se guarda en cuanto se corrige.
-          if (!contexto.current || erroresDe(nueva, contexto.current).length === 0) programar(nueva);
+          // Los errores no impiden la captura: se guardan y solo impiden enviar la cotización.
+          programar(nueva);
           return nueva;
         }),
       );
@@ -201,23 +206,21 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       aeropuertos,
       aerolineas: datos.aerolineas,
       nombres,
+      tramos: Object.fromEntries(partidas.filter((p) => p.tipo === "vuelo").flatMap((p) => p.tramos.map((t) => [t.id, t]))),
+      unidades: Object.fromEntries(datos.unidades.map((u) => [u.id, u])),
     }),
-    [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres],
+    [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres, partidas, datos.unidades],
   );
-  useEffect(() => {
-    contexto.current = ctx;
-  }, [ctx]);
-
   const hallazgos = useMemo(() => revisarCotizacion(partidas, ctx), [partidas, ctx]);
-  const errores = hallazgos.filter((h) => h.nivel === "error");
-  const bloquean = hallazgos.filter((h) => h.nivel !== "aviso");
+  const bloquean = hallazgos.filter((h) => h.nivel === "error" || h.nivel === "falta");
   const deLaPartida = (id: string) => hallazgos.filter((h) => h.partidaId === id && h.nivel !== "falta");
 
   const ajustesTotales = {
     cargoServicio: datos.cotizacion.cargoServicio,
     conIva: ajustes.conIva,
     ivaPb: datos.cotizacion.ivaPb,
-    personas,
+    personas: pagan,
+    bebes,
   };
 
   const vistas: VistaOpcion[] = vistasDeOpcion(opciones).map((id) => {
@@ -257,9 +260,10 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   const alAgregar = (a: Agregado) => {
     setPartidas(a.partidas);
     setOpciones(a.opciones);
-    setFichas((f) => ({ ...f, [a.ficha.id]: a.ficha }));
+    const ficha = a.ficha;
+    if (ficha) setFichas((f) => ({ ...f, [ficha.id]: ficha }));
     setAgregar(null);
-    setAviso(`Se agregó ${nombrePartida(a.partida, a.ficha)}`);
+    setAviso(`Se agregó ${nombrePartida(a.partida, ficha ?? undefined)}`);
     irA(a.partida.id);
     if (a.partida.opcionId) setOpcionVista(a.partida.opcionId);
   };
@@ -318,6 +322,9 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       ? ["opcion", "estancia"]
       : ["estancia"];
   const tramosVuelo = partidas.filter((p) => p.tipo === "vuelo").flatMap((p) => p.tramos);
+  const hotelesTraslado = hotelesDelViaje(
+    hoteles.map((h) => ({ opcionId: h.opcionId, fechaInicio: h.fechaInicio, nombre: fichaDe(h)?.nombre ?? "Hotel" })),
+  );
   const ordenadas = [...opciones].sort((a, b) => a.orden - b.orden);
 
   const tarjeta = (p: PartidaArmador) => (
@@ -330,6 +337,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       utilidadBasePb={ajustes.utilidadBasePb}
       partidas={partidas}
       tramosVuelo={tramosVuelo}
+      hotelesTraslado={hotelesTraslado}
       hallazgos={deLaPartida(p.id)}
       aeropuertos={aeropuertos}
       alConocerAeropuertos={(lista) =>
@@ -353,9 +361,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     />
   );
 
-  const textoGuardado = errores.length
-    ? `Sin guardar: ${errores.length === 1 ? "hay un error por corregir" : `hay ${errores.length} errores por corregir`}`
-    : guardado.error
+  const textoGuardado = guardado.error
     ? guardado.error
     : guardado.pendientes > 0
       ? "Guardando…"
@@ -385,7 +391,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
         </div>
         <span
           aria-live="polite"
-          className={`ml-auto text-[12.5px] ${errores.length || guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
+          className={`ml-auto text-[12.5px] ${guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
         >
           {textoGuardado}
         </span>
@@ -407,10 +413,12 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_340px] items-start gap-5 px-5 py-5">
         <div className="flex min-w-0 flex-col gap-5">
           {SECCIONES.map((s) => {
-            const deSeccion = partidas.filter((p) => p.tipo === s.tipo).sort((a, b) => a.orden - b.orden);
-            const hayVuelo = s.tipo === "vuelo" && deSeccion.length > 0;
+            const tipos: readonly TipoPartida[] = s.tipos;
+            const deSeccion = partidas.filter((p) => tipos.includes(p.tipo)).sort((a, b) => a.orden - b.orden);
+            const hayVuelo = s.clave === "vuelos" && deSeccion.length > 0;
+            const esHospedaje = s.clave === "hospedaje";
             const hotelVisto =
-              s.tipo === "hotel" && opciones.length ? partidas.find((p) => p.opcionId === opcionVista) : undefined;
+              esHospedaje && opciones.length ? partidas.find((p) => p.opcionId === opcionVista) : undefined;
             return (
               <section
                 key={s.clave}
@@ -419,20 +427,29 @@ export function Armador({ datos }: { datos: DatosArmador }) {
               >
                 <div className="flex items-center justify-between border-b border-linea px-5 py-3.5">
                   <h2 className="text-[16px] font-bold">{s.titulo}</h2>
-                  <Boton
-                    variante="secundario"
-                    disabled={hayVuelo}
-                    title={hayVuelo ? "Ya hay un vuelo en esta cotización. Edítalo para cambiar el tipo de viaje." : undefined}
-                    onClick={() =>
-                      setAgregar({ tipo: s.tipo, colocacion: s.tipo === "hotel" ? colocaciones[0] : "estancia" })
-                    }
-                    className="disabled:opacity-50"
-                  >
-                    <IconoMas tam={14} /> {AGREGAR[s.clave]}
-                  </Boton>
+                  <div className="flex items-center gap-2">
+                    {hayVuelo ? (
+                      <span className="text-[12.5px] text-tinta-3">
+                        Ya hay un vuelo en esta cotización. Se edita para cambiar el tipo de viaje.
+                      </span>
+                    ) : null}
+                    {AGREGAR[s.clave].map((a) => (
+                      <Boton
+                        key={a.tipo}
+                        variante="secundario"
+                        disabled={hayVuelo}
+                        onClick={() =>
+                          setAgregar({ tipo: a.tipo, colocacion: a.tipo === "hotel" ? colocaciones[0] : "estancia" })
+                        }
+                        className="disabled:opacity-50"
+                      >
+                        <IconoMas tam={14} /> {a.texto}
+                      </Boton>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-4 p-5">
-                  {s.tipo === "hotel" && opciones.length ? (
+                  {esHospedaje && opciones.length ? (
                     <div className="flex flex-wrap items-center gap-2">
                       <div role="tablist" aria-label="Opciones de hospedaje" className="flex rounded-[12px] bg-suave p-1">
                         {ordenadas.map((o) => {
@@ -460,7 +477,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                                 {v?.falta
                                   ? "Falta costo neto"
                                   : v
-                                    ? `${formatoDinero(v.totales.secciones.hospedaje)} · ${formatoDinero(Math.round(v.totales.secciones.hospedaje / Math.max(1, personas)))} p/p`
+                                    ? `${formatoDinero(v.totales.secciones.hospedaje)} · ${formatoDinero(Math.round(v.totales.secciones.hospedaje / Math.max(1, pagan)))} p/p${bebes ? " sin contar bebés" : ""}`
                                     : ""}
                               </span>
                             </button>
@@ -473,7 +490,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                     </div>
                   ) : null}
 
-                  {s.tipo === "hotel" && opciones.length ? (
+                  {esHospedaje && opciones.length ? (
                     hotelVisto ? (
                       tarjeta(hotelVisto)
                     ) : null
@@ -489,10 +506,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                     <NotaSeccion
                       key={s.clave}
                       inicial={datos.cotizacion.notas[s.clave] ?? ""}
-                      alGuardar={async (t) => {
-                        const r = await guardarNota(cotizacionId, s.clave, t);
-                        if (r.error) setAviso(r.error);
-                      }}
+                      alGuardar={async (t) => (await guardarNota(cotizacionId, s.clave, t)).error ?? null}
                     />
                   ) : null}
                 </div>
@@ -536,6 +550,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
           ciudades={datos.ciudades}
           agregaCiudades={datos.agregaCiudades}
           editaCatalogo={datos.editaCatalogo}
+          personas={personas}
         />
       ) : null}
 
@@ -576,6 +591,7 @@ function TarjetaPartida({
   utilidadBasePb,
   partidas,
   tramosVuelo,
+  hotelesTraslado,
   hallazgos,
   aeropuertos,
   alConocerAeropuertos,
@@ -595,6 +611,7 @@ function TarjetaPartida({
   utilidadBasePb: number;
   partidas: PartidaArmador[];
   tramosVuelo: PartidaArmador["tramos"];
+  hotelesTraslado: { llegada: string | null; salida: string | null };
   /** Errores y avisos de esta partida; lo que falta se ve en «Antes de enviar». */
   hallazgos: Hallazgo[];
   aeropuertos: Record<string, Aeropuerto>;
@@ -676,7 +693,18 @@ function TarjetaPartida({
 
       <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-4">
         <div className="min-w-0">
-          {ficha?.tipo === "hotel" ? (
+          {p.tipo === "traslado" ? (
+            <EditorTraslado
+              p={p}
+              unidades={datos.unidades}
+              viaje={viajeEditor}
+              tramosVuelo={tramosVuelo}
+              hoteles={hotelesTraslado}
+              aeropuertos={aeropuertos}
+              llegarAntes={reglas.llegarAntes}
+              alCambiar={alCambiar}
+            />
+          ) : ficha?.tipo === "hotel" ? (
             <EditorHotel
               p={p}
               ficha={ficha}
@@ -709,7 +737,8 @@ function TarjetaPartida({
           calc={calc}
           fx={fx}
           fixHoy={datos.fixHoy}
-          personas={personasDe(p) || viaje.adultos + viaje.menores}
+          personas={pasajerosConPrecio(viaje.adultos, viaje.menores, viaje.edadesMenores)}
+          sinBebes={bebesDe(viaje.edadesMenores, viaje.menores) > 0}
           utilidadBasePb={utilidadBasePb}
           utilidadFijaPb={p.tipo === "vuelo" ? reglas.utilidadVuelosPb : undefined}
           proveedores={proveedoresPara(p.tipo, datos.proveedores)}
@@ -730,10 +759,41 @@ function TarjetaPartida({
 
 // ─── Nota para el cliente de cada sección ───────────────────────────────────
 
-function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: string) => Promise<void> }) {
+function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: string) => Promise<string | null> }) {
   const [texto, setTexto] = useState(inicial);
   const [abierta, setAbierta] = useState(!!inicial);
-  const guardada = useRef(inicial);
+  const [guardada, setGuardada] = useState(inicial.trim());
+  const [estado, setEstado] = useState<"" | "guardando" | "guardado">("");
+  const [error, setError] = useState<string | null>(null);
+  const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (reloj.current && clearTimeout(reloj.current)), []);
+
+  const hayCambios = texto.trim() !== guardada;
+
+  // Guarda lo que hay en el campo (vacío quita la nota). Si falla, el texto se queda donde está.
+  const guardar = async (t: string) => {
+    const limpio = t.trim();
+    if (limpio === guardada) return;
+    setEstado("guardando");
+    setError(null);
+    const e = await alGuardar(limpio);
+    if (e) {
+      setEstado("");
+      setError(e);
+      return;
+    }
+    setGuardada(limpio);
+    setEstado("guardado");
+    if (reloj.current) clearTimeout(reloj.current);
+    reloj.current = setTimeout(() => setEstado(""), 3000);
+  };
+
+  const quitar = async () => {
+    setTexto("");
+    await guardar("");
+    setAbierta(false);
+  };
+
   if (!abierta)
     return (
       <div>
@@ -743,24 +803,44 @@ function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: s
       </div>
     );
   return (
-    <label className="block rounded-[12px] bg-suave/70 p-3 shadow-borde">
-      <span className="mb-1 block text-[12.5px] font-semibold text-tinta-2">
-        Nota para el cliente <span className="font-normal text-tinta-3">· la ve en su enlace, en esta sección</span>
-      </span>
-      <textarea
-        aria-label="Nota para el cliente"
-        value={texto}
-        maxLength={600}
-        rows={2}
-        onChange={(e) => setTexto(e.target.value)}
-        onBlur={() => {
-          if (texto.trim() === guardada.current.trim()) return;
-          guardada.current = texto;
-          void alGuardar(texto);
-        }}
-        placeholder="Por qué elegimos esto para el viaje."
-        className="w-full resize-y bg-transparent text-[13.5px] leading-relaxed outline-none placeholder:text-tinta-3/70"
-      />
-    </label>
+    <div className="rounded-[12px] bg-suave/70 p-3 shadow-borde">
+      <label>
+        <span className="mb-1 block text-[12.5px] font-semibold text-tinta-2">
+          Nota para el cliente <span className="font-normal text-tinta-3">· la ve en su enlace, en esta sección</span>
+        </span>
+        <textarea
+          aria-label="Nota para el cliente"
+          autoFocus={!inicial}
+          value={texto}
+          maxLength={600}
+          rows={2}
+          onChange={(e) => {
+            setTexto(e.target.value);
+            setEstado("");
+          }}
+          onBlur={() => void guardar(texto)}
+          placeholder="Por qué elegimos esto para el viaje."
+          className="w-full resize-y bg-transparent text-[13.5px] leading-relaxed outline-none placeholder:text-tinta-3/70"
+        />
+      </label>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Boton
+            variante="texto"
+            disabled={!hayCambios || estado === "guardando"}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => void guardar(texto)}
+          >
+            Guardar nota
+          </Boton>
+          <Boton variante="texto" onMouseDown={(e) => e.preventDefault()} onClick={() => void quitar()}>
+            Quitar nota
+          </Boton>
+        </div>
+        <span role="status" className="text-[12px] text-tinta-3">
+          {error ? <span className="text-rojo">{error}</span> : estado === "guardando" ? "Guardando…" : estado === "guardado" ? "Guardado" : hayCambios ? "Sin guardar" : ""}
+        </span>
+      </div>
+    </div>
   );
 }

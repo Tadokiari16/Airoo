@@ -338,7 +338,7 @@ function Formulario({
         galeriaNota="albercas, restaurantes, áreas comunes"
         pie="Se ordenan arrastrando. Las fotos de cada habitación van en su habitación, abajo."
       />
-      <Habitaciones hotel={h} proveedores={proveedores} editable={editable} alAvisar={alAvisar} />
+      <Habitaciones hotel={h} editable={editable} alAvisar={alAvisar} />
 
       <fieldset disabled={!editable} className="contents">
         <Bloque

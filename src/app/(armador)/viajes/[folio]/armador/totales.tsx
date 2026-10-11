@@ -60,7 +60,7 @@ export function TotalPorOpcion({
       <p className="text-[12px] text-tinta-3">Total</p>
       <div className="flex items-baseline justify-between">
         <p className="num text-[28px] font-bold tracking-[-0.02em]">{formatoDinero(t.total)}</p>
-        <p className="num text-[12px] text-tinta-3">{formatoDinero(t.porPersona)} p/p</p>
+        <p className="num text-[12px] text-tinta-3">{formatoDinero(t.porPersona)} p/p{t.bebes ? " sin contar bebés" : ""}</p>
       </div>
       <dl className="mt-2 flex flex-col text-[13px]">
         {filas.map(([e, m]) => (
@@ -140,15 +140,15 @@ export function TotalPorOpcion({
   );
 }
 
-const COLOR = { error: "text-rojo", falta: "text-ambar", aviso: "text-tinta-2" } as const;
+const COLOR = { error: "text-rojo", falta: "text-ambar", aviso: "text-tinta-2", observacion: "text-tinta-2" } as const;
 
 function Renglon({ h, alIr }: { h: Hallazgo; alIr?: (h: Hallazgo) => void }) {
   return (
     <li className="flex items-start gap-1.5 text-[12.5px]">
-      <span className={`mt-px shrink-0 ${h.nivel === "aviso" ? "text-ambar" : COLOR[h.nivel]}`}>
+      <span className={`mt-px shrink-0 ${h.nivel === "aviso" ? "text-ambar" : h.nivel === "observacion" ? "text-tinta-3" : COLOR[h.nivel]}`}>
         <IconoAviso tam={14} />
       </span>
-      <span className={h.nivel === "aviso" ? "text-tinta-2" : `font-semibold ${COLOR[h.nivel]}`}>
+      <span className={h.nivel === "aviso" || h.nivel === "observacion" ? "text-tinta-2" : `font-semibold ${COLOR[h.nivel]}`}>
         {h.texto}
         {alIr && h.partidaId ? (
           <button
@@ -165,12 +165,14 @@ function Renglon({ h, alIr }: { h: Hallazgo; alIr?: (h: Hallazgo) => void }) {
 }
 
 /**
- * Lo que impide enviar (errores y datos que faltan) y, aparte, los avisos:
- * cosas raras que pueden estar bien y no impiden enviar.
+ * Lo que impide enviar (errores y datos que faltan) y, aparte, los avisos
+ * (cosas raras que pueden estar bien) y las observaciones (datos neutros).
+ * Ni los avisos ni las observaciones impiden enviar.
  */
 export function AntesDeEnviar({ hallazgos, alIr }: { hallazgos: Hallazgo[]; alIr: (h: Hallazgo) => void }) {
   const bloquean = [...hallazgos.filter((h) => h.nivel === "error"), ...hallazgos.filter((h) => h.nivel === "falta")];
   const avisos = hallazgos.filter((h) => h.nivel === "aviso");
+  const observaciones = hallazgos.filter((h) => h.nivel === "observacion");
   return (
     <section aria-label="Antes de enviar" className="rounded-tarjeta bg-tarjeta p-4 shadow-tarjeta">
       <h2 className="flex items-center gap-2 text-[14px] font-bold">
@@ -203,20 +205,34 @@ export function AntesDeEnviar({ hallazgos, alIr }: { hallazgos: Hallazgo[]; alIr
           </ul>
         </div>
       ) : null}
+      {observaciones.length ? (
+        <div aria-label="Observaciones" role="group" className="mt-3 border-t border-linea pt-2.5">
+          <p className="text-[12px] font-bold text-tinta-2">
+            {observaciones.length === 1 ? "1 observación" : `${observaciones.length} observaciones`}
+            <span className="font-normal text-tinta-3"> · no impiden enviar ni cambian los precios</span>
+          </p>
+          <ul className="mt-1.5 flex flex-col gap-1.5">
+            {observaciones.map((h, i) => (
+              <Renglon key={i} h={h} alIr={alIr} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }
 
-/** Errores y avisos dentro de la tarjeta de cada servicio. */
+/** Errores, avisos y observaciones dentro de la tarjeta de cada servicio. */
 export function Hallazgos({ hallazgos }: { hallazgos: Hallazgo[] }) {
   if (!hallazgos.length) return null;
   const errores = hallazgos.filter((h) => h.nivel === "error");
   const avisos = hallazgos.filter((h) => h.nivel === "aviso");
+  const observaciones = hallazgos.filter((h) => h.nivel === "observacion");
   return (
     <div className="mt-3 flex flex-col gap-2">
       {errores.length ? (
         <div role="alert" className="rounded-[12px] bg-rojo-tenue px-3 py-2.5">
-          <p className="text-[12px] font-bold text-rojo">No se guarda hasta corregirlo</p>
+          <p className="text-[12px] font-bold text-rojo">Impide enviar la cotización hasta corregirlo</p>
           <ul className="mt-1 flex flex-col gap-1">
             {errores.map((h, i) => (
               <Renglon key={i} h={h} />
@@ -228,6 +244,15 @@ export function Hallazgos({ hallazgos }: { hallazgos: Hallazgo[] }) {
         <div aria-label="Avisos del servicio" role="group" className="rounded-[12px] bg-ambar-tenue/60 px-3 py-2.5">
           <ul className="flex flex-col gap-1">
             {avisos.map((h, i) => (
+              <Renglon key={i} h={h} />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {observaciones.length ? (
+        <div aria-label="Observaciones del servicio" role="group" className="rounded-[12px] bg-suave/70 px-3 py-2.5">
+          <ul className="flex flex-col gap-1">
+            {observaciones.map((h, i) => (
               <Renglon key={i} h={h} />
             ))}
           </ul>

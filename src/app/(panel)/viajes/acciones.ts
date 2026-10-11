@@ -9,13 +9,14 @@ import { anotar } from "@/lib/bitacora";
 import { aPuntosBase, vigencia } from "@/lib/cotizacion";
 import { generarToken } from "@/lib/enlaces";
 import { folioTexto } from "@/lib/etapas";
-import { hoyEnCancun } from "@/lib/fechas";
-import { puede } from "@/lib/permisos";
+import { hoyEnCancun, rangoCorto } from "@/lib/fechas";
+import { puede, puedeEditarViaje } from "@/lib/permisos";
 import { usuarioActual, usuarioCon } from "@/lib/sesion";
 import { limpiar, normalizar } from "@/lib/texto";
+import { textoViajeros } from "@/lib/etapas";
 import { anotarEnViaje } from "@/lib/viajes";
 import { cargarAjustes } from "../configuracion/datos";
-import { buscarClientes as buscar, type ClienteOpcion } from "./datos";
+import { buscarClientes as buscar, serviciosFueraDeFechas, type ClienteOpcion } from "./datos";
 
 const RUTA = "/viajes";
 
@@ -51,6 +52,18 @@ const Nuevo = z
 
 export type ResultadoNuevo = { error: string } | undefined;
 
+/** Las edades de los menores, separadas por coma. Devuelve el texto del error si algo no cuadra. */
+function leerEdades(texto: string, menores: number): number[] | string {
+  const edades = texto
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .map(Number);
+  if (edades.some((e) => !Number.isInteger(e) || e < 0 || e > 17)) return "La edad de cada menor va de 0 a 17 años.";
+  if (edades.length > menores) return "Hay más edades que menores.";
+  return edades;
+}
+
 /** Siguiente folio libre: los de ejemplo conservan el suyo y se saltan. */
 async function siguienteFolio(tx: Pick<typeof db, "execute">): Promise<number> {
   for (;;) {
@@ -76,14 +89,8 @@ export async function crearViaje(_: ResultadoNuevo, f: FormData): Promise<Result
   if (!r.success) return { error: r.error.issues[0].message };
   const v = r.data;
 
-  const edades = v.edades
-    .split(",")
-    .map((x) => x.trim())
-    .filter(Boolean)
-    .map(Number);
-  if (edades.some((e) => !Number.isInteger(e) || e < 0 || e > 17))
-    return { error: "La edad de cada menor va de 0 a 17 años." };
-  if (edades.length > v.menores) return { error: "Hay más edades que menores." };
+  const edades = leerEdades(v.edades, v.menores);
+  if (typeof edades === "string") return { error: edades };
 
   // Quién lo atiende: la asesora, ella misma; el Dueño elige.
   let aCargo = yo.id;
@@ -202,6 +209,44 @@ export async function guardarNotaInterna(viajeId: string, texto: string): Promis
   return {};
 }
 
+async function notaDe(eventoId: string, yoId: string, esDueno: boolean) {
+  const [n] = await db
+    .select()
+    .from(schema.viajeEventos)
+    .where(and(eq(schema.viajeEventos.id, eventoId), eq(schema.viajeEventos.tipo, "nota")))
+    .limit(1);
+  if (!n) return { error: "Esa nota ya no existe." } as const;
+  if (n.quien !== yoId && !esDueno) return { error: "Una nota la cambia quien la escribió o el dueño." } as const;
+  const v = await viajePorId(n.viajeId);
+  if (!v) return { error: "Ese viaje ya no existe." } as const;
+  return { n, v } as const;
+}
+
+export async function editarNotaInterna(eventoId: string, texto: string): Promise<{ error?: string }> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_viajes")) return { error: "Tu rol no ve viajes." };
+  const nota = limpiar(texto);
+  if (nota.length < 2) return { error: "La nota está vacía." };
+  if (nota.length > 1000) return { error: "La nota lleva hasta 1000 caracteres." };
+  const r = await notaDe(eventoId, yo.id, yo.rol === "dueno");
+  if ("error" in r) return { error: r.error };
+  await db.update(schema.viajeEventos).set({ texto: nota }).where(eq(schema.viajeEventos.id, eventoId));
+  revalidatePath(RUTA);
+  revalidatePath(`${RUTA}/${r.v.folio}`);
+  return {};
+}
+
+export async function eliminarNotaInterna(eventoId: string): Promise<{ error?: string }> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_viajes")) return { error: "Tu rol no ve viajes." };
+  const r = await notaDe(eventoId, yo.id, yo.rol === "dueno");
+  if ("error" in r) return { error: r.error };
+  await db.delete(schema.viajeEventos).where(eq(schema.viajeEventos.id, eventoId));
+  revalidatePath(RUTA);
+  revalidatePath(`${RUTA}/${r.v.folio}`);
+  return {};
+}
+
 export async function cambiarACargo(viajeId: string, usuarioId: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("editar_todos_los_viajes");
   if (!yo) return { error: "Solo el dueño cambia quién atiende un viaje." };
@@ -228,4 +273,131 @@ export async function cambiarACargo(viajeId: string, usuarioId: string): Promise
   revalidatePath(RUTA);
   revalidatePath(`${RUTA}/${v.folio}`);
   return {};
+}
+
+
+// ─── Editar el viaje ────────────────────────────────────────────────────────
+
+export type ResultadoEdicion =
+  | { error: string }
+  | { ok: true; cambios: string[]; fuera: string[] };
+
+/**
+ * Cliente, destino, fechas y pasajeros del viaje. Los servicios no se tocan: los que
+ * queden fuera de las fechas nuevas se devuelven para marcarlos, no se mueven en silencio.
+ */
+export async function editarViaje(viajeId: string, f: FormData): Promise<ResultadoEdicion> {
+  const yo = await usuarioActual();
+  const antes = await viajePorId(viajeId);
+  if (!antes) return { error: "Ese viaje ya no existe." };
+  if (!puedeEditarViaje(yo.rol, yo.id, antes.aCargo)) return { error: "Tu rol puede consultar este viaje, pero no cambiarlo." };
+
+  const r = Nuevo.safeParse({
+    clienteId: "",
+    clienteNombre: "",
+    clienteWhatsapp: "",
+    ciudadSalidaId: "",
+    edades: "",
+    aCargo: "",
+    ...Object.fromEntries(f),
+  });
+  if (!r.success) return { error: r.error.issues[0].message };
+  const v = r.data;
+  const edades = leerEdades(v.edades, v.menores);
+  if (typeof edades === "string") return { error: edades };
+
+  const ciudad = async (id: string) =>
+    (
+      await db
+        .select({ id: schema.ciudades.id, nombre: schema.ciudades.nombre })
+        .from(schema.ciudades)
+        .where(eq(schema.ciudades.id, id))
+        .limit(1)
+    )[0];
+  const destino = await ciudad(v.ciudadDestinoId);
+  if (!destino) return { error: "Ese destino ya no está en la lista." };
+  const salida = v.ciudadSalidaId ? await ciudad(v.ciudadSalidaId) : null;
+
+  const [clienteAntes] = await db
+    .select({ id: schema.clientes.id, nombre: schema.clientes.nombre })
+    .from(schema.clientes)
+    .where(eq(schema.clientes.id, antes.clienteId))
+    .limit(1);
+  const [destinoAntes] = await db
+    .select({ nombre: schema.ciudades.nombre })
+    .from(schema.ciudades)
+    .where(eq(schema.ciudades.id, antes.ciudadDestinoId))
+    .limit(1);
+
+  const cambios = await db.transaction(async (tx) => {
+    // El cliente del viaje: el que se eligió, uno nuevo con los datos escritos, o el mismo de antes.
+    let cliente = clienteAntes ?? null;
+    if (v.clienteId) {
+      const [c] = await tx
+        .select({ id: schema.clientes.id, nombre: schema.clientes.nombre })
+        .from(schema.clientes)
+        .where(eq(schema.clientes.id, v.clienteId))
+        .limit(1);
+      if (c) cliente = c;
+    } else if (v.clienteNombre) {
+      const [c] = await tx
+        .insert(schema.clientes)
+        .values({
+          nombre: v.clienteNombre,
+          nombreBusqueda: normalizar(v.clienteNombre),
+          whatsapp: v.clienteWhatsapp || null,
+          creadoPor: yo.id,
+        })
+        .returning({ id: schema.clientes.id, nombre: schema.clientes.nombre });
+      cliente = c;
+    }
+
+    await tx
+      .update(schema.viajes)
+      .set({
+        clienteId: cliente?.id ?? antes.clienteId,
+        ciudadDestinoId: destino.id,
+        ciudadSalidaId: salida?.id ?? null,
+        inicio: v.inicio,
+        fin: v.fin,
+        adultos: v.adultos,
+        menores: v.menores,
+        edadesMenores: edades,
+        actualizadoEn: new Date(),
+      })
+      .where(eq(schema.viajes.id, viajeId));
+
+    const cambios: string[] = [];
+    if (cliente && cliente.id !== antes.clienteId) cambios.push(`Cliente: ${clienteAntes?.nombre ?? "—"} → ${cliente.nombre}`);
+    if (destino.id !== antes.ciudadDestinoId) cambios.push(`Destino: ${destinoAntes?.nombre ?? "—"} → ${destino.nombre}`);
+    if ((salida?.id ?? null) !== antes.ciudadSalidaId) cambios.push("Ciudad de salida");
+    if (v.inicio !== antes.inicio || v.fin !== antes.fin)
+      cambios.push(`Fechas: ${rangoCorto(antes.inicio, antes.fin)} → ${rangoCorto(v.inicio, v.fin)}`);
+    if (v.adultos !== antes.adultos || v.menores !== antes.menores)
+      cambios.push(`Pasajeros: ${textoViajeros(antes.adultos, antes.menores)} → ${textoViajeros(v.adultos, v.menores)}`);
+    else if (edades.join(",") !== antes.edadesMenores.join(",")) cambios.push("Edades de los menores");
+
+    if (cambios.length) {
+      await tx.insert(schema.viajeEventos).values({
+        viajeId,
+        tipo: "viaje",
+        texto: "Se editó el viaje",
+        etiqueta: cambios.join(" · "),
+        quien: yo.id,
+      });
+      await anotar(
+        { quien: yo.id, texto: `${folioTexto(antes.folio)} editado: ${cambios.join(" · ")}`, entidad: "viajes", entidadId: viajeId },
+        tx,
+      );
+    }
+    return cambios;
+  });
+
+  const fuera = cambios.some((c) => c.startsWith("Fechas"))
+    ? await serviciosFueraDeFechas(viajeId, v.inicio, v.fin)
+    : [];
+  revalidatePath(RUTA);
+  revalidatePath(`${RUTA}/${antes.folio}`);
+  revalidatePath(`${RUTA}/${antes.folio}/armador`);
+  return { ok: true, cambios, fuera };
 }

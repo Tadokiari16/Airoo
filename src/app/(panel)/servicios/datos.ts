@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { viajesPorRegistro } from "@/lib/catalogos";
 import { historialDe } from "@/lib/bitacora";
@@ -72,7 +72,8 @@ export async function cargarServicios(soloId?: string): Promise<Servicio[]> {
     .from(s)
     .leftJoin(schema.ciudades, eq(schema.ciudades.id, s.ciudadId))
     .leftJoin(schema.usuarios, eq(schema.usuarios.id, s.creadoPor))
-    .where(soloId ? eq(s.id, soloId) : undefined)
+    // Los traslados viejos ya no aparecen: los traslados tienen su catálogo.
+    .where(and(ne(s.tipo, "traslado"), soloId ? eq(s.id, soloId) : undefined))
     .orderBy(asc(s.nombreBusqueda));
   if (filas.length === 0) return [];
   const ids = filas.map((f) => f.s.id);

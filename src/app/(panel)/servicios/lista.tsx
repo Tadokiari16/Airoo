@@ -23,7 +23,7 @@ import { comoLlega, plural, textoDonde, type PermisosServicio } from "./textos";
 import { PanelServicio } from "./panel";
 import { NuevoServicio } from "./nuevo";
 
-type Vista = "todos" | "traslados" | "seguros" | "extras" | "archivados";
+type Vista = "todos" | "seguros" | "extras" | "archivados";
 
 export function ListaServicios({
   servicios,
@@ -98,13 +98,14 @@ export function ListaServicios({
           ) : null
         }
       >
-        Traslados, seguros y extras. Cada tipo define cómo se cobra y qué recibe el cliente.
+        Seguros y extras. Cada tipo define cómo se cobra y qué recibe el cliente; los traslados están en su
+        propio catálogo.
       </Encabezado>
 
       <Tarjeta>
         {servicios.length === 0 ? (
           <Vacio titulo="Todavía no hay servicios">
-            Traslados, seguros, eSIM y otros extras, cada uno con su forma de cobro.
+            Seguros, eSIM y otros extras, cada uno con su forma de cobro.
           </Vacio>
         ) : (
           <>
@@ -114,7 +115,6 @@ export function ListaServicios({
               alCambiar={setFiltro}
               opciones={[
                 { valor: "todos", etiqueta: "Todos", n: cuenta("todos") },
-                { valor: "traslados", etiqueta: "Traslados", n: cuenta("traslados") },
                 { valor: "seguros", etiqueta: "Seguros", n: cuenta("seguros") },
                 { valor: "extras", etiqueta: "Extras", n: cuenta("extras") },
                 {

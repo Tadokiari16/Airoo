@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { pedirRecuperacion } from "../acciones";
@@ -21,7 +22,7 @@ export default function Recuperar() {
           <p className="mt-1 text-tinta-2">
             Te mandamos por correo una liga para elegir una contraseña nueva.
           </p>
-          <form action={accion} className="mt-5 flex flex-col gap-4">
+          <form onSubmit={enviarSinVaciar(accion)} className="mt-5 flex flex-col gap-4">
             <Campo
               etiqueta="Correo"
               name="correo"

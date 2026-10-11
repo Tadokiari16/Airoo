@@ -12,6 +12,7 @@ import {
   IconoHoteles,
   IconoProveedores,
   IconoServicios,
+  IconoTraslados,
   IconoViajes,
 } from "@/components/iconos";
 
@@ -23,6 +24,7 @@ const ICONOS = {
   hoteles: IconoHoteles,
   actividades: IconoActividades,
   servicios: IconoServicios,
+  traslados: IconoTraslados,
   aerolineas: IconoAerolineas,
   proveedores: IconoProveedores,
   configuracion: IconoConfiguracion,

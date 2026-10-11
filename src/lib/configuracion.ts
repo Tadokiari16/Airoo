@@ -19,6 +19,8 @@ export const AJUSTES_INICIALES = {
   comision_airoo: { porcentaje_de_utilidad: 35 },
   credito_airoo: { meses_vigencia: 12 },
   llegar_aeropuerto: { nacional_horas: 2, internacional_horas: 3 },
+  // Importar hoteles desde RateHawk o TBO: conexión opcional, apagada en esta versión.
+  importacion_hoteles: { encendida: false },
   agencia: {
     nombre_comercial: "Airoo",
     whatsapp: "",
@@ -48,6 +50,13 @@ const dias = (min: number, max: number) =>
     .int("Días completos.")
     .min(min, `Al menos ${min} ${min === 1 ? "día" : "días"}.`)
     .max(max, `Hasta ${max} días.`);
+
+const horas = (vuelos: string) =>
+  z
+    .number({ error: `Faltan las horas para vuelos ${vuelos}.` })
+    .min(0.5, `Para vuelos ${vuelos}, al menos media hora.`)
+    .max(6, `Para vuelos ${vuelos}, hasta 6 horas.`)
+    .refine((n) => Number.isInteger(n * 2), "En horas o medias horas, como 2 o 2.5.");
 
 export const COLCHONES = [0, 1, 1.5, 2] as const;
 export const PLAZOS_DATOS_Y_PAGO = [1, 2, 3] as const;
@@ -95,6 +104,10 @@ export const ESQUEMAS = {
       ),
   }),
   aviso_pago_proveedor: z.object({ dias_antes: dias(1, 15) }),
+  llegar_aeropuerto: z.object({
+    nacional_horas: horas("nacionales"),
+    internacional_horas: horas("internacionales"),
+  }),
   agencia: z.object({
     nombre_comercial: z.string().trim().min(2, "Falta el nombre comercial.").max(60),
     whatsapp: z
@@ -154,6 +167,8 @@ export function textoBitacora<C extends ClaveEditable>(clave: C, v: z.infer<(typ
       return `Recordatorios de pago al cliente: ${textoRecordatorios(x.dias_antes)}`;
     case "aviso_pago_proveedor":
       return `Aviso de pago a proveedores: ${plural(x.dias_antes, "día", "días")} antes de la fecha límite`;
+    case "llegar_aeropuerto":
+      return `Llegar al aeropuerto: ${x.nacional_horas} h antes en vuelos nacionales, ${x.internacional_horas} h en internacionales`;
     case "agencia":
       return "Datos de la agencia actualizados";
   }

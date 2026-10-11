@@ -1,5 +1,5 @@
-// Servicios de ejemplo, los del prototipo de Servicios. Los ID en los
-// proveedores son ficticios.
+// Servicios de ejemplo, los del prototipo de Servicios sin los traslados (tienen
+// su propio catálogo de unidades). Los ID en los proveedores son ficticios.
 
 import type { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "../src/lib/db/schema";
@@ -26,41 +26,6 @@ type ServicioSemilla = {
 };
 
 const SERVICIOS: ServicioSemilla[] = [
-  {
-    nombre: "Traslado privado · Aeropuerto de Cancún",
-    tipo: "traslado",
-    destino: "Cancún y Riviera Maya",
-    ciudad: "Cancún",
-    modelo: "vehiculo",
-    notaCobro: "La duración del trayecto se calcula al cotizar, con el origen y destino de cada cliente.",
-    descripcion:
-      "Traslado privado del aeropuerto a tu hotel y de regreso, sin paradas ni esperas por otros pasajeros.",
-    recibe: "Datos del chofer un día antes",
-    enViaje:
-      "Hasta un día antes dice «Por llegar» con la fecha. Después: hora, punto de encuentro, letrero, chofer, vehículo y botón para llamar. Siempre con «Si en 15 minutos no ves a tu chofer, escríbenos».",
-    nota: "Pedir nombre del chofer y placas por WhatsApp un día antes.",
-    variantes: [
-      ["Suburban", 6, 6, null],
-      ["Van privada", 10, 10, null],
-      ["Sprinter", 19, 19, null],
-      ["Van adaptada", 6, 6, "rampa"],
-    ],
-    variaPorReserva: true,
-  },
-  {
-    nombre: "Traslado privado · Europa",
-    tipo: "traslado",
-    destino: "Barcelona, Madrid, Roma y más",
-    modelo: "vehiculo",
-    descripcion: "Traslado privado entre el aeropuerto o la estación de tren y el hotel.",
-    recibe: "Bono con teléfono del operador",
-    enViaje: "El bono de TBO se sube tal cual; trae el teléfono del operador local.",
-    variantes: [
-      ["Sedán", 3, 3, null],
-      ["Minivan", 7, 7, null],
-    ],
-    ligas: [["TBO Holidays", null]],
-  },
   {
     nombre: "Seguro de viaje",
     tipo: "seguro",

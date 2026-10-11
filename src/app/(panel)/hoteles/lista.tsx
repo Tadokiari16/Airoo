@@ -33,12 +33,15 @@ export function ListaHoteles({
   inicial,
   permisos,
   agregaCiudades,
+  importar,
 }: {
   hoteles: Hotel[];
   ciudades: OpcionCiudad[];
   inicial: string | null;
   permisos: PermisosHotel;
   agregaCiudades: boolean;
+  /** Hay una conexión de importación encendida en Configuración. */
+  importar: boolean;
 }) {
   const [filtro, setFiltro] = useState<Vista>(() =>
     hoteles.find((h) => h.id === inicial)?.archivado ? "archivados" : "activos",
@@ -155,16 +158,16 @@ export function ListaHoteles({
             </BuscadorLista>
             <Tabla
               columnas={[
-                { titulo: "Hotel", ancho: "27%" },
-                { titulo: "Régimen", ancho: "10%" },
-                { titulo: "Habitaciones", ancho: "16%" },
-                { titulo: "Dónde se reserva", ancho: "19%" },
-                { titulo: "Ficha", ancho: "15%" },
+                { titulo: "Hotel", ancho: "28%" },
+                { titulo: "Destino", ancho: "17%" },
+                { titulo: "Régimen", ancho: "11%" },
+                { titulo: "Habitaciones", ancho: "15%" },
+                { titulo: "Ficha", ancho: "16%" },
                 { titulo: "Uso", ancho: "13%" },
               ]}
             >
               {filas.map((h) => {
-                const nombres = h.habitaciones.reduce((a, r) => a + r.nombres.length, 0);
+                const conFotos = h.habitaciones.filter((r) => r.fotos.length > 0).length;
                 const faltan = h.revision.filter((r) => !r.ok);
                 return (
                   <FilaCatalogo
@@ -174,14 +177,12 @@ export function ListaHoteles({
                     alAbrir={() => setSel(h.id)}
                   >
                     <td className="px-3.5 py-[13px] pl-[18px] align-middle">
-                      <div className="flex min-w-0 flex-col">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <b className="truncate text-sm font-semibold">{h.nombre}</b>
-                          {h.minima ? <Insignia tono="gris">Mínima</Insignia> : null}
-                        </span>
-                        <span className="truncate text-[12.5px] text-tinta-3">{h.ciudad}</span>
-                      </div>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <b className="truncate text-sm font-semibold">{h.nombre}</b>
+                        {h.minima ? <Insignia tono="gris">Mínima</Insignia> : null}
+                      </span>
                     </td>
+                    <td className="truncate px-3.5 align-middle text-[13.5px]">{h.ciudad}</td>
                     <td className="px-3.5 align-middle">
                       {h.regimenes.length ? (
                         <Regimenes claves={h.regimenes} />
@@ -192,7 +193,12 @@ export function ListaHoteles({
                     {h.habitaciones.length ? (
                       <Celda
                         titulo={plural(h.habitaciones.length, "tipo", "tipos")}
-                        sub={plural(nombres, "nombre de proveedor", "nombres de proveedor")}
+                        sub={
+                          conFotos === h.habitaciones.length
+                            ? "todas con fotos"
+                            : `${h.habitaciones.length - conFotos} sin fotos`
+                        }
+                        tonoSub={conFotos === h.habitaciones.length ? undefined : "ambar"}
                       />
                     ) : (
                       <Celda
@@ -201,27 +207,6 @@ export function ListaHoteles({
                         tonoSub="ambar"
                       />
                     )}
-                    <Celda
-                      titulo={
-                        h.dondeReservar.length
-                          ? h.dondeReservar
-                              .map((d) => (d.tipo === "directo" ? "Trato directo" : d.proveedor))
-                              .join(" · ")
-                          : "Sin plataformas"
-                      }
-                      sub={
-                        h.dondeReservar.length > 1
-                          ? `${h.dondeReservar.length} opciones`
-                          : h.dondeReservar[0]
-                            ? h.dondeReservar[0].tipo === "directo"
-                              ? "datos en Proveedores"
-                              : h.dondeReservar[0].idExterno
-                                ? `ID ${h.dondeReservar[0].idExterno}`
-                                : "sin ID"
-                            : "se agregan en la ficha"
-                      }
-                      tonoSub={h.dondeReservar.length ? undefined : "ambar"}
-                    />
                     <td
                       className="px-3.5 align-middle"
                       title={faltan.map((r) => r.falta).join(" · ") || undefined}
@@ -269,6 +254,7 @@ export function ListaHoteles({
         alCerrar={() => setNuevo(false)}
         ciudades={ciudades}
         agregaCiudades={agregaCiudades}
+        importar={importar}
       />
       <AvisoFlotante texto={aviso} alCerrar={() => setAviso(null)} />
     </>

@@ -71,7 +71,7 @@ export type ResumenFicha = {
   descripcion: string | null;
   direccion: string | null;
   ligaMaps: string | null;
-  habitaciones: { fotos: number; nombres: number }[];
+  habitaciones: { fotos: number }[];
   tripadvisorId: string | null;
   tripadvisorCalificacion: number | null;
   cargos: number;
@@ -87,7 +87,6 @@ export type Revision = {
     | "descripcion"
     | "direccion"
     | "fotos_hab"
-    | "nombres"
     | "tripadvisor"
     | "cargos"
     | "reservaciones";
@@ -101,13 +100,11 @@ export type Revision = {
 /** Con 5 fotos en la galería la propuesta ya se ve completa. */
 export const GALERIA_MINIMA = 5;
 
-/** Los 9 puntos de «Ficha · N de 9», en el orden del prototipo. */
+/** Los 8 puntos de «Ficha · N de 8», en el orden del prototipo. */
 export function revisarFicha(h: ResumenFicha): Revision[] {
   const portada = h.portada ? evaluarPortada(h.portada.ancho, h.portada.alto) : null;
   const nHab = h.habitaciones.length;
   const conFotos = h.habitaciones.filter((r) => r.fotos > 0).length;
-  const nombres = h.habitaciones.reduce((a, r) => a + r.nombres, 0);
-  const sinNombre = h.habitaciones.filter((r) => r.nombres === 0).length;
   return [
     {
       clave: "portada",
@@ -149,13 +146,6 @@ export function revisarFicha(h: ResumenFicha): Revision[] {
         nHab === 0
           ? "Faltan habitaciones"
           : `${nHab - conFotos} ${nHab - conFotos === 1 ? "habitación" : "habitaciones"} sin fotos`,
-    },
-    {
-      clave: "nombres",
-      nombre: "Nombres en plataformas",
-      valor: String(nombres),
-      ok: nHab > 0 && sinNombre === 0,
-      falta: nHab === 0 ? "Faltan habitaciones" : "Falta un nombre de proveedor",
     },
     {
       clave: "tripadvisor",

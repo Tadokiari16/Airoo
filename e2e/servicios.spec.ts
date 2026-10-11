@@ -7,8 +7,6 @@ const sufijo = Date.now().toString(36);
 test.describe.configure({ timeout: 60_000 });
 
 const bloque = (page: Page, titulo: string) => page.getByRole("region", { name: titulo, exact: true });
-const barra = (page: Page) => page.getByRole("region", { name: "Cambios sin guardar" });
-const pide = (page: Page) => page.getByRole("list", { name: "En el armador se va a pedir" });
 
 async function crearServicio(page: Page, nombre: string, tipo: string, destino: string) {
   await page.goto("/servicios");
@@ -26,51 +24,19 @@ async function crearServicio(page: Page, nombre: string, tipo: string, destino: 
   await expect(page.getByRole("heading", { level: 1, name: nombre })).toBeVisible();
 }
 
-async function guardar(page: Page) {
-  await barra(page).getByRole("button", { name: "Guardar" }).click();
-  await expect(page.getByText("Ficha guardada · las cotizaciones nuevas ya usan estos datos")).toBeVisible();
-  await expect(barra(page)).toBeHidden();
-}
-
-test("un traslado nuevo se cobra por vehículo y pide sus unidades", async ({ page }) => {
+test("el tipo se elige al crear y queda fijo; los traslados tienen su catálogo", async ({ page }) => {
   await entrarComo(page, CORREOS.dueno);
-  const nombre = `Traslado de prueba ${sufijo}`;
-  await crearServicio(page, nombre, "Traslado", "Tulum");
-
-  await expect(
-    bloque(page, "Cómo se cobra").getByRole("button", { name: "Por vehículo", pressed: true }),
-  ).toBeVisible();
-  await expect(pide(page)).not.toContainText("Unidad");
-
-  const unidades = bloque(page, "Unidades");
-  await unidades.getByRole("button", { name: "Agregar unidad" }).click();
-  await unidades.getByLabel("Nombre, unidad 1").fill("Van privada");
-  await unidades.getByLabel("Pasajeros, Van privada").fill("10");
-  await unidades.getByLabel("Maletas, Van privada").fill("8");
-  await expect(pide(page)).toContainText("Unidad");
-  await page.getByLabel("El cliente recibe").fill("Datos del chofer un día antes");
-  await guardar(page);
-
   await page.goto("/servicios");
-  const fila = page.getByRole("row", { name: nombre });
-  await expect(fila).toContainText("1 unidad");
-  await expect(fila).toContainText("Por vehículo");
-  await expect(fila).toContainText("Por definir");
-  await fila.click();
-  const panel = page.getByRole("complementary", { name: nombre });
-  await expect(panel.getByRole("region", { name: "Unidades" })).toContainText("Hasta 10");
-  await expect(panel.getByRole("region", { name: "Para completar" })).toContainText("Falta el proveedor");
-});
+  await page.getByRole("button", { name: "Nuevo servicio" }).click();
+  const d = page.getByRole("dialog", { name: "Nuevo servicio" });
+  await expect(d.getByRole("group", { name: "Tipo" }).getByRole("button", { name: "Traslado", exact: true })).toHaveCount(0);
+  await d.getByRole("button", { name: "Cancelar" }).click();
+  await expect(page.getByRole("tab", { name: /Traslados/ })).toHaveCount(0);
 
-test("los pasajeros van en números", async ({ page }) => {
-  await entrarComo(page, CORREOS.dueno);
-  await crearServicio(page, `Traslado con error ${sufijo}`, "Traslado", "Cancún");
-  const unidades = bloque(page, "Unidades");
-  await unidades.getByRole("button", { name: "Agregar unidad" }).click();
-  await unidades.getByLabel("Nombre, unidad 1").fill("Sedán");
-  await unidades.getByLabel("Pasajeros, Sedán").fill("tres");
-  await barra(page).getByRole("button", { name: "Guardar" }).click();
-  await expect(barra(page)).toContainText("Los pasajeros van en números, del 1 al 99.");
+  const nombre = `Conectividad de prueba ${sufijo}`;
+  await crearServicio(page, nombre, "Conectividad", "Europa");
+  await expect(page.getByText("El tipo se elige al crear el servicio y ya no cambia")).toBeVisible();
+  await expect(page.getByRole("group", { name: "Tipo" })).toHaveCount(0);
 });
 
 test("«Varía por reserva» quita los proveedores ligados", async ({ page }) => {

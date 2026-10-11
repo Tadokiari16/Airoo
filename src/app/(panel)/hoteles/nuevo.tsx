@@ -13,22 +13,28 @@ import { crearHotel, type ResultadoAlta } from "./acciones";
 
 type Paso = "como" | "manual";
 
-/** Alta de hotel: primero cómo (captura manual o importar), luego nombre y ciudad. */
+/**
+ * Alta de hotel: nombre y ciudad. Solo con una conexión de importación
+ * encendida en Configuración se pregunta antes cómo darlo de alta.
+ */
 export function NuevoHotel({
   abierto,
   alCerrar,
   ciudades,
   agregaCiudades,
+  importar,
 }: {
   abierto: boolean;
   alCerrar: () => void;
   ciudades: OpcionCiudad[];
   agregaCiudades: boolean;
+  importar: boolean;
 }) {
-  const [paso, setPaso] = useState<Paso>("como");
+  const inicial: Paso = importar ? "como" : "manual";
+  const [paso, setPaso] = useState<Paso>(inicial);
   const [forma, setForma] = useState<"manual" | null>(null);
   const cerrar = () => {
-    setPaso("como");
+    setPaso(inicial);
     setForma(null);
     alCerrar();
   };
@@ -36,7 +42,7 @@ export function NuevoHotel({
     <Dialogo
       abierto={abierto}
       alCerrar={cerrar}
-      titulo={paso === "manual" ? "Nuevo hotel · captura manual" : "Nuevo hotel"}
+      titulo={paso === "manual" && importar ? "Nuevo hotel · captura manual" : "Nuevo hotel"}
       sub={paso === "manual" ? "Nombre y ciudad; lo demás va en la ficha." : "¿Cómo lo quieres dar de alta?"}
       ancho={560}
     >
@@ -83,7 +89,7 @@ export function NuevoHotel({
         <CapturaManual
           ciudades={ciudades}
           agregaCiudades={agregaCiudades}
-          alRegresar={() => setPaso("como")}
+          alRegresar={importar ? () => setPaso("como") : undefined}
           alCancelar={cerrar}
         />
       )}
@@ -137,7 +143,7 @@ function CapturaManual({
 }: {
   ciudades: OpcionCiudad[];
   agregaCiudades: boolean;
-  alRegresar: () => void;
+  alRegresar?: () => void;
   alCancelar: () => void;
 }) {
   const router = useRouter();
@@ -198,9 +204,11 @@ function CapturaManual({
       ) : null}
 
       <div className="flex items-center gap-2">
-        <Boton variante="texto" onClick={alRegresar} className="gap-1">
-          <IconoAtras tam={15} /> Cambiar forma de alta
-        </Boton>
+        {alRegresar ? (
+          <Boton variante="texto" onClick={alRegresar} className="gap-1">
+            <IconoAtras tam={15} /> Cambiar forma de alta
+          </Boton>
+        ) : null}
         <Boton variante="secundario" className="ml-auto h-10" onClick={alCancelar}>
           Cancelar
         </Boton>

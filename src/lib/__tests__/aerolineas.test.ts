@@ -1,31 +1,54 @@
 import { describe, expect, it } from "vitest";
 import {
   buscarIata,
+  errorMaleta,
   limpiarIata,
   textoCheckin,
   textoEquipaje,
   textoFuente,
   textoLlegarAntes,
+  textoMaleta,
+  textoTarifa,
+  type Tarifa,
 } from "../aerolineas";
 
-const t = (nombre: string, documentada: string | null) => ({
+const nada = { piezas: 0, kg: null };
+const t = (nombre: string, kg: number | null, piezas = 1): Tarifa => ({
   nombre,
-  mano: null,
-  documentada,
+  mano: nada,
+  documentado: kg ? { piezas, kg } : nada,
   cambios: null,
+  articuloPersonal: true,
 });
 
 describe("aerolíneas", () => {
   it("equipaje documentado: el máximo y desde qué tarifa", () => {
-    expect(textoEquipaje([t("Zero", null), t("Light", null), t("Switch", "15 kg")])).toEqual({
+    expect(textoEquipaje([t("Zero", null), t("Light", null), t("Switch", 15)])).toEqual({
       titulo: "Hasta 15 kg",
       sub: "Desde la tarifa Switch",
     });
-    expect(textoEquipaje([t("Básica", null), t("Clásica", "25 kg"), t("Plus", "23 kg")]).titulo).toBe(
-      "Hasta 25 kg",
+    expect(textoEquipaje([t("Básica", null), t("Clásica", 25), t("Plus", 23, 2)]).titulo).toBe(
+      "Hasta 2 piezas de 23 kg",
     );
     expect(textoEquipaje([t("Básica", null)]).titulo).toBe("No incluye");
     expect(textoEquipaje([]).titulo).toBe("Sin tarifas");
+  });
+
+  it("equipaje con opciones cerradas: no incluye, o piezas y kilos", () => {
+    expect(textoMaleta(nada)).toBe("No incluye");
+    expect(textoMaleta({ piezas: 1, kg: 10 })).toBe("10 kg");
+    expect(textoMaleta({ piezas: 2, kg: 23 })).toBe("2 piezas de 23 kg");
+    expect(errorMaleta({ piezas: 1, kg: null }, "Mano")).toBe("Mano: faltan los kilos por pieza.");
+    expect(errorMaleta({ piezas: 1, kg: 80 }, "Documentada")).toBe("Documentada: de 1 a 50 kg por pieza.");
+    expect(errorMaleta({ piezas: 0, kg: null }, "Mano")).toBeNull();
+  });
+
+  it("la tarifa en el armador dice artículo personal, mano y documentada", () => {
+    expect(textoTarifa({ mano: { piezas: 1, kg: 10 }, documentado: { piezas: 1, kg: 25 }, articuloPersonal: true })).toBe(
+      "Artículo personal + mano 10 kg + documentada 25 kg",
+    );
+    expect(textoTarifa({ mano: nada, documentado: nada, articuloPersonal: false })).toBe("Sin equipaje");
+    expect(textoTarifa({ mano: { piezas: 1, kg: 10 }, documentado: nada, articuloPersonal: false })).toBe("Mano 10 kg");
   });
 
   it("check-in: cuenta las ventanas sin verificar y dice de dónde salen", () => {

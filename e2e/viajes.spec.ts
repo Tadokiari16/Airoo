@@ -7,7 +7,7 @@ const total = (page: Page) => page.getByRole("region", { name: /^Total/ });
 test("el viaje de ejemplo se arma con tres opciones y el total del prototipo", async ({ page }) => {
   await entrarComo(page, CORREOS.dueno);
   await page.goto("/viajes/2458");
-  await expect(page.getByRole("heading", { name: "Nataly Cervantes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nataly Cervantes", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Abrir armador" }).click();
   await expect(page).toHaveURL(/\/viajes\/2458\/armador$/);
 
@@ -120,6 +120,7 @@ test("vuelo con escala: aeropuertos de la lista, duración, conexión, errores y
   await expect(vuelo.getByText("1 h 30 min")).toBeVisible();
 
   // Escala en Ciudad de México: el tramo nuevo sale de donde llegó el anterior.
+  await expect(page.getByText("Guardado", { exact: true })).toBeVisible();
   await vuelo.getByRole("group", { name: "Ida" }).getByRole("button", { name: "+ Agregar escala" }).click();
   await expect(vuelo.getByRole("combobox", { name: "Origen del vuelo de ida tramo 2" })).toHaveValue("MEX · Ciudad de México");
   await aeropuerto(vuelo, "Destino del vuelo de ida tramo 2", "Cancún", "CUN");
@@ -137,13 +138,14 @@ test("vuelo con escala: aeropuertos de la lista, duración, conexión, errores y
   await expect(vuelo.getByRole("group", { name: "Avisos del servicio" }).getByText(aviso)).toBeVisible();
   await expect(antesDeEnviar(page).getByRole("group", { name: "Avisos" }).getByText(aviso)).toBeVisible();
 
-  // Regreso desde Cancún a Cancún: error, no se guarda.
+  // Regreso desde Cancún a Cancún: error. Se guarda igual y impide enviar.
   await aeropuerto(vuelo, "Origen del vuelo de regreso", "CUN", "CUN");
   await aeropuerto(vuelo, "Destino del vuelo de regreso", "Cancún", "CUN");
   await expect(vuelo.getByRole("alert").getByText("El regreso sale y llega al mismo aeropuerto, Cancún (CUN).")).toBeVisible();
-  await expect(page.getByText("Sin guardar: hay un error por corregir")).toBeVisible();
+  await expect(antesDeEnviar(page)).toContainText("El regreso sale y llega al mismo aeropuerto, Cancún (CUN).");
+  await expect(antesDeEnviar(page).getByText("Todo listo para enviar")).toHaveCount(0);
 
-  // Al corregirlo se guarda, y la ida con escala sigue ahí al volver a abrir.
+  // Al corregirlo desaparece, y la ida con escala sigue ahí al volver a abrir.
   await aeropuerto(vuelo, "Destino del vuelo de regreso", "GDL", "GDL");
   await expect(vuelo.getByRole("alert")).toHaveCount(0);
   await expect(page.getByText("Guardado", { exact: true })).toBeVisible();

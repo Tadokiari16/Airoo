@@ -1,7 +1,7 @@
 "use client";
 
 import { MARGENES, tipoCambioDe, type FixCotizacion, type PartidaArmador } from "@/lib/armador";
-import { textoPorcentaje, textoTipoCambio, type Calculo } from "@/lib/cotizacion";
+import { precioPorPersona, textoPorcentaje, textoTipoCambio, type Calculo } from "@/lib/cotizacion";
 import { formatoDinero, MONEDAS, type Moneda } from "@/lib/dinero";
 import { formatoDia } from "@/lib/fechas";
 import type { ProveedorOpcion } from "./datos";
@@ -25,6 +25,7 @@ export function PanelPrecio({
   fx,
   fixHoy,
   personas,
+  sinBebes = false,
   utilidadBasePb,
   utilidadFijaPb,
   proveedores,
@@ -37,6 +38,7 @@ export function PanelPrecio({
   fx: FixCotizacion;
   fixHoy: { usd: number | null; eur: number | null; fecha: string | null };
   personas: number;
+  sinBebes?: boolean;
   utilidadBasePb: number;
   /** Vuelos: la utilidad es fija por política. */
   utilidadFijaPb?: number;
@@ -49,7 +51,10 @@ export function PanelPrecio({
   const tc = tipoCambioDe(p.moneda, fx);
   const fixDeHoy = p.moneda === "USD" ? fixHoy.usd : p.moneda === "EUR" ? fixHoy.eur : null;
   const anticipo = calc.netoMxn !== null ? calc.netoMxn - calc.enDestino : null;
-  const pp = (c: number | null) => (c !== null && personas > 0 ? `${formatoDinero(Math.round(c / personas))} por persona` : "");
+  const pp = (c: number | null) => {
+    const v = c !== null ? precioPorPersona(c, personas) : null;
+    return v !== null ? `${formatoDinero(v)} por persona${sinBebes ? " sin contar bebés" : ""}` : "";
+  };
 
   return (
     <div className="flex flex-col gap-3 rounded-[14px] bg-suave/70 p-3.5 shadow-borde">

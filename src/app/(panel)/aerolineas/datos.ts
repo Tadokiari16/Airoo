@@ -22,7 +22,6 @@ export type Aerolinea = {
   iata: string;
   nombre: string;
   sitio: string | null;
-  comoSeCompra: string | null;
   notaInterna: string | null;
   tarifas: (Tarifa & { id: string })[];
   checkin: VentanaCheckin[];
@@ -60,9 +59,10 @@ export async function cargarAerolineas(): Promise<Aerolinea[]> {
       .map((t) => ({
         id: t.id,
         nombre: t.nombre,
-        mano: t.mano,
-        documentada: t.documentada,
-        cambios: t.cambios,
+        mano: { piezas: t.manoPiezas, kg: t.manoKg },
+        documentado: { piezas: t.documentadoPiezas, kg: t.documentadoKg },
+        cambios: t.cambiosRegla,
+        articuloPersonal: t.articuloPersonal,
       }));
     // Siempre las dos rutas, aunque falte alguna fila.
     const checkin = RUTAS.map(({ valor }): VentanaCheckin => {
@@ -84,7 +84,6 @@ export async function cargarAerolineas(): Promise<Aerolinea[]> {
       iata: x.iata,
       nombre: x.nombre,
       sitio: x.sitio,
-      comoSeCompra: x.comoSeCompra,
       notaInterna: x.notaInterna,
       tarifas: susTarifas,
       checkin,

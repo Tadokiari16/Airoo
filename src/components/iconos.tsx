@@ -59,7 +59,14 @@ export const IconoActividades = (p: P) => (
     <path d="M13 6v2M13 11v2M13 16v2" />
   </Base>
 );
+// Servicios: seguros, conectividad, equipo y reservaciones.
 export const IconoServicios = (p: P) => (
+  <Base {...p}>
+    <path d="M11 21.7a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7z" />
+    <path d="M12 22V12M3.3 7 12 12l8.7-5M7.5 4.3l9 5.1" />
+  </Base>
+);
+export const IconoTraslados = (p: P) => (
   <Base {...p}>
     <path d="M13 6v5a1 1 0 0 0 1 1h6.1M14 18H9M2 16V7a1 1 0 0 1 1-1h13.2a2 2 0 0 1 1.7.9l3.8 5.6a2 2 0 0 1 .3 1.1V17a1 1 0 0 1-1 1h-1" />
     <circle cx="7" cy="18" r="2" />

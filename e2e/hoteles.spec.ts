@@ -24,15 +24,9 @@ const barra = (page: Page) => page.getByRole("region", { name: "Cambios sin guar
 async function crearHotel(page: Page, nombre: string, ciudad = "Tulum") {
   await page.goto("/hoteles");
   await page.getByRole("button", { name: "Nuevo hotel" }).click();
-  const d = page.getByRole("dialog", { name: "Nuevo hotel" });
-  // La importación está apagada: no hay proveedores conectados.
-  await expect(d.getByRole("radio", { name: /Importar desde un proveedor/ })).toHaveAttribute(
-    "aria-disabled",
-    "true",
-  );
-  await d.getByRole("radio", { name: /Captura manual/ }).click();
-  await d.getByRole("button", { name: "Continuar" }).click();
-  const m = page.getByRole("dialog", { name: "Nuevo hotel · captura manual" });
+  // La importación está apagada en Configuración: se abre directo la captura manual.
+  const m = page.getByRole("dialog", { name: "Nuevo hotel" });
+  await expect(m.getByRole("radio", { name: /Importar desde un proveedor/ })).toHaveCount(0);
   await m.getByLabel("Nombre").fill(nombre);
   await m.getByLabel("Ciudad").fill(ciudad);
   await m
@@ -52,20 +46,18 @@ test("un hotel nuevo empieza con lo mínimo y la ficha marca lo que falta", asyn
   const nombre = `Hotel Prueba ${sufijo}`;
   await entrarComo(page, CORREOS.asesora);
   await crearHotel(page, nombre);
-  await expect(page.getByRole("region", { name: "Ficha · 0 de 9" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Ficha · 0 de 8" })).toBeVisible();
 
   // Aparece en «Por completar» con la insignia «Mínima».
   await page.goto("/hoteles");
   await page.getByRole("tab", { name: /Por completar/ }).click();
   const fila = page.getByRole("row", { name: nombre });
   await expect(fila.getByText("Mínima")).toBeVisible();
-  await expect(fila.getByText("Faltan 9 cosas")).toBeVisible();
+  await expect(fila.getByText("Faltan 8 cosas")).toBeVisible();
 
   // Un nombre parecido avisa antes de crear otro.
   await page.getByRole("button", { name: "Nuevo hotel" }).click();
-  await page.getByRole("radio", { name: /Captura manual/ }).click();
-  await page.getByRole("button", { name: "Continuar" }).click();
-  const m = page.getByRole("dialog", { name: "Nuevo hotel · captura manual" });
+  const m = page.getByRole("dialog", { name: "Nuevo hotel" });
   await m.getByLabel("Nombre").fill(nombre);
   await m.getByLabel("Ciudad").fill("Tulum");
   await m.getByRole("option", { name: /^Tulum/ }).click();
@@ -180,12 +172,13 @@ test("la ficha se guarda con la barra de cambios y valida lo que se captura", as
     "href",
     "https://www.tripadvisor.com.mx/Hotel_Review-d7654321-Reviews",
   );
-  await expect(page.getByRole("row", { name: nombre }).getByText("ID 6099001")).toBeVisible();
+  // La tabla muestra el destino junto al nombre; dónde se reserva queda en la ficha.
+  const fila = page.getByRole("row", { name: nombre });
+  await expect(fila.getByRole("cell").nth(1)).toContainText("Tulum");
+  await expect(fila.getByText("ID 6099001")).toHaveCount(0);
 });
 
-test("las habitaciones llevan su nombre para el cliente, sus fotos y los nombres de cada plataforma", async ({
-  page,
-}) => {
+test("las habitaciones llevan solo su nombre para el cliente y sus fotos", async ({ page }) => {
   const nombre = `Hotel Cuartos ${sufijo}`;
   await entrarComo(page, CORREOS.asesora);
   await crearHotel(page, nombre);
@@ -197,11 +190,9 @@ test("las habitaciones llevan su nombre para el cliente, sus fotos y los nombres
   await expect(fila).toBeVisible();
   await expect(fila.getByText("Sin fotos")).toBeVisible();
 
-  await fila.getByRole("button", { name: "+ Nombre" }).click();
-  await fila.getByLabel("Proveedor", { exact: true }).selectOption({ label: "TBO Holidays" });
-  await fila.getByLabel("Nombre en la tarifa del proveedor").fill("FAMILY DLX OV");
-  await fila.getByRole("button", { name: "Agregar", exact: true }).click();
-  await expect(fila.getByText("FAMILY DLX OV")).toBeVisible();
+  // Sin nombres por plataforma, camas ni personas: eso se elige en el armador.
+  await expect(fila.getByRole("button", { name: "+ Nombre" })).toHaveCount(0);
+  await expect(habs).toContainText("Camas y número de personas no se guardan aquí");
 
   await subir(page, "Subir fotos de Suite Deluxe vista al mar").setInputFiles(
     await fotoPrueba("hab.jpg", 1600, 1200),
@@ -214,11 +205,9 @@ test("las habitaciones llevan su nombre para el cliente, sus fotos y los nombres
   // Las fotos de la habitación no se mezclan con la galería.
   await expect(bloque(page, "Portada y galería").getByText("· 0 fotos")).toBeVisible();
 
-  // Vista previa como cliente: con el nombre para el cliente, no el del proveedor.
   await page.getByRole("button", { name: "Vista previa como cliente" }).click();
   const vista = page.getByRole("dialog", { name: "Vista previa como cliente" });
   await expect(vista.getByText("Suite Deluxe vista al mar")).toBeVisible();
-  await expect(vista.getByText("FAMILY DLX OV")).toHaveCount(0);
 });
 
 test("la asesora archiva y reactiva; unir y eliminar son solo del dueño", async ({ page, browser }) => {

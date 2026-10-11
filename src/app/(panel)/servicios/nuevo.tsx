@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
-import { MODELO_SUGERIDO, modelo, TIPOS, type TipoServicio } from "@/lib/servicios";
+import { MODELO_SUGERIDO, modelo, TIPOS_ALTA, type TipoServicio } from "@/lib/servicios";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -34,7 +34,7 @@ function Formulario({ alCancelar }: { alCancelar: () => void }) {
   const router = useRouter();
   const [nombre, setNombre] = useState("");
   const [destino, setDestino] = useState("");
-  const [tipo, setTipo] = useState<TipoServicio>("traslado");
+  const [tipo, setTipo] = useState<TipoServicio>("seguro");
   const [estado, accion, pendiente] = useActionState(async (prev: ResultadoAlta, f: FormData) => {
     const r = await crearServicio(prev, f);
     if (r && "id" in r) router.push(`/servicios/${r.id}?nuevo=1`);
@@ -49,7 +49,7 @@ function Formulario({ alCancelar }: { alCancelar: () => void }) {
         name="nombre"
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
-        placeholder="Ej. Traslado privado · Aeropuerto de Cancún"
+        placeholder="Ej. Seguro de viaje"
         autoFocus
         autoComplete="off"
       />
@@ -57,14 +57,15 @@ function Formulario({ alCancelar }: { alCancelar: () => void }) {
         <span className="text-[13px] font-semibold">Tipo</span>
         <Opciones
           etiqueta="Tipo"
-          opciones={TIPOS.map((t) => ({ valor: t.valor, etiqueta: t.nombre }))}
+          opciones={TIPOS_ALTA.map((t) => ({ valor: t.valor, etiqueta: t.nombre }))}
           elegidas={[tipo]}
           alCambiar={([t]) => setTipo(t)}
         />
         <p className="text-[12.5px] text-tinta-3">
           La forma de cobrar y los campos dependen del tipo. Para{" "}
-          {TIPOS.find((t) => t.valor === tipo)!.nombre.toLowerCase()} se empieza con «
-          {modelo(MODELO_SUGERIDO[tipo]).nombre.toLowerCase()}»; se cambia en la ficha.
+          {TIPOS_ALTA.find((t) => t.valor === tipo)!.nombre.toLowerCase()} se empieza con «
+          {modelo(MODELO_SUGERIDO[tipo]).nombre.toLowerCase()}», que se cambia en la ficha. El tipo queda fijo
+          al crear el servicio. Los traslados están en su propio catálogo.
         </p>
       </div>
       <Campo

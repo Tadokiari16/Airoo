@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { huespedesNuevaHabitacion, noches, CAMAS } from "@/lib/cotizacion";
-import { nuevoId, horaTexto, type PartidaArmador, type TramoArmador } from "@/lib/armador";
+import { completarRegreso, filasTua, nuevoId, horaTexto, type PartidaArmador, type TramoArmador, type TuaAeropuerto } from "@/lib/armador";
+import type { Moneda } from "@/lib/dinero";
 import type {
   FichaActividadArmador,
   FichaAerolineaArmador,
@@ -16,7 +17,7 @@ import { REGIMENES, nombreRegimen } from "@/lib/hoteles";
 import { textoEdad } from "@/lib/actividades";
 import { agregarHabitacionHotel, vueloConocido } from "./acciones";
 import { CampoAeropuerto } from "./campo-aeropuerto";
-import { CAJA, CampoHora, Etiqueta, OjoTachado, Paso, Segmentos } from "./piezas";
+import { CAJA, CampoDinero, CampoHora, Etiqueta, OjoTachado, Paso, Segmentos } from "./piezas";
 
 type Cambiar = (cambio: Partial<PartidaArmador>) => void;
 type Viaje = { inicio: string; fin: string; adultos: number; menores: number };
@@ -293,8 +294,11 @@ export function EditorVuelo({
   alAvisar: (t: string) => void;
 }) {
   const redondo = p.detalle.redondo !== false;
+  // Con el vuelo redondo, el regreso toma la ruta invertida de la ida mientras nadie la cambie a mano.
+  const ponerTramos = (nuevos: TramoArmador[]) =>
+    alCambiar({ tramos: redondo ? completarRegreso(p.tramos, nuevos) : nuevos });
   const tramo = (id: string, cambio: Partial<TramoArmador>) =>
-    alCambiar({ tramos: p.tramos.map((t) => (t.id === id ? { ...t, ...cambio } : t)) });
+    ponerTramos(p.tramos.map((t) => (t.id === id ? { ...t, ...cambio } : t)));
   const tiempos = tiemposDeVuelo(p.tramos, aeropuertos);
   const sentidos = (redondo ? (["ida", "regreso"] as const) : (["ida"] as const)).map((s) => ({
     sentido: s,
@@ -311,7 +315,7 @@ export function EditorVuelo({
     // Las idas van antes que los regresos; dentro de cada sentido, en orden de vuelo.
     const ida = p.tramos.filter((t) => t.sentido === "ida");
     const regreso = p.tramos.filter((t) => t.sentido === "regreso");
-    alCambiar({ tramos: sentido === "ida" ? [...ida, nuevo, ...regreso] : [...ida, ...regreso, nuevo] });
+    ponerTramos(sentido === "ida" ? [...ida, nuevo, ...regreso] : [...ida, ...regreso, nuevo]);
   };
 
   return (
@@ -454,7 +458,7 @@ export function EditorVuelo({
                     {tramos.length > 1 ? (
                       <button
                         type="button"
-                        onClick={() => alCambiar({ tramos: p.tramos.filter((x) => x.id !== t.id) })}
+                        onClick={() => ponerTramos(p.tramos.filter((x) => x.id !== t.id))}
                         className="cursor-pointer pb-2 text-[12.5px] font-semibold text-tinta-3 hover:text-rojo"
                       >
                         Quitar tramo
@@ -557,18 +561,7 @@ export function EditorVuelo({
         usó en otro viaje, se copian.
       </p>
 
-      <label>
-        <Etiqueta ayuda="importe ya pagado en el aeropuerto de salida; aparece en la confirmación de reserva">
-          TUA informativa
-        </Etiqueta>
-        <input
-          aria-label="TUA informativa"
-          value={p.detalle.tua ?? ""}
-          placeholder="GDL $727 · CUN $382"
-          onChange={(e) => alCambiar({ detalle: { ...p.detalle, tua: e.target.value } })}
-          className={CAJA}
-        />
-      </label>
+      <TuaPorAeropuerto p={p} aeropuertos={aeropuertos} alCambiar={alCambiar} />
     </div>
   );
 }
@@ -587,6 +580,68 @@ export function tramoVacio(sentido: "ida" | "regreso", fecha: string): TramoArma
     llega: null,
     llegaDias: 0,
   };
+}
+
+/** TUA informativa: una fila por aeropuerto de salida de cada tramo. No entra al costo. */
+function TuaPorAeropuerto({
+  p,
+  aeropuertos,
+  alCambiar,
+}: {
+  p: PartidaArmador;
+  aeropuertos: Record<string, Aeropuerto>;
+  alCambiar: Cambiar;
+}) {
+  const filas = filasTua(p.tramos, p.detalle.tuas, (iata) => (aeropuertos[iata]?.paisCodigo === "MX" ? "MXN" : "USD"));
+  const poner = (tramoId: string, cambio: Partial<TuaAeropuerto>) =>
+    alCambiar({ detalle: { ...p.detalle, tuas: filas.map((f) => (f.tramoId === tramoId ? { ...f, ...cambio } : f)) } });
+  return (
+    <fieldset className="rounded-[12px] p-3 shadow-borde">
+      <legend className="sr-only">TUA informativa</legend>
+      <div className="mb-2">
+        <b className="text-[14px]">TUA informativa</b>
+        <p className="text-[11.5px] text-tinta-3">
+          Importe ya pagado en cada aeropuerto de salida; aparece en la confirmación de reserva y no entra al costo.
+        </p>
+      </div>
+      {filas.length ? (
+        <ul className="flex flex-col gap-2">
+          {filas.map((f) => {
+            const a = aeropuertos[f.iata];
+            return (
+              <li key={f.tramoId} className="grid grid-cols-[1fr_150px_110px] items-center gap-2.5">
+                <span className="text-[13px]">
+                  Salida de <b className="num">{f.iata}</b>
+                  {a ? <span className="text-tinta-3"> · {a.ciudad}</span> : null}
+                </span>
+                <CampoDinero
+                  etiqueta={`TUA de ${f.iata}`}
+                  valor={f.centavos}
+                  moneda={f.moneda}
+                  alCambiar={(c) => poner(f.tramoId, { centavos: c })}
+                />
+                <Segmentos
+                  chico
+                  etiqueta={`Moneda de la TUA de ${f.iata}`}
+                  opciones={[
+                    { valor: "MXN", etiqueta: "MXN" },
+                    { valor: "USD", etiqueta: "USD" },
+                  ]}
+                  valor={f.moneda === "USD" ? "USD" : "MXN"}
+                  alCambiar={(m) => poner(f.tramoId, { moneda: m as Moneda })}
+                />
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="text-[12.5px] text-tinta-3">Las filas aparecen cuando cada tramo tiene su aeropuerto de salida.</p>
+      )}
+      {p.detalle.tua && !filas.some((f) => f.centavos !== null) ? (
+        <p className="mt-2 text-[11.5px] text-tinta-3">Capturado antes como texto: {p.detalle.tua}</p>
+      ) : null}
+    </fieldset>
+  );
 }
 
 // ─── Actividad ──────────────────────────────────────────────────────────────
@@ -774,11 +829,11 @@ export function EditorServicio({
     const trayectos = [];
     if (r !== "regreso")
       trayectos.push(
-        actual("Aeropuerto") ?? { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: viaje.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null },
+        actual("Aeropuerto") ?? { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: viaje.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null, vueloFecha: null, vueloHora: null },
       );
     if (r !== "ida")
       trayectos.push(
-        actual("Hotel") ?? { id: nuevoId(), desde: "Hotel", hasta: "Aeropuerto", fecha: viaje.fin, hora: null, vueloTramoId: regreso?.id ?? null },
+        actual("Hotel") ?? { id: nuevoId(), desde: "Hotel", hasta: "Aeropuerto", fecha: viaje.fin, hora: null, vueloTramoId: regreso?.id ?? null, vueloFecha: null, vueloHora: null },
       );
     alCambiar({ detalle: { ...p.detalle, recoleccion: r }, trayectos });
   };

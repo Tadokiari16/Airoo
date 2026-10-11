@@ -3,6 +3,7 @@
 
 import type { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "../src/lib/db/schema";
+import type { Cambios } from "../src/lib/aerolineas";
 
 type Db = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -18,8 +19,8 @@ const AEROLINEAS: {
   nombre: string;
   sitio: string;
   nota?: string;
-  /** [nombre, mano, documentada, cambios] */
-  tarifas: [string, string | null, string | null, string][];
+  /** [nombre, kg de mano, kg documentado, cambios]; sin kilos no incluye. Una pieza de cada uno. */
+  tarifas: [string, number | null, number | null, Cambios][];
   nacional: Ventana;
   internacional: Ventana;
 }[] = [
@@ -29,9 +30,9 @@ const AEROLINEAS: {
     sitio: "vivaaerobus.com",
     nota: "La tarifa Switch de 72 h no está confirmada en fuente oficial.",
     tarifas: [
-      ["Zero", null, null, "Sin cambios"],
-      ["Light", "10 kg", null, "Con cargo"],
-      ["Switch", null, "15 kg", "Con cargo"],
+      ["Zero", null, null, "sin_cambios"],
+      ["Light", 10, null, "con_cargo"],
+      ["Switch", null, 15, "con_cargo"],
     ],
     nacional: ["Depende de la tarifa", "1 h 10 min antes", "terceros", "eSky"],
     internacional: ["Depende de la tarifa", "1 h 10 min antes", "terceros", "eSky"],
@@ -41,9 +42,9 @@ const AEROLINEAS: {
     nombre: "Volaris",
     sitio: "volaris.com",
     tarifas: [
-      ["Básica", null, null, "Con cargo"],
-      ["Clásica", "10 kg", "25 kg", "Con cargo"],
-      ["Plus", "10 kg", "25 kg", "Sin cargo"],
+      ["Básica", null, null, "con_cargo"],
+      ["Clásica", 10, 25, "con_cargo"],
+      ["Plus", 10, 25, "sin_cargo"],
     ],
     nacional: ["72 h antes", "1 h antes", "terceros", "ByAir"],
     internacional: ["72 h antes", "1 h antes", "terceros", "ByAir"],
@@ -53,9 +54,9 @@ const AEROLINEAS: {
     nombre: "Aeroméxico",
     sitio: "aeromexico.com",
     tarifas: [
-      ["Básica", "10 kg", null, "Sin cambios"],
-      ["Clásica", "10 kg", "25 kg", "Con cargo"],
-      ["Flexible", "10 kg", "25 kg", "Sin cargo"],
+      ["Básica", 10, null, "sin_cambios"],
+      ["Clásica", 10, 25, "con_cargo"],
+      ["Flexible", 10, 25, "sin_cargo"],
     ],
     nacional: [null, null, "sin_fuente", null],
     internacional: [null, null, "sin_fuente", null],
@@ -72,18 +73,19 @@ export async function sembrarAerolineas(db: Db, duenoId: string) {
         iata: a.iata,
         nombre: a.nombre,
         sitio: a.sitio,
-        comoSeCompra: "En su sitio, con la forma de pago que ofrezca",
         notaInterna: a.nota ?? null,
         creadoPor: duenoId,
       })
       .returning({ id: schema.aerolineas.id });
     await db.insert(schema.aerolineaTarifas).values(
-      a.tarifas.map(([nombre, mano, documentada, cambios], orden) => ({
+      a.tarifas.map(([nombre, mano, documentado, cambios], orden) => ({
         aerolineaId: nueva.id,
         nombre,
-        mano,
-        documentada,
-        cambios,
+        manoPiezas: mano ? 1 : 0,
+        manoKg: mano,
+        documentadoPiezas: documentado ? 1 : 0,
+        documentadoKg: documentado,
+        cambiosRegla: cambios,
         orden,
       })),
     );

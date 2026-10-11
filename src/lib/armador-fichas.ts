@@ -52,7 +52,26 @@ export type FichaAerolineaArmador = {
   tarifas: { id: string; nombre: string; detalle: string }[];
 };
 
-export type FichaArmador = FichaHotelArmador | FichaActividadArmador | FichaServicioArmador | FichaAerolineaArmador;
+/** Un tipo de unidad del catálogo de Traslados. */
+export type FichaTrasladoArmador = {
+  tipo: "traslado";
+  id: string;
+  nombre: string;
+  lugar: string;
+  foto: string | null;
+  pasajeros: number;
+  maletas: number;
+  adaptada: boolean;
+  descripcion: string | null;
+  archivada: boolean;
+};
+
+export type FichaArmador =
+  | FichaHotelArmador
+  | FichaActividadArmador
+  | FichaServicioArmador
+  | FichaAerolineaArmador
+  | FichaTrasladoArmador;
 
 export type ResultadoCatalogo = {
   id: string;
@@ -69,8 +88,10 @@ export function idCatalogo(p: {
   actividadId: string | null;
   servicioId: string | null;
   aerolineaId: string | null;
+  trasladoUnidadId: string | null;
 }): string | null {
   if (p.tipo === "hotel") return p.hotelId;
+  if (p.tipo === "traslado") return p.trasladoUnidadId;
   if (p.tipo === "actividad") return p.actividadId;
   if (p.tipo === "servicio") return p.servicioId;
   return p.aerolineaId;

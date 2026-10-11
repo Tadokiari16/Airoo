@@ -18,15 +18,14 @@ import { buscarEnCatalogo, fichaDe } from "@/lib/catalogo-armador";
 import { CAMAS, repartirHuespedes, type TipoPartida } from "@/lib/cotizacion";
 import { MONEDAS } from "@/lib/dinero";
 import { puede, puedeEditarViaje } from "@/lib/permisos";
-import { MODELO_SUGERIDO, VALORES_TIPO as TIPOS_SERVICIO } from "@/lib/servicios";
+import { MODELO_SUGERIDO, VALORES_TIPO_ALTA as TIPOS_SERVICIO } from "@/lib/servicios";
+import { COMPARTIDO, hotelesDelViaje, proponerTrayectos, unidadSugerida } from "@/lib/traslados";
 import { usuarioActual } from "@/lib/sesion";
 import { limpiar, normalizar } from "@/lib/texto";
 import { tipoCambioVigente } from "@/lib/tipo-cambio";
 import { anotarEnViaje, opcionesDe, partidasDe } from "@/lib/viajes";
 import { cargarAjustes } from "@/app/(panel)/configuracion/datos";
-import { erroresDe, type ContextoRevision } from "@/lib/revision";
 import type { Aeropuerto } from "@/lib/vuelos";
-import { hoyEnCancun } from "@/lib/fechas";
 import { aPuntosBase } from "@/lib/cotizacion";
 import { ultimoAcuerdo } from "./datos";
 
@@ -68,7 +67,7 @@ function revalidar(folio: number) {
 }
 
 const SECCION_DE: Record<TipoPartida, string> = Object.fromEntries(
-  SECCIONES.map((s) => [s.tipo, s.titulo.split(" ")[0]]),
+  SECCIONES.flatMap((s) => s.tipos.map((t) => [t, s.titulo.split(" ")[0]])),
 ) as Record<TipoPartida, string>;
 
 async function anotarEdicion(viajeId: string, quien: string, tipo: TipoPartida) {
@@ -233,7 +232,8 @@ export async function vueloConocido(numero: string) {
 
 // ─── Agregar al viaje ───────────────────────────────────────────────────────
 
-export type Agregado = { partida: PartidaArmador; ficha: FichaArmador; opciones: Opcion[]; partidas: PartidaArmador[] };
+/** La ficha falta solo en el traslado compartido, que no lleva unidad. */
+export type Agregado = { partida: PartidaArmador; ficha: FichaArmador | null; opciones: Opcion[]; partidas: PartidaArmador[] };
 
 export async function agregarPartida(
   cotizacionId: string,
@@ -244,9 +244,11 @@ export async function agregarPartida(
   const e = await editable(cotizacionId);
   if (e.error !== undefined) return { error: e.error };
   const { yo, cotizacion: c, viaje: v } = e;
-  const ficha = await fichaDe(tipo, catalogoId);
-  if (!ficha) return { error: "Ese registro ya no está en el catálogo." };
-  if (ficha.tipo === "hotel" && ficha.soloAdultos && v.menores > 0)
+  const compartido = tipo === "traslado" && catalogoId === COMPARTIDO;
+  const ficha = compartido ? null : await fichaDe(tipo, catalogoId);
+  if (!ficha && !compartido) return { error: "Ese registro ya no está en el catálogo." };
+  if (ficha?.tipo === "traslado" && ficha.archivada) return { error: "Ese tipo de unidad está archivado." };
+  if (ficha?.tipo === "hotel" && ficha.soloAdultos && v.menores > 0)
     return {
       error: `Este hotel es solo para adultos y en el viaje van ${v.menores} ${v.menores === 1 ? "menor" : "menores"}.`,
     };
@@ -297,7 +299,9 @@ export async function agregarPartida(
     }
   }
 
-  if (ficha.tipo === "hotel") {
+  if (tipo === "traslado") await prepararTraslado(p, ficha?.tipo === "traslado" ? ficha.id : null, existentes, v);
+
+  if (ficha?.tipo === "hotel") {
     p.hotelId = ficha.id;
     p.regimen = ficha.regimenes[0] ?? null;
     p.reembolsable = true;
@@ -311,7 +315,7 @@ export async function agregarPartida(
         menores: h.menores,
       }));
   }
-  if (ficha.tipo === "actividad") {
+  if (ficha?.tipo === "actividad") {
     p.actividadId = ficha.id;
     p.planId = ficha.planes[0]?.id ?? null;
     p.detalle = { duracion: ficha.duracion ?? "", inclusiones: ficha.inclusiones };
@@ -334,27 +338,13 @@ export async function agregarPartida(
       ];
     }
   }
-  if (ficha.tipo === "servicio") {
+  if (ficha?.tipo === "servicio") {
     p.servicioId = ficha.id;
-    const variante =
-      ficha.tipoServicio === "traslado"
-        ? (ficha.variantes.find((x) => (x.pasajeros ?? 0) >= personas) ?? ficha.variantes[0])
-        : ficha.variantes[0];
-    p.varianteId = variante?.id ?? null;
+    p.varianteId = ficha.variantes[0]?.id ?? null;
     p.detalle = { personas };
-    if (ficha.tipoServicio === "traslado") {
-      p.detalle = { personas, recoleccion: "redondo" };
-      const vuelo = existentes.find((x) => x.tipo === "vuelo");
-      const ida = vuelo?.tramos.filter((t) => t.sentido === "ida").at(-1);
-      const regreso = vuelo?.tramos.find((t) => t.sentido === "regreso");
-      p.trayectos = [
-        { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: v.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null },
-        { id: nuevoId(), desde: "Hotel", hasta: "Aeropuerto", fecha: v.fin, hora: null, vueloTramoId: regreso?.id ?? null },
-      ];
-    }
     if (ficha.modeloCobro === "persona_dia" && ficha.tipoServicio === "seguro") p.detalle = { ...p.detalle, cobertura: "Nacional", mayores70: 0 };
   }
-  if (ficha.tipo === "vuelo") {
+  if (ficha?.tipo === "vuelo") {
     p.aerolineaId = ficha.id;
     p.tarifaId = ficha.tarifas[0]?.id ?? null;
     p.detalle = { redondo: true, pasajeros: personas };
@@ -409,6 +399,96 @@ export async function agregarPartida(
   return { partida: todas.find((x) => x.id === p.id)!, ficha, opciones: nuevasOpciones, partidas: todas };
 }
 
+/**
+ * Traslado nuevo: aeropuerto–hotel y redondo, con el vuelo y el hotel de la
+ * cotización. «Se reserva en» propone el último proveedor de traslados que se
+ * usó (si no hay, TBO), con su último acuerdo.
+ */
+async function prepararTraslado(
+  p: PartidaArmador,
+  unidadId: string | null,
+  existentes: PartidaArmador[],
+  v: typeof schema.viajes.$inferSelect,
+) {
+  const personas = v.adultos + v.menores;
+  p.trasladoUnidadId = unidadId;
+  p.detalle = {
+    modo: "aeropuerto_hotel",
+    servicio: unidadId ? "privado" : "compartido",
+    sentido: "redondo",
+    direccion: "llegada",
+    personas,
+    maletas: personas,
+  };
+  const tramos = existentes.filter((x) => x.tipo === "vuelo").flatMap((x) => x.tramos);
+  const claves = [...new Set(tramos.flatMap((t) => [t.origen, t.destino]).filter(Boolean))];
+  const aeropuertos = claves.length
+    ? await db
+        .select({ iata: schema.aeropuertos.iata, ciudad: schema.aeropuertos.ciudad })
+        .from(schema.aeropuertos)
+        .where(inArray(schema.aeropuertos.iata, claves))
+    : [];
+  const hoteles = existentes.filter((x) => x.tipo === "hotel" && x.hotelId);
+  const fichas = hoteles.length
+    ? await db
+        .select({ id: schema.hoteles.id, nombre: schema.hoteles.nombre })
+        .from(schema.hoteles)
+        .where(inArray(schema.hoteles.id, hoteles.map((h) => h.hotelId as string)))
+    : [];
+  p.trayectos = proponerTrayectos({
+    sentido: "redondo",
+    direccion: "llegada",
+    tramos,
+    hoteles: hotelesDelViaje(
+      hoteles.map((h) => ({
+        opcionId: h.opcionId,
+        fechaInicio: h.fechaInicio,
+        nombre: fichas.find((f) => f.id === h.hotelId)?.nombre ?? "Hotel",
+      })),
+    ),
+    ciudadDe: (iata) => aeropuertos.find((a) => a.iata === iata)?.ciudad,
+    viaje: { inicio: v.inicio, fin: v.fin },
+    actuales: [],
+    nuevoId,
+  });
+
+  const [ultimo] = await db
+    .select({ proveedorId: schema.partidas.proveedorId })
+    .from(schema.partidas)
+    .where(and(eq(schema.partidas.tipo, "traslado"), sql`${schema.partidas.proveedorId} is not null`))
+    .orderBy(desc(schema.partidas.actualizadoEn))
+    .limit(1);
+  const [tbo] = ultimo
+    ? []
+    : await db
+        .select({ id: schema.proveedores.id })
+        .from(schema.proveedores)
+        .where(and(sql`lower(${schema.proveedores.nombre}) like 'tbo%'`, isNull(schema.proveedores.archivadoEn)))
+        .limit(1);
+  const proveedorId = ultimo?.proveedorId ?? tbo?.id ?? null;
+  if (proveedorId) {
+    p.proveedorId = proveedorId;
+    const a = await ultimoAcuerdo(proveedorId);
+    if (a) {
+      p.pagoProveedor = a.pagoProveedor;
+      p.anticipoProveedorPb = a.anticipoProveedorPb;
+      p.cancelacionTexto = a.cancelacionTexto;
+    }
+  }
+}
+
+/** La unidad que se propone al agregar un traslado: la más chica en la que cabe el viaje. */
+export async function unidadPropuesta(personas: number): Promise<string | null> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "cotizar")) return null;
+  const t = schema.trasladoUnidades;
+  const unidades = await db
+    .select({ id: t.id, nombre: t.nombre, pasajeros: t.pasajeros, maletas: t.maletas, adaptada: t.adaptada })
+    .from(t)
+    .where(isNull(t.archivadoEn));
+  return unidadSugerida(unidades, personas, personas)?.id ?? null;
+}
+
 // ─── Guardar una partida ────────────────────────────────────────────────────
 
 const dia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable();
@@ -421,13 +501,14 @@ const texto = (max: number) => z.string().max(max).transform((v) => v.trim());
 
 const Partida = z.object({
   id,
-  tipo: z.enum(["hotel", "vuelo", "actividad", "servicio"]),
+  tipo: z.enum(["hotel", "vuelo", "actividad", "traslado", "servicio"]),
   opcionId: id.nullable(),
   orden: z.number().int(),
   hotelId: id.nullable(),
   actividadId: id.nullable(),
   servicioId: id.nullable(),
   aerolineaId: id.nullable(),
+  trasladoUnidadId: id.nullable(),
   planId: id.nullable(),
   varianteId: id.nullable(),
   tarifaId: id.nullable(),
@@ -443,9 +524,25 @@ const Partida = z.object({
     redondo: z.boolean().optional(),
     pasajeros: z.number().int().min(0).max(500).optional(),
     tua: texto(200).optional(),
+    tuas: z
+      .array(
+        z.object({
+          tramoId: z.string().max(64),
+          iata: z.string().max(3),
+          centavos: z.number().int().min(0).max(100_000_000).nullable(),
+          moneda: z.enum(["MXN", "USD", "EUR"]),
+        }),
+      )
+      .max(24)
+      .optional(),
     duracion: texto(80).optional(),
     inclusiones: texto(2000).optional(),
     personas: z.number().int().min(0).max(500).optional(),
+    modo: z.enum(["aeropuerto_hotel", "libre"]).optional(),
+    servicio: z.enum(["privado", "compartido"]).optional(),
+    sentido: z.enum(["sencillo", "redondo"]).optional(),
+    direccion: z.enum(["llegada", "salida"]).optional(),
+    maletas: z.number().int().min(0).max(500).optional(),
     recoleccion: z.enum(["ida", "regreso", "redondo"]).optional(),
     duracionAprox: texto(40).optional(),
     cobertura: texto(80).optional(),
@@ -505,6 +602,8 @@ const Partida = z.object({
         fecha: dia,
         hora,
         vueloTramoId: id.nullable(),
+        vueloFecha: dia,
+        vueloHora: hora,
       }),
     )
     .max(8),
@@ -523,6 +622,7 @@ async function escribirPartida(cotizacionId: string, p: PartidaArmador, quien: s
     actividadId: p.actividadId,
     servicioId: p.servicioId,
     aerolineaId: p.aerolineaId,
+    trasladoUnidadId: p.trasladoUnidadId,
     planId: p.planId,
     varianteId: p.varianteId,
     tarifaId: p.tarifaId,
@@ -599,6 +699,8 @@ async function escribirPartida(cotizacionId: string, p: PartidaArmador, quien: s
       fecha: t.fecha,
       hora: t.hora,
       vueloTramoId: t.vueloTramoId,
+      vueloFecha: t.vueloFecha,
+      vueloHora: t.vueloHora,
     }));
   });
 }
@@ -626,6 +728,16 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
     const ajustes = await cargarAjustes();
     p.utilidadPb = aPuntosBase(ajustes.ganancia_defecto.vuelos);
   }
+  // La unidad solo va en el traslado privado.
+  if (p.tipo !== "traslado" || p.detalle.servicio === "compartido") p.trasladoUnidadId = null;
+  if (p.trasladoUnidadId) {
+    const [u] = await db
+      .select({ id: schema.trasladoUnidades.id })
+      .from(schema.trasladoUnidades)
+      .where(eq(schema.trasladoUnidades.id, p.trasladoUnidadId))
+      .limit(1);
+    if (!u) return { error: "Ese tipo de unidad ya no está en el catálogo de Traslados." };
+  }
   // Los trayectos solo se ligan a vuelos de esta misma cotización.
   const ligas = p.trayectos.map((t) => t.vueloTramoId).filter((x): x is string => !!x);
   if (ligas.length) {
@@ -638,9 +750,6 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
     for (const t of p.trayectos) if (t.vueloTramoId && !ok.has(t.vueloTramoId)) t.vueloTramoId = null;
   }
 
-  // Lo que se contradice no se guarda: el armador ya lo muestra; aquí se revisa otra vez.
-  const errores = erroresDe(p, await contextoRevision(c, v, [p]));
-  if (errores.length) return { error: errores[0].texto };
   if (p.aerolineaId) {
     const [a] = await db.select({ id: schema.aerolineas.id }).from(schema.aerolineas).where(eq(schema.aerolineas.id, p.aerolineaId)).limit(1);
     if (!a) return { error: "La aerolínea de este vuelo ya no está en el catálogo de Aerolíneas." };
@@ -665,27 +774,6 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
   await anotarEdicion(v.id, yo.id, p.tipo);
   revalidar(v.folio);
   return fx;
-}
-
-/** Lo que la revisión necesita, leído de la base: aeropuertos de los tramos y aerolíneas del catálogo. */
-async function contextoRevision(
-  c: typeof schema.cotizaciones.$inferSelect,
-  v: typeof schema.viajes.$inferSelect,
-  partidas: PartidaArmador[],
-): Promise<ContextoRevision> {
-  const claves = [...new Set(partidas.flatMap((p) => p.tramos.flatMap((t) => [t.origen, t.destino])).filter(Boolean))];
-  const [aeropuertos, aerolineas] = await Promise.all([
-    claves.length ? db.select().from(schema.aeropuertos).where(inArray(schema.aeropuertos.iata, claves)) : [],
-    db.select({ iata: schema.aerolineas.iata }).from(schema.aerolineas),
-  ]);
-  return {
-    viaje: { inicio: v.inicio, fin: v.fin, adultos: v.adultos, menores: v.menores, edadesMenores: v.edadesMenores },
-    hoy: hoyEnCancun(),
-    fx: { fixUsd: c.fixUsd, fixEur: c.fixEur, colchonPb: c.colchonPb },
-    aeropuertos: Object.fromEntries(aeropuertos.map((a) => [a.iata, a])),
-    aerolineas: aerolineas.map((a) => a.iata),
-    nombres: {},
-  };
 }
 
 /** El campo de aeropuerto: busca por clave, ciudad o nombre. «CUN», «Cancún», «MEX». */

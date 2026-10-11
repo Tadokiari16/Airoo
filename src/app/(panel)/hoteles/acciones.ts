@@ -364,7 +364,7 @@ export async function quitarHabitacion(id: string): Promise<{ error?: string }> 
     .select({ archivo: schema.fotos.archivo })
     .from(schema.fotos)
     .where(eq(schema.fotos.habitacionId, id));
-  // Fotos y nombres de proveedor se borran con ella (en cascada).
+  // Sus fotos se borran con ella (en cascada).
   await db.delete(schema.hotelHabitaciones).where(eq(schema.hotelHabitaciones.id, id));
   await borrarFotos(fotos.map((f) => f.archivo));
   await tocar(r.hotelId);
@@ -375,76 +375,6 @@ export async function quitarHabitacion(id: string): Promise<{ error?: string }> 
     entidadId: r.hotelId,
   });
   revalidar(r.hotelId);
-  return {};
-}
-
-export async function agregarNombreProveedor(
-  habitacionId: string,
-  proveedorId: string,
-  nombre: string,
-): Promise<{ error?: string }> {
-  const yo = await usuarioCon("editar_catalogos");
-  if (!yo) return { error: SIN_PERMISO };
-  const n = limpiar(nombre);
-  if (n.length < 2) return { error: "Falta el nombre tal como aparece en la tarifa del proveedor." };
-  if (!z.uuid().safeParse(proveedorId).success) return { error: "Falta elegir el proveedor." };
-  const [r] = await db
-    .select()
-    .from(schema.hotelHabitaciones)
-    .where(eq(schema.hotelHabitaciones.id, habitacionId))
-    .limit(1);
-  if (!r) return { error: "Esa habitación ya no existe." };
-  const [p] = await db
-    .select({ nombre: schema.proveedores.nombre })
-    .from(schema.proveedores)
-    .where(eq(schema.proveedores.id, proveedorId))
-    .limit(1);
-  if (!p) return { error: "Ese proveedor ya no existe." };
-  const repetido = await db
-    .select({ id: schema.hotelHabitacionNombres.id })
-    .from(schema.hotelHabitacionNombres)
-    .where(
-      and(
-        eq(schema.hotelHabitacionNombres.habitacionId, habitacionId),
-        eq(schema.hotelHabitacionNombres.proveedorId, proveedorId),
-        sql`lower(${schema.hotelHabitacionNombres.nombre}) = lower(${n})`,
-      ),
-    );
-  if (repetido.length) return { error: "Ese nombre ya está en esta habitación." };
-  await db.insert(schema.hotelHabitacionNombres).values({ habitacionId, proveedorId, nombre: n });
-  await tocar(r.hotelId);
-  await anotar({
-    quien: yo.id,
-    texto: `Nombre de ${p.nombre} para «${r.nombreCliente}»: ${n}`,
-    entidad: "hoteles",
-    entidadId: r.hotelId,
-  });
-  revalidar(r.hotelId);
-  return {};
-}
-
-export async function quitarNombreProveedor(id: string): Promise<{ error?: string }> {
-  const yo = await usuarioCon("editar_catalogos");
-  if (!yo) return { error: SIN_PERMISO };
-  const [n] = await db
-    .select({ n: schema.hotelHabitacionNombres, hotelId: schema.hotelHabitaciones.hotelId })
-    .from(schema.hotelHabitacionNombres)
-    .innerJoin(
-      schema.hotelHabitaciones,
-      eq(schema.hotelHabitaciones.id, schema.hotelHabitacionNombres.habitacionId),
-    )
-    .where(eq(schema.hotelHabitacionNombres.id, id))
-    .limit(1);
-  if (!n) return {};
-  await db.delete(schema.hotelHabitacionNombres).where(eq(schema.hotelHabitacionNombres.id, id));
-  await tocar(n.hotelId);
-  await anotar({
-    quien: yo.id,
-    texto: `Nombre de proveedor quitado: ${n.n.nombre}`,
-    entidad: "hoteles",
-    entidadId: n.hotelId,
-  });
-  revalidar(n.hotelId);
   return {};
 }
 

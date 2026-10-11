@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { Boton } from "@/components/ui/boton";
 import { Campo, Selector } from "@/components/ui/campo";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -69,7 +70,7 @@ function FormularioInvitar({ alTerminar }: { alTerminar: () => void }) {
   }
 
   return (
-    <form action={accion} className="flex flex-col gap-4">
+    <form onSubmit={enviarSinVaciar(accion)} className="flex flex-col gap-4">
       <p className="text-tinta-2">La invitación llega por correo o WhatsApp y entra con el rol elegido.</p>
       <Campo etiqueta="Nombre" name="nombre" placeholder="Ej. Asesora 3" required />
       <Campo

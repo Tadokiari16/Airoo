@@ -18,6 +18,8 @@ Los diseños están en `disenos/`:
 - Tolerancia de precio al validar: monto fijo de $300 MXN por servicio. Si sube menos, Airoo lo absorbe; si sube más, se manda versión 2 al cliente.
 - «Cargo por servicio» (no «fee»). Los precios no llevan IVA salvo que el cliente pida factura.
 - Comisión de Airoo sobre viajes de asesoras: **35% de la utilidad** (venta − costo). Ejemplo: venta $20,000, utilidad $2,000 → Airoo $700, asesora $1,300.
+- **Utilidad de vuelos: 2.5%**, fija y sin edición en el armador. El valor sale de Configuración (`ganancia_defecto.vuelos`), no se escribe en el código. Es política de Airoo: los vuelos dejan menos margen que el resto de los servicios.
+- **Pagos flexibles (decisión 6.2, aprobada).** El anticipo cubre lo que se paga al reservar (vuelos, actividades, traslados, seguro) y el cargo por servicio. El hotel se divide en dos pagos solo si su tarifa tiene cancelación gratis y su fecha de pago deja tiempo; si no, va completo en el anticipo y queda «Pago único». En un viaje de solo hospedaje, el hotel se divide en tres partes iguales y la primera, más el cargo por servicio, forma el anticipo. Así el cliente no adelanta un hotel que todavía puede cancelar sin costo.
 
 **Pagos**
 - **Desde el sistema no se hacen pagos.** Se registra lo que ya se pagó: cuándo, con qué, a qué cuenta, monto real y comprobante.
@@ -32,11 +34,16 @@ Los diseños están en `disenos/`:
 - Las aerolíneas no son proveedores: viven en el catálogo de Aerolíneas.
 
 **Catálogos**
-- Sin API en la primera versión. Alta manual con lo mínimo (nombre + ciudad) y se completa en la ficha. La importación (RateHawk/TBO) queda como conexión opcional futura, apagada.
+- Sin API en la primera versión. Alta manual con lo mínimo (nombre + ciudad) y se completa en la ficha. La importación (RateHawk/TBO) queda como conexión opcional futura, apagada: mientras no haya una conexión encendida en Configuración, «Nuevo hotel» abre directo la captura manual.
 - Ciudades: lista compartida por hoteles, actividades y viajes. Solo administradores agregan ciudades; avisar si hay una con nombre parecido.
-- Hotel: portada separada (16:9, mínimo 1600×900, con ajuste de encuadre; avisar si la foto es chica o cuadrada), galería de la propiedad, habitaciones con su propio grupo de fotos y los nombres que usa cada plataforma, dirección + liga de Google Maps, teléfono público, ID de Tripadvisor, reglas del hotel, cargos que se pagan en el hotel (con su moneda), dónde se puede reservar (plataformas con ID, sin obligar).
+- Hotel: portada separada (16:9, mínimo 1600×900, con ajuste de encuadre; avisar si la foto es chica o cuadrada), galería de la propiedad, habitaciones (solo el nombre que ve el cliente y su propio grupo de fotos), dirección + liga de Google Maps, teléfono público, ID de Tripadvisor, reglas del hotel, cargos que se pagan en el hotel (con su moneda), dónde se puede reservar (plataformas con ID, sin obligar).
 - Camas y número de personas **no** van en el catálogo: se eligen en el armador (lista fija de camas; personas por defecto 4).
 - Actividad: ficha base igual para todas (nombre, ciudad, tipo, duración en texto libre, descripción, fotos) + 8 bloques opcionales que se encienden por actividad: cómo se cobra (por persona/edad/grupo/unidad), planes, boletos por edad, horarios, cómo llega el cliente, incluye/no incluye/qué llevar, requisitos, cómo se confirma. El tipo sugiere bloques, no apaga ninguno con datos. Proveedores ligados se consultan, no se copian.
+- Servicios (seguros, conectividad, equipo, reservaciones): el tipo se elige al darlo de alta y después no se cambia. Las indicaciones para el cliente van en «En el viaje confirmado».
+- Traslados: el catálogo guarda **tipos de unidad** (sedán, SUV, van, Sprinter, van adaptada), cada uno con nombre, pasajeros máximos, maletas máximas, si es adaptada, foto y descripción. **Sin ciudad, proveedor ni precio**, y sin inventario de flotilla. Los traslados ya no viven en Servicios.
+- Traslado en el armador: modo aeropuerto–hotel (propuesto con el vuelo y el hotel de la cotización) o libre (origen y destino a mano); privado o compartido; sencillo o redondo; fecha y hora; «Se reserva en» (hoy TBO de punto de partida), moneda de la tarifa y costo neto total. En privado se elige la unidad y se avisa si los pasajeros o las maletas superan su capacidad; en compartido no se elige unidad. Si el vuelo del que salió el traslado cambia de horario, el traslado queda «por revisar».
+- Traslado al reservar (Fase 4): se sube la confirmación del proveedor. El operador (nombre, teléfono, WhatsApp) se captura después como dato de esa reserva, **no es un proveedor del catálogo**. Aviso si faltan 3 días para el servicio y no hay operador. Cuando está capturado, el cliente ve el contacto del operador en su agenda.
+- Aerolíneas: cada tarifa con opciones cerradas: equipaje de mano y documentado («No incluye» o piezas con kilos), cambios (Sin cambios, Con cargo, Sin cargo) y artículo personal (encendido por defecto). La TUA no va en el catálogo: depende de los aeropuertos y se captura en el armador. «Llegar antes» (nacional e internacional) se configura en Configuración › Datos y horario.
 - Archivar: interruptor con confirmación. Eliminar solo si nunca se usó; si se usó, solo archivar. «Unir con otro hotel» para duplicados.
 
 **Cancelación**
