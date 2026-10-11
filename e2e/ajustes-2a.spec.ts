@@ -183,8 +183,8 @@ test("editar viaje: cliente, fechas y pasajeros; los servicios fuera del nuevo r
 
   // Cliente: se busca otro que ya existe.
   await d.getByRole("button", { name: "Cambiar" }).first().click();
-  await d.getByLabel("Buscar cliente").fill("Nataly");
-  await d.getByRole("button", { name: /Nataly Cervantes/ }).click();
+  await d.getByLabel("Buscar cliente").fill("Cliente prueba notas");
+  await d.getByRole("button", { name: /Cliente prueba notas/ }).first().click();
 
   // Fechas nuevas: el hotel (10–14 dic) queda fuera y la ventana lo dice antes de guardar.
   await d.getByLabel("Salida", { exact: true }).fill("2026-12-12");
@@ -198,7 +198,7 @@ test("editar viaje: cliente, fechas y pasajeros; los servicios fuera del nuevo r
   await d.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(d).toBeHidden();
 
-  await expect(page.getByRole("heading", { name: "Nataly Cervantes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cliente prueba notas" })).toBeVisible();
   await expect(page.getByText("3 adultos y 1 menor").first()).toBeVisible();
   await expect(page.getByText("Edades de los menores: 6 años")).toBeVisible();
   await expect(page.getByText("Fuera de las fechas del viaje")).toBeVisible();
