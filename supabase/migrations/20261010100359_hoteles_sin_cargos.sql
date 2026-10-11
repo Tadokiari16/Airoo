@@ -1,0 +1,1 @@
+ALTER TABLE "hoteles" ADD COLUMN "sin_cargos" boolean DEFAULT false NOT NULL;

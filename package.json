@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "tsx scripts/arranque.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -12,6 +13,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "db:generar": "drizzle-kit generate",
+    "arranque": "tsx scripts/arranque.ts",
     "db:reiniciar": "supabase db reset",
     "semilla": "tsx scripts/semilla.ts"
   },

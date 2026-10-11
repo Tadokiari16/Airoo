@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { urlSitio } from "./sitio";
 
 // Enlaces del cliente y del pasajero (CLAUDE.md › Decisiones técnicas): el
 // acceso es con un token aleatorio largo, nunca con el folio. El folio
@@ -16,12 +17,12 @@ export function esTokenValido(texto: string): boolean {
   return /^[A-Za-z0-9_-]{43}$/.test(texto);
 }
 
-export function enlaceCliente(token: string, sitio = process.env.NEXT_PUBLIC_SITE_URL ?? ""): string {
+export function enlaceCliente(token: string, sitio = urlSitio()): string {
   if (!esTokenValido(token)) throw new Error("El enlace del cliente se arma con un token, no con el folio");
   return `${sitio}/c/${token}`;
 }
 
-export function enlacePasajero(token: string, sitio = process.env.NEXT_PUBLIC_SITE_URL ?? ""): string {
+export function enlacePasajero(token: string, sitio = urlSitio()): string {
   if (!esTokenValido(token)) throw new Error("El enlace del pasajero se arma con un token, no con el folio");
   return `${sitio}/p/${token}`;
 }

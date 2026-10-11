@@ -20,7 +20,11 @@ export type Permiso =
   | "configuracion" // configuración, equipo, ciudades y bitácora
   | "ver_catalogos" // hoteles, actividades, servicios y aerolíneas
   | "ver_proveedores"
-  | "editar_catalogos";
+  | "editar_catalogos" // agregar y editar hoteles, actividades, servicios, aerolíneas y proveedores
+  | "archivar_catalogos" // archivar y reactivar
+  | "eliminar_catalogos" // eliminar (solo si nunca se usó) y unir duplicados
+  | "cuentas_proveedor" // agregar, aprobar o rechazar dónde recibe un proveedor
+  | "ver_cuenta_completa"; // ver y copiar el número completo de una cuenta de proveedor
 
 const MATRIZ: Record<Rol, readonly Permiso[]> = {
   dueno: [
@@ -33,9 +37,20 @@ const MATRIZ: Record<Rol, readonly Permiso[]> = {
     "ver_catalogos",
     "ver_proveedores",
     "editar_catalogos",
+    "archivar_catalogos",
+    "eliminar_catalogos",
+    "cuentas_proveedor",
+    "ver_cuenta_completa",
   ],
-  asesora: ["cotizar", "confirmar_pagos", "ver_catalogos", "ver_proveedores", "editar_catalogos"],
-  contador: ["confirmar_pagos", "ver_finanzas", "ver_proveedores"],
+  asesora: [
+    "cotizar",
+    "confirmar_pagos",
+    "ver_catalogos",
+    "ver_proveedores",
+    "editar_catalogos",
+    "archivar_catalogos",
+  ],
+  contador: ["confirmar_pagos", "ver_finanzas", "ver_proveedores", "ver_cuenta_completa"],
 };
 
 export function puede(rol: Rol, permiso: Permiso): boolean {

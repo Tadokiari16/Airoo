@@ -7,6 +7,7 @@ import { anotar } from "@/lib/bitacora";
 import { invitacionPendiente } from "@/lib/sesion";
 import { supabaseServidor } from "@/lib/supabase/servidor";
 import { iniciales, limpiar } from "@/lib/texto";
+import { urlSitio } from "@/lib/sitio";
 
 export type Estado = { error?: string; listo?: boolean } | undefined;
 
@@ -38,7 +39,7 @@ export async function pedirRecuperacion(_: Estado, datos: FormData): Promise<Est
   if (!correo.includes("@")) return { error: "Ese correo no parece completo." };
   const supabase = await supabaseServidor();
   await supabase.auth.resetPasswordForEmail(correo, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirmar?next=/nueva-contrasena`,
+    redirectTo: `${urlSitio()}/auth/confirmar?next=/nueva-contrasena`,
   });
   // Mismo mensaje exista o no la cuenta, para no revelar quién tiene acceso.
   return { listo: true };

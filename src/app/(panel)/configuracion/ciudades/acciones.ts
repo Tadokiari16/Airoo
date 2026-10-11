@@ -15,7 +15,7 @@ export type { Parecida };
 export type ResultadoCiudad =
   | { error: string }
   | { parecidas: Parecida[]; datos: { nombre: string; region: string; pais: string } }
-  | { creada: string }
+  | { creada: string; id: string }
   | undefined;
 
 const Ciudad = z.object({
@@ -69,7 +69,8 @@ export async function agregarCiudad(_: ResultadoCiudad, datos: FormData): Promis
     entidadId: nueva.id,
   });
   revalidatePath(RUTA);
-  return { creada: `${nombre}, ${region}` };
+  revalidatePath("/hoteles");
+  return { creada: `${nombre}, ${region}`, id: nueva.id };
 }
 
 export async function archivarCiudad(id: string, archivar: boolean) {

@@ -1,23 +1,31 @@
 import type { Metadata } from "next";
-import { usuarioCon } from "@/lib/sesion";
-import { Encabezado } from "../encabezado";
+import { usuarioActual } from "@/lib/sesion";
+import { puede } from "@/lib/permisos";
 import { SinAcceso } from "../sin-acceso";
-import { Tarjeta, Vacio } from "@/components/ui/tarjeta";
+import { cargarActividades, opcionesCiudad } from "./datos";
+import { ListaActividades } from "./lista";
 
 export const metadata: Metadata = { title: "Actividades" };
 
-export default async function Actividades() {
-  if (!(await usuarioCon("ver_catalogos"))) return <SinAcceso />;
+export default async function Actividades({ searchParams }: { searchParams: Promise<{ a?: string }> }) {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_catalogos")) return <SinAcceso />;
+  const [actividades, ciudades, { a }] = await Promise.all([
+    cargarActividades(),
+    opcionesCiudad(),
+    searchParams,
+  ]);
   return (
-    <>
-      <Encabezado titulo="Actividades">
-        Parques, tours, day passes y experiencias, con los bloques que cada una necesita.
-      </Encabezado>
-      <Tarjeta>
-        <Vacio titulo="Todavía no hay actividades">
-          Cada actividad lleva una ficha base y los bloques que necesita: planes, boletos por edad, horarios.
-        </Vacio>
-      </Tarjeta>
-    </>
+    <ListaActividades
+      actividades={actividades}
+      ciudades={ciudades}
+      inicial={a ?? null}
+      agregaCiudades={puede(yo.rol, "configuracion")}
+      permisos={{
+        editar: puede(yo.rol, "editar_catalogos"),
+        archivar: puede(yo.rol, "archivar_catalogos"),
+        eliminar: puede(yo.rol, "eliminar_catalogos"),
+      }}
+    />
   );
 }
