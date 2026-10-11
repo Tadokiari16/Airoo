@@ -22,7 +22,8 @@ import {
   IconoWhatsapp,
 } from "@/components/iconos";
 import type { ItemResumen, ViajeCompleto } from "../datos";
-import { cambiarACargo, guardarNotaInterna } from "../acciones";
+import { cambiarACargo, editarNotaInterna, eliminarNotaInterna } from "../acciones";
+import { NotaGuardada, NotaNueva } from "../nota-interna";
 import { AvatarACargo, Etiqueta } from "../piezas";
 import { EditarViaje } from "./editar";
 
@@ -365,8 +366,6 @@ function TarjetaDinero({ d }: { d: NonNullable<ViajeCompleto["dinero"]> }) {
 }
 
 function TarjetaActividad({ v, alAvisar }: { v: ViajeCompleto; alAvisar: (t: string) => void }) {
-  const [nota, setNota] = useState("");
-  const [guardando, iniciar] = useTransition();
   return (
     <Tarjeta className="px-[18px] py-4">
       <Cabeza titulo="Actividad">
@@ -374,31 +373,7 @@ function TarjetaActividad({ v, alAvisar }: { v: ViajeCompleto; alAvisar: (t: str
           Historial completo
         </Link>
       </Cabeza>
-      <form
-        className="mb-3 flex gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          iniciar(async () => {
-            const r = await guardarNotaInterna(v.id, nota);
-            if (r.error) alAvisar(r.error);
-            else {
-              setNota("");
-              alAvisar("Nota interna guardada · no se le avisa al cliente");
-            }
-          });
-        }}
-      >
-        <input
-          aria-label="Nota interna para el equipo"
-          value={nota}
-          onChange={(e) => setNota(e.target.value)}
-          placeholder="Nota interna para el equipo…"
-          className="h-10 min-w-0 flex-1 rounded-campo bg-tarjeta px-3 text-[13.5px] shadow-borde outline-none focus:shadow-[inset_0_0_0_1.5px_var(--color-azul)]"
-        />
-        <Boton variante="secundario" type="submit" className="h-10" disabled={guardando || nota.trim().length < 2}>
-          Guardar
-        </Boton>
-      </form>
+      <NotaNueva viajeId={v.id} alAvisar={alAvisar} />
       <ListaActividad eventos={v.actividad.slice(0, 6)} />
     </Tarjeta>
   );
@@ -414,7 +389,7 @@ function ListaActividad({ eventos, completa }: { eventos: ViajeCompleto["activid
             className={`mt-1.5 size-[7px] shrink-0 rounded-full ${e.tipo === "nota" ? "bg-ambar" : e.tipo === "cliente" ? "bg-verde" : "bg-azul"}`}
           />
           <div className="min-w-0">
-            <b className="font-semibold">{e.texto}</b>
+            <b className="font-semibold whitespace-pre-line">{e.texto}</b>
             <span className="flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-tinta-3">
               {e.cuando}
               {completa && e.quien ? <> · {e.quien}</> : null}
@@ -425,6 +400,9 @@ function ListaActividad({ eventos, completa }: { eventos: ViajeCompleto["activid
                 </>
               ) : null}
             </span>
+            {e.puedeCambiar ? (
+              <NotaGuardada id={e.id} texto={e.texto} alCambiar={editarNotaInterna} alEliminar={eliminarNotaInterna} />
+            ) : null}
           </div>
         </li>
       ))}

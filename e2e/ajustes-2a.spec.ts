@@ -198,7 +198,7 @@ test("editar viaje: cliente, fechas y pasajeros; los servicios fuera del nuevo r
   await d.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(d).toBeHidden();
 
-  await expect(page.getByRole("heading", { name: "Cliente prueba notas" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cliente prueba notas", exact: true })).toBeVisible();
   await expect(page.getByText("3 adultos y 1 menor").first()).toBeVisible();
   await expect(page.getByText("Edades de los menores: 6 años")).toBeVisible();
   await expect(page.getByText("Fuera de las fechas del viaje")).toBeVisible();
@@ -222,4 +222,61 @@ test("nuevo viaje: bajo el contador de pasajeros se explican las edades", async 
   await expect(d.getByText("Adultos: 12 años o más · Menores: 2 a 11 · Bebés: menos de 2")).toBeVisible();
   await d.getByLabel("Menores").fill("2");
   await expect(d.getByLabel("Edad del menor 2")).toBeVisible();
+});
+
+test("nota interna de la ficha: Enter agrega una línea, se guarda con botón y se edita y elimina", async ({ page }) => {
+  await entrarComo(page, CORREOS.dueno);
+  const folio = await nuevoViaje(page, "Cliente prueba nota interna");
+  const campo = page.getByLabel("Nota interna para el equipo");
+  await campo.fill("Primera línea");
+  await campo.press("Enter");
+  await campo.pressSequentially("segunda línea");
+  // Enter no envía ni vacía el campo.
+  await expect(campo).toHaveValue("Primera línea\nsegunda línea");
+  await page.getByRole("button", { name: "Guardar nota" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Guardado" })).toBeVisible();
+  await expect(campo).toHaveValue("");
+  await expect(page.getByText("Primera línea")).toBeVisible();
+
+  await page.getByRole("button", { name: "Editar nota" }).click();
+  await page.getByLabel("Editar nota").fill("Nota corregida");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText("Nota corregida")).toBeVisible();
+
+  await page.getByRole("button", { name: "Eliminar nota" }).click();
+  await page.getByRole("button", { name: "Eliminar", exact: true }).click();
+  await expect(page.getByText("Nota corregida")).toBeHidden();
+  void folio;
+});
+
+test("nota interna: al salir del campo se guarda", async ({ page }) => {
+  await entrarComo(page, CORREOS.dueno);
+  await nuevoViaje(page, "Cliente prueba nota salir");
+  const campo = page.getByLabel("Nota interna para el equipo");
+  await campo.fill("Se guarda al salir");
+  await page.getByRole("heading", { name: "Actividad" }).click();
+  await expect(page.getByText("Se guarda al salir")).toBeVisible();
+  await expect(campo).toHaveValue("");
+});
+
+test("entrar con contraseña incorrecta no vacía el correo", async ({ page }) => {
+  await page.goto("/entrar");
+  await page.getByLabel("Correo").fill(CORREOS.dueno);
+  await page.getByLabel("Contraseña").fill("incorrecta-123");
+  await page.getByLabel("Contraseña").press("Enter");
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByLabel("Correo")).toHaveValue(CORREOS.dueno);
+});
+
+test("edades: indica bebé, menor y cuenta como adulto; el precio por persona no cuenta bebés", async ({ page }) => {
+  await entrarComo(page, CORREOS.dueno);
+  await page.getByRole("button", { name: "Nuevo viaje" }).click();
+  const d = page.getByRole("dialog", { name: "Nuevo viaje" });
+  await d.getByLabel("Menores").fill("3");
+  await d.getByLabel("Edad del menor 1").fill("1");
+  await d.getByLabel("Edad del menor 2").fill("7");
+  await d.getByLabel("Edad del menor 3").fill("15");
+  await expect(d.getByText("Bebé", { exact: true })).toBeVisible();
+  await expect(d.getByText("Menor", { exact: true })).toBeVisible();
+  await expect(d.getByText("Cuenta como adulto en vuelos")).toBeVisible();
 });

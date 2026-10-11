@@ -154,20 +154,21 @@ export const fixDe = (c: Cotizacion): FixCotizacion => ({
   colchonPb: c.colchonPb,
 });
 
-export const ajustesDe = (c: Cotizacion, personas: number): Ajustes => ({
+export const ajustesDe = (c: Cotizacion, personas: number, bebes = 0): Ajustes => ({
   cargoServicio: c.cargoServicioCentavos,
   conIva: c.conIva,
   ivaPb: c.ivaPb,
   personas,
+  bebes,
 });
 
 /** Totales de cada opción (o de la cotización completa si no hay opciones). */
-export function totalesPorOpcion(c: Cotizacion, partidas: PartidaArmador[], opciones: Opcion[], personas: number) {
+export function totalesPorOpcion(c: Cotizacion, partidas: PartidaArmador[], opciones: Opcion[], personas: number, bebes = 0) {
   const fx = fixDe(c);
   const calc = partidas.map((p) => aCalculo(p, fx));
   return vistasDeOpcion(opciones).map((opcionId) => ({
     opcionId,
-    totales: totales(partidasDeOpcion(calc, opcionId), ajustesDe(c, personas)),
+    totales: totales(partidasDeOpcion(calc, opcionId), ajustesDe(c, personas, bebes)),
   }));
 }
 
@@ -220,6 +221,7 @@ export type Evento = {
   texto: string;
   etiqueta: string | null;
   quien: string | null;
+  quienId: string | null;
   creadoEn: Date;
 };
 
@@ -237,6 +239,7 @@ export async function eventosDe(viajeId: string, limite = 50): Promise<Evento[]>
     texto: f.e.texto,
     etiqueta: f.e.etiqueta,
     quien: f.quien,
+    quienId: f.e.quien,
     creadoEn: f.e.creadoEn,
   }));
 }

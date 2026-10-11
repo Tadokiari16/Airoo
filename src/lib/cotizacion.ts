@@ -95,7 +95,10 @@ export type Ajustes = {
   conIva: boolean;
   /** 1600 = 16% */
   ivaPb: number;
+  /** Entre quiénes se divide el precio por persona: los pasajeros sin contar bebés. */
   personas: number;
+  /** Bebés del viaje (menos de 2 años); solo para decir que no entran en la división. */
+  bebes?: number;
 };
 
 export type Totales = {
@@ -105,6 +108,8 @@ export type Totales = {
   iva: number;
   total: number;
   porPersona: number;
+  /** Bebés que no entran en el precio por persona. */
+  bebes: number;
   costo: number;
   ganancia: number;
   /** Ganancia sobre el subtotal, en puntos base. */
@@ -121,8 +126,18 @@ export const partidasDeOpcion = <T extends { opcionId: string | null }>(partidas
 
 /**
  * Precio por persona de un monto: se divide entre los pasajeros del viaje, no entre
- * los huéspedes de las habitaciones. Se calcula al mostrar, no se guarda.
+ * los huéspedes de las habitaciones y sin contar bebés. Se calcula al mostrar, no se guarda.
  */
+export const EDAD_BEBE = 2;
+
+/** Bebés entre los menores: menos de 2 años. Un menor sin edad todavía se cuenta como menor. */
+export const bebesDe = (edades: number[], menores: number): number =>
+  edades.slice(0, menores).filter((e) => e < EDAD_BEBE).length;
+
+/** Pasajeros que entran en el precio por persona: todos menos los bebés. */
+export const pasajerosConPrecio = (adultos: number, menores: number, edades: number[]): number =>
+  adultos + menores - bebesDe(edades, menores);
+
 export const precioPorPersona = (centavos: number, pasajeros: number): number | null =>
   pasajeros > 0 ? Math.round(centavos / pasajeros) : null;
 
@@ -153,6 +168,7 @@ export function totales(partidas: PartidaCalculo[], a: Ajustes): Totales {
     iva,
     total,
     porPersona: precioPorPersona(total, a.personas) ?? total,
+    bebes: a.bebes ?? 0,
     costo,
     ganancia,
     gananciaPb: subtotal > 0 ? Math.round((ganancia * 10_000) / subtotal) : 0,

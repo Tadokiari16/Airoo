@@ -209,6 +209,44 @@ export async function guardarNotaInterna(viajeId: string, texto: string): Promis
   return {};
 }
 
+async function notaDe(eventoId: string, yoId: string, esDueno: boolean) {
+  const [n] = await db
+    .select()
+    .from(schema.viajeEventos)
+    .where(and(eq(schema.viajeEventos.id, eventoId), eq(schema.viajeEventos.tipo, "nota")))
+    .limit(1);
+  if (!n) return { error: "Esa nota ya no existe." } as const;
+  if (n.quien !== yoId && !esDueno) return { error: "Una nota la cambia quien la escribió o el dueño." } as const;
+  const v = await viajePorId(n.viajeId);
+  if (!v) return { error: "Ese viaje ya no existe." } as const;
+  return { n, v } as const;
+}
+
+export async function editarNotaInterna(eventoId: string, texto: string): Promise<{ error?: string }> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_viajes")) return { error: "Tu rol no ve viajes." };
+  const nota = limpiar(texto);
+  if (nota.length < 2) return { error: "La nota está vacía." };
+  if (nota.length > 1000) return { error: "La nota lleva hasta 1000 caracteres." };
+  const r = await notaDe(eventoId, yo.id, yo.rol === "dueno");
+  if ("error" in r) return { error: r.error };
+  await db.update(schema.viajeEventos).set({ texto: nota }).where(eq(schema.viajeEventos.id, eventoId));
+  revalidatePath(RUTA);
+  revalidatePath(`${RUTA}/${r.v.folio}`);
+  return {};
+}
+
+export async function eliminarNotaInterna(eventoId: string): Promise<{ error?: string }> {
+  const yo = await usuarioActual();
+  if (!puede(yo.rol, "ver_viajes")) return { error: "Tu rol no ve viajes." };
+  const r = await notaDe(eventoId, yo.id, yo.rol === "dueno");
+  if ("error" in r) return { error: r.error };
+  await db.delete(schema.viajeEventos).where(eq(schema.viajeEventos.id, eventoId));
+  revalidatePath(RUTA);
+  revalidatePath(`${RUTA}/${r.v.folio}`);
+  return {};
+}
+
 export async function cambiarACargo(viajeId: string, usuarioId: string): Promise<{ error?: string }> {
   const yo = await usuarioCon("editar_todos_los_viajes");
   if (!yo) return { error: "Solo el dueño cambia quién atiende un viaje." };

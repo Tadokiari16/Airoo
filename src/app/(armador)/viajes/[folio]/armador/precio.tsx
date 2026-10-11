@@ -25,6 +25,7 @@ export function PanelPrecio({
   fx,
   fixHoy,
   personas,
+  sinBebes = false,
   utilidadBasePb,
   utilidadFijaPb,
   proveedores,
@@ -37,6 +38,7 @@ export function PanelPrecio({
   fx: FixCotizacion;
   fixHoy: { usd: number | null; eur: number | null; fecha: string | null };
   personas: number;
+  sinBebes?: boolean;
   utilidadBasePb: number;
   /** Vuelos: la utilidad es fija por política. */
   utilidadFijaPb?: number;
@@ -51,7 +53,7 @@ export function PanelPrecio({
   const anticipo = calc.netoMxn !== null ? calc.netoMxn - calc.enDestino : null;
   const pp = (c: number | null) => {
     const v = c !== null ? precioPorPersona(c, personas) : null;
-    return v !== null ? `${formatoDinero(v)} por persona` : "";
+    return v !== null ? `${formatoDinero(v)} por persona${sinBebes ? " sin contar bebés" : ""}` : "";
   };
 
   return (

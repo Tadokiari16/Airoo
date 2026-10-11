@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { entrar } from "../acciones";
@@ -9,7 +10,7 @@ import { entrar } from "../acciones";
 export function FormularioEntrar() {
   const [estado, accion, enviando] = useActionState(entrar, undefined);
   return (
-    <form action={accion} className="mt-5 flex flex-col gap-4">
+    <form onSubmit={enviarSinVaciar(accion)} className="mt-5 flex flex-col gap-4">
       <Campo etiqueta="Correo" name="correo" type="email" autoComplete="email" required />
       <Campo
         etiqueta="Contraseña"

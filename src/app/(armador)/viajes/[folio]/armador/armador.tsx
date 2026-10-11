@@ -14,7 +14,7 @@ import { revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/r
 import type { Aeropuerto } from "@/lib/vuelos";
 import { idCatalogo, type FichaArmador } from "@/lib/armador-fichas";
 import { lineasPartida, nombreCorto, nombrePartida, SECCIONES, type ClaveSeccion } from "@/lib/armador-textos";
-import { partidasDeOpcion, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
+import { bebesDe, partidasDeOpcion, pasajerosConPrecio, planDePagos, totales, vigencia, type TipoPartida } from "@/lib/cotizacion";
 import { formatoDinero } from "@/lib/dinero";
 import { Boton } from "@/components/ui/boton";
 import { Dialogo } from "@/components/ui/dialogo";
@@ -89,6 +89,8 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   const { viaje, reglas } = datos;
   const cotizacionId = datos.cotizacion.id;
   const personas = viaje.adultos + viaje.menores;
+  const bebes = bebesDe(viaje.edadesMenores, viaje.menores);
+  const pagan = pasajerosConPrecio(viaje.adultos, viaje.menores, viaje.edadesMenores);
 
   const [partidas, setPartidas] = useState(datos.partidas);
   const [opciones, setOpciones] = useState(datos.opciones);
@@ -217,7 +219,8 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     cargoServicio: datos.cotizacion.cargoServicio,
     conIva: ajustes.conIva,
     ivaPb: datos.cotizacion.ivaPb,
-    personas,
+    personas: pagan,
+    bebes,
   };
 
   const vistas: VistaOpcion[] = vistasDeOpcion(opciones).map((id) => {
@@ -424,13 +427,17 @@ export function Armador({ datos }: { datos: DatosArmador }) {
               >
                 <div className="flex items-center justify-between border-b border-linea px-5 py-3.5">
                   <h2 className="text-[16px] font-bold">{s.titulo}</h2>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    {hayVuelo ? (
+                      <span className="text-[12.5px] text-tinta-3">
+                        Ya hay un vuelo en esta cotización. Se edita para cambiar el tipo de viaje.
+                      </span>
+                    ) : null}
                     {AGREGAR[s.clave].map((a) => (
                       <Boton
                         key={a.tipo}
                         variante="secundario"
                         disabled={hayVuelo}
-                        title={hayVuelo ? "Ya hay un vuelo en esta cotización. Edítalo para cambiar el tipo de viaje." : undefined}
                         onClick={() =>
                           setAgregar({ tipo: a.tipo, colocacion: a.tipo === "hotel" ? colocaciones[0] : "estancia" })
                         }
@@ -470,7 +477,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                                 {v?.falta
                                   ? "Falta costo neto"
                                   : v
-                                    ? `${formatoDinero(v.totales.secciones.hospedaje)} · ${formatoDinero(Math.round(v.totales.secciones.hospedaje / Math.max(1, personas)))} p/p`
+                                    ? `${formatoDinero(v.totales.secciones.hospedaje)} · ${formatoDinero(Math.round(v.totales.secciones.hospedaje / Math.max(1, pagan)))} p/p${bebes ? " sin contar bebés" : ""}`
                                     : ""}
                               </span>
                             </button>
@@ -730,7 +737,8 @@ function TarjetaPartida({
           calc={calc}
           fx={fx}
           fixHoy={datos.fixHoy}
-          personas={viaje.adultos + viaje.menores}
+          personas={pasajerosConPrecio(viaje.adultos, viaje.menores, viaje.edadesMenores)}
+          sinBebes={bebesDe(viaje.edadesMenores, viaje.menores) > 0}
           utilidadBasePb={utilidadBasePb}
           utilidadFijaPb={p.tipo === "vuelo" ? reglas.utilidadVuelosPb : undefined}
           proveedores={proveedoresPara(p.tipo, datos.proveedores)}

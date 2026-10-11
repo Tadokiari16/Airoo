@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { guardarContrasena } from "../acciones";
@@ -11,7 +12,7 @@ export default function NuevaContrasena() {
     <>
       <h1 className="text-[22px] font-bold tracking-[-0.02em]">Contraseña nueva</h1>
       <p className="mt-1 text-tinta-2">Al guardarla entras al panel con ella.</p>
-      <form action={accion} className="mt-5 flex flex-col gap-4">
+      <form onSubmit={enviarSinVaciar(accion)} className="mt-5 flex flex-col gap-4">
         <Campo
           etiqueta="Contraseña nueva"
           name="contrasena"

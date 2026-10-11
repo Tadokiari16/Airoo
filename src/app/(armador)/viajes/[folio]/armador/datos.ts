@@ -131,7 +131,7 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
       folio: f.v.folio,
       folioTexto: folioTexto(f.v.folio),
       cliente: f.cliente,
-      clienteNombre: f.cliente.split(/\s+/)[0],
+      clienteNombre: f.cliente,
       destino: f.destino,
       ciudadId: f.v.ciudadDestinoId,
       inicio: f.v.inicio,

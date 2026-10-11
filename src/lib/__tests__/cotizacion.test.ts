@@ -7,6 +7,8 @@ import {
   netoEnPesos,
   planDePagos,
   precioPorPersona,
+  bebesDe,
+  pasajerosConPrecio,
   precioCliente,
   repartirHuespedes,
   textoTipoCambio,
@@ -188,6 +190,19 @@ describe("precio por persona", () => {
     expect(precioPorPersona(540_000, 2)).toBe(270_000);
     // Con 11 huéspedes daba $490.91: ese cálculo ya no se usa.
     expect(precioPorPersona(540_000, 11)).toBe(49_091);
+  });
+
+  it("no cuenta a los bebés: 2 adultos y un bebé dividen entre 2", () => {
+    expect(bebesDe([1], 1)).toBe(1);
+    expect(bebesDe([1, 5, 15], 3)).toBe(1);
+    // Un menor sin edad se cuenta como menor, no como bebé.
+    expect(bebesDe([], 2)).toBe(0);
+    expect(pasajerosConPrecio(2, 1, [1])).toBe(2);
+    expect(pasajerosConPrecio(2, 2, [1, 9])).toBe(3);
+    expect(precioPorPersona(540_000, pasajerosConPrecio(2, 1, [1]))).toBe(270_000);
+    const t = totales([], { cargoServicio: 540_000, conIva: false, ivaPb: 1600, personas: 2, bebes: 1 });
+    expect(t.porPersona).toBe(270_000);
+    expect(t.bebes).toBe(1);
   });
 
   it("redondea al centavo y no divide entre cero", () => {

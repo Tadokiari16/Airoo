@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
 import { aceptarInvitacion } from "../acciones";
@@ -8,7 +9,7 @@ import { aceptarInvitacion } from "../acciones";
 export function FormularioBienvenida() {
   const [estado, accion, enviando] = useActionState(aceptarInvitacion, undefined);
   return (
-    <form action={accion} className="mt-5 flex flex-col gap-4">
+    <form onSubmit={enviarSinVaciar(accion)} className="mt-5 flex flex-col gap-4">
       <Campo
         etiqueta="Contraseña"
         name="contrasena"

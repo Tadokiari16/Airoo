@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ALCANCES, BARRA, ETAPAS, entraEnAlcance, nombreEtapa, type Alcance } from "@/lib/etapas";
 import { ligaWhatsApp } from "@/lib/whatsapp";
 import { Boton } from "@/components/ui/boton";
@@ -13,7 +13,7 @@ import { FilaCatalogo, Filtro, SinResultados, Tabla } from "@/components/catalog
 import { PanelLateral, Seccion } from "@/components/catalogo/panel-lateral";
 import type { OpcionCiudad } from "@/components/catalogo/elegir-ciudad";
 import type { FilaViaje } from "./datos";
-import { guardarNotaInterna } from "./acciones";
+import { NotaNueva } from "./nota-interna";
 import { AvatarACargo, Etiqueta, Punto, tonoEtapa } from "./piezas";
 import { NuevoViaje } from "./nuevo";
 
@@ -258,8 +258,6 @@ function PanelViaje({
   posicion?: { actual: number; total: number };
   alAvisar: (t: string) => void;
 }) {
-  const [nota, setNota] = useState("");
-  const [guardando, iniciar] = useTransition();
   const wa = v.whatsapp ? ligaWhatsApp(v.whatsapp) : null;
   return (
     <PanelLateral
@@ -304,31 +302,7 @@ function PanelViaje({
             </span>
           </p>
         ) : null}
-        <form
-          className="flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            iniciar(async () => {
-              const r = await guardarNotaInterna(v.id, nota);
-              if (r.error) alAvisar(r.error);
-              else {
-                setNota("");
-                alAvisar("Nota interna guardada · no se le avisa al cliente");
-              }
-            });
-          }}
-        >
-          <input
-            aria-label="Nota del equipo"
-            value={nota}
-            onChange={(e) => setNota(e.target.value)}
-            placeholder="Nota del equipo…"
-            className="h-9 flex-1 rounded-[10px] bg-tarjeta px-3 text-[13.5px] shadow-borde outline-none focus:shadow-[inset_0_0_0_1.5px_var(--color-azul)]"
-          />
-          <Boton variante="secundario" type="submit" disabled={guardando || nota.trim().length < 2}>
-            Guardar
-          </Boton>
-        </form>
+        <NotaNueva viajeId={v.id} alAvisar={alAvisar} />
       </Seccion>
 
       <Seccion titulo="Servicios">

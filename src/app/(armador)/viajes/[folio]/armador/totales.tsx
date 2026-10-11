@@ -60,7 +60,7 @@ export function TotalPorOpcion({
       <p className="text-[12px] text-tinta-3">Total</p>
       <div className="flex items-baseline justify-between">
         <p className="num text-[28px] font-bold tracking-[-0.02em]">{formatoDinero(t.total)}</p>
-        <p className="num text-[12px] text-tinta-3">{formatoDinero(t.porPersona)} p/p</p>
+        <p className="num text-[12px] text-tinta-3">{formatoDinero(t.porPersona)} p/p{t.bebes ? " sin contar bebés" : ""}</p>
       </div>
       <dl className="mt-2 flex flex-col text-[13px]">
         {filas.map(([e, m]) => (

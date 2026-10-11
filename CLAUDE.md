@@ -18,6 +18,8 @@ Los diseños están en `disenos/`:
 - Tolerancia de precio al validar: monto fijo de $300 MXN por servicio. Si sube menos, Airoo lo absorbe; si sube más, se manda versión 2 al cliente.
 - «Cargo por servicio» (no «fee»). Los precios no llevan IVA salvo que el cliente pida factura.
 - Comisión de Airoo sobre viajes de asesoras: **35% de la utilidad** (venta − costo). Ejemplo: venta $20,000, utilidad $2,000 → Airoo $700, asesora $1,300.
+- **Utilidad de vuelos: 2.5%**, fija y sin edición en el armador. El valor sale de Configuración (`ganancia_defecto.vuelos`), no se escribe en el código. Es política de Airoo: los vuelos dejan menos margen que el resto de los servicios.
+- **Pagos flexibles (decisión 6.2, aprobada).** El anticipo cubre lo que se paga al reservar (vuelos, actividades, traslados, seguro) y el cargo por servicio. El hotel se divide en dos pagos solo si su tarifa tiene cancelación gratis y su fecha de pago deja tiempo; si no, va completo en el anticipo y queda «Pago único». En un viaje de solo hospedaje, el hotel se divide en tres partes iguales y la primera, más el cargo por servicio, forma el anticipo. Así el cliente no adelanta un hotel que todavía puede cancelar sin costo.
 
 **Pagos**
 - **Desde el sistema no se hacen pagos.** Se registra lo que ya se pagó: cuándo, con qué, a qué cuenta, monto real y comprobante.

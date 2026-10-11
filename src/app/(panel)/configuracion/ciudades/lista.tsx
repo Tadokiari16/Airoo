@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState, useTransition } from "react";
+import { enviarSinVaciar } from "@/components/ui/enviar";
 import { normalizar } from "@/lib/texto";
 import { Boton } from "@/components/ui/boton";
 import { Campo } from "@/components/ui/campo";
@@ -212,7 +213,7 @@ function FormularioCiudad({
   const parecidas = estado && "parecidas" in estado ? estado : null;
 
   return (
-    <form action={accion} className="flex flex-col gap-4">
+    <form onSubmit={enviarSinVaciar(accion)} className="flex flex-col gap-4">
       <Campo
         etiqueta="Ciudad"
         name="nombre"

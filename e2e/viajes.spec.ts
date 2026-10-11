@@ -7,7 +7,7 @@ const total = (page: Page) => page.getByRole("region", { name: /^Total/ });
 test("el viaje de ejemplo se arma con tres opciones y el total del prototipo", async ({ page }) => {
   await entrarComo(page, CORREOS.dueno);
   await page.goto("/viajes/2458");
-  await expect(page.getByRole("heading", { name: "Nataly Cervantes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nataly Cervantes", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Abrir armador" }).click();
   await expect(page).toHaveURL(/\/viajes\/2458\/armador$/);
 
@@ -120,6 +120,7 @@ test("vuelo con escala: aeropuertos de la lista, duración, conexión, errores y
   await expect(vuelo.getByText("1 h 30 min")).toBeVisible();
 
   // Escala en Ciudad de México: el tramo nuevo sale de donde llegó el anterior.
+  await expect(page.getByText("Guardado", { exact: true })).toBeVisible();
   await vuelo.getByRole("group", { name: "Ida" }).getByRole("button", { name: "+ Agregar escala" }).click();
   await expect(vuelo.getByRole("combobox", { name: "Origen del vuelo de ida tramo 2" })).toHaveValue("MEX · Ciudad de México");
   await aeropuerto(vuelo, "Destino del vuelo de ida tramo 2", "Cancún", "CUN");
