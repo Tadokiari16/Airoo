@@ -68,6 +68,7 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
       actividadId: p.actividadId,
       servicioId: p.servicioId,
       aerolineaId: p.aerolineaId,
+      trasladoUnidadId: p.trasladoUnidadId,
       planId: p.planId,
       varianteId: p.varianteId,
       tarifaId: p.tarifaId,
@@ -127,6 +128,8 @@ export async function partidasDe(cotizacionIds: string[]): Promise<Map<string, P
           fecha: t.fecha,
           hora: hora(t.hora),
           vueloTramoId: t.vueloTramoId,
+          vueloFecha: t.vueloFecha,
+          vueloHora: hora(t.vueloHora),
         })),
     });
   }

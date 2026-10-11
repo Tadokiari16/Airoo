@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { ligaTripadvisor, nombreRegimen } from "@/lib/hoteles";
 import { Boton } from "@/components/ui/boton";
 import { Insignia } from "@/components/ui/insignia";
-import { IconoCandado, IconoEtiqueta, IconoExterno, IconoTelefono } from "@/components/iconos";
+import { IconoCandado, IconoExterno, IconoTelefono } from "@/components/iconos";
 import { Dato, PanelLateral, Seccion } from "@/components/catalogo/panel-lateral";
 import { ConfirmarArchivo, type Confirmacion } from "@/components/catalogo/archivo";
 import { FotosPanel } from "@/components/catalogo/fotos-panel";
@@ -184,14 +184,6 @@ export function PanelHotel({
                         {r.fotos.length ? plural(r.fotos.length, "foto", "fotos") : "Sin fotos"}
                       </span>
                     </div>
-                    <span
-                      className={`inline-flex h-6 items-center gap-1 rounded-md px-2 text-[11.5px] font-semibold ${r.nombres.length ? "bg-suave text-tinta-2" : "bg-ambar-tenue text-ambar"}`}
-                    >
-                      <IconoEtiqueta tam={13} />
-                      {r.nombres.length
-                        ? plural(r.nombres.length, "nombre de proveedor", "nombres de proveedor")
-                        : "sin nombre de proveedor"}
-                    </span>
                   </li>
                 ))}
               </ul>

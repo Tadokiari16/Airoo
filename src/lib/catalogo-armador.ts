@@ -3,6 +3,8 @@ import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { db, schema } from "@/lib/db";
 import { urlFoto } from "@/lib/imagenes";
+import { textoTarifa } from "@/lib/aerolineas";
+import { textoCapacidad } from "@/lib/traslados";
 import { normalizar } from "@/lib/texto";
 import type { FichaArmador, ResultadoCatalogo } from "@/lib/armador-fichas";
 import type { TipoPartida } from "@/lib/cotizacion";
@@ -176,16 +178,49 @@ export async function fichasAerolineas(ids: string[]): Promise<FichaArmador[]> {
       .map((t) => ({
         id: t.id,
         nombre: t.nombre,
-        detalle: [t.mano, t.documentada].filter(Boolean).join(" + "),
+        detalle: textoTarifa({
+          mano: { piezas: t.manoPiezas, kg: t.manoKg },
+          documentado: { piezas: t.documentadoPiezas, kg: t.documentadoKg },
+          articuloPersonal: t.articuloPersonal,
+        }),
       })),
+  }));
+}
+
+/** Tipos de unidad de traslado. Sin ids: todos, los archivados al final. */
+export async function fichasTraslados(ids?: string[]): Promise<FichaArmador[]> {
+  if (ids && !ids.length) return [];
+  const t = schema.trasladoUnidades;
+  const filas = await db
+    .select()
+    .from(t)
+    .where(ids ? inArray(t.id, ids) : undefined)
+    .orderBy(sql`${t.archivadoEn} is not null`, asc(t.pasajeros), asc(t.maletas), asc(t.nombre));
+  return filas.map((u) => ({
+    tipo: "traslado" as const,
+    id: u.id,
+    nombre: u.nombre,
+    lugar: "",
+    foto: u.foto ? urlFoto(u.foto, "c") : null,
+    pasajeros: u.pasajeros,
+    maletas: u.maletas,
+    adaptada: u.adaptada,
+    descripcion: u.descripcion,
+    archivada: !!u.archivadoEn,
   }));
 }
 
 /** Las fichas de todo lo que usan estas partidas, por id. */
 export async function fichasDe(
-  partidas: { hotelId: string | null; actividadId: string | null; servicioId: string | null; aerolineaId: string | null }[],
+  partidas: {
+    hotelId: string | null;
+    actividadId: string | null;
+    servicioId: string | null;
+    aerolineaId: string | null;
+    trasladoUnidadId: string | null;
+  }[],
 ): Promise<Record<string, FichaArmador>> {
-  const unicos = (k: "hotelId" | "actividadId" | "servicioId" | "aerolineaId") => [
+  const unicos = (k: "hotelId" | "actividadId" | "servicioId" | "aerolineaId" | "trasladoUnidadId") => [
     ...new Set(partidas.map((p) => p[k]).filter((x): x is string => !!x)),
   ];
   const listas = await Promise.all([
@@ -193,6 +228,7 @@ export async function fichasDe(
     fichasActividades(unicos("actividadId")),
     fichasServicios(unicos("servicioId")),
     fichasAerolineas(unicos("aerolineaId")),
+    fichasTraslados(unicos("trasladoUnidadId")),
   ]);
   return Object.fromEntries(listas.flat().map((f) => [f.id, f]));
 }
@@ -205,7 +241,9 @@ export async function fichaDe(tipo: TipoPartida, id: string): Promise<FichaArmad
         ? await fichasActividades([id])
         : tipo === "servicio"
           ? await fichasServicios([id])
-          : await fichasAerolineas([id]);
+          : tipo === "traslado"
+            ? await fichasTraslados([id])
+            : await fichasAerolineas([id]);
   return f[0] ?? null;
 }
 
@@ -281,12 +319,30 @@ export async function buscarEnCatalogo(
       .where(
         and(
           isNull(schema.servicios.archivadoEn),
+          // Los traslados viejos de Servicios ya no se agregan: tienen su propio catálogo.
+          sql`${schema.servicios.tipo} <> 'traslado'`,
           conTexto ? sql`${schema.servicios.nombreBusqueda} like ${q}` : sql`true`,
         ),
       )
       .orderBy(desc(usos(schema.partidas.servicioId, schema.servicios.id)), asc(schema.servicios.nombre))
       .limit(8);
     return filas.map((f) => ({ ...f, sub: f.lugar }));
+  }
+  if (tipo === "traslado") {
+    const t = schema.trasladoUnidades;
+    const filas = await db
+      .select({
+        id: t.id,
+        nombre: t.nombre,
+        pasajeros: t.pasajeros,
+        maletas: t.maletas,
+        usos: usos(schema.partidas.trasladoUnidadId, t.id),
+      })
+      .from(t)
+      .where(and(isNull(t.archivadoEn), conTexto ? sql`${t.nombreBusqueda} like ${q}` : sql`true`))
+      .orderBy(asc(t.pasajeros), asc(t.maletas), asc(t.nombre))
+      .limit(12);
+    return filas.map((f) => ({ id: f.id, nombre: f.nombre, sub: textoCapacidad(f), ciudadId: null, usos: f.usos }));
   }
   const filas = await db
     .select({

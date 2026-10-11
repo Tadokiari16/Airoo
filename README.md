@@ -51,7 +51,7 @@ Los correos que manda Supabase local (cambio de contraseña) se ven en http://12
 - `src/lib/cuentas.ts` y `src/lib/cifrado.ts`: reglas de las cuentas de proveedores (CLABE, tarjeta, verificación por llamada) y su cifrado.
 - `src/components/catalogo`: piezas compartidas de los catálogos (pestañas, tabla, panel lateral, archivar y eliminar, fotos con encuadre 16:9).
 - `src/lib/fotos.ts`, `src/lib/imagenes.ts` y `src/lib/almacen.ts`: reglas de la portada, los dos tamaños webp de cada foto y dónde se guardan (carpeta `.almacen` en local, bucket público `fotos` de Supabase en producción, según `ALMACEN_FOTOS`).
-- `src/lib/hoteles.ts`: qué le falta a la ficha de un hotel (los 9 puntos), cargos y Tripadvisor.
+- `src/lib/hoteles.ts`: qué le falta a la ficha de un hotel (los 8 puntos), cargos y Tripadvisor.
 - `src/lib/actividades.ts`: tipos de actividad, los 8 bloques opcionales, qué bloques sugiere cada tipo (al cambiarlo no se apaga ninguno) y qué va a pedir el armador.
 - `src/app/(panel)/fotos-acciones.ts`: subir, ordenar, encuadrar y quitar fotos; las comparten hoteles y actividades.
 - `src/lib/servicios.ts`: tipos de servicio, modelo de cobro sugerido por tipo, cómo se llaman sus variantes (unidades, planes, tipos) y qué le falta a la ficha.

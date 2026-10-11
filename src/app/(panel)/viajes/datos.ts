@@ -245,7 +245,7 @@ export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeComp
     clave: s.clave,
     titulo: s.titulo,
     items: partidas
-      .filter((p) => p.tipo === s.tipo)
+      .filter((p) => (s.tipos as readonly string[]).includes(p.tipo))
       .map((p): ItemResumen => {
         const ficha: FichaArmador | undefined = fichas[idCatalogo(p) ?? ""];
         const o = opciones.find((x) => x.id === p.opcionId);

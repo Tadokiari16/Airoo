@@ -30,7 +30,7 @@ export async function usosDeProveedor(id: string): Promise<UsosProveedor> {
 
 // ─── Viajes que usan un registro (Fase 2) ───────────────────────────────────
 
-type CampoPartida = "hotelId" | "actividadId" | "servicioId" | "aerolineaId" | "proveedorId";
+type CampoPartida = "hotelId" | "actividadId" | "servicioId" | "aerolineaId" | "trasladoUnidadId" | "proveedorId";
 
 /** Viajes distintos con alguna partida que usa este registro, en cualquier versión. */
 export async function viajesQueUsan(campo: CampoPartida, id: string): Promise<number> {

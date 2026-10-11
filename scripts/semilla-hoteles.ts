@@ -72,7 +72,7 @@ export async function foto(
   return { archivo, ancho: grande.info.width, alto: grande.info.height };
 }
 
-type Hab = { nombre: string; fotos: string; nombres: [string, string][] };
+type Hab = { nombre: string; fotos: string };
 type HotelSemilla = {
   nombre: string;
   ciudad: string;
@@ -126,35 +126,18 @@ const HOTELES: HotelSemilla[] = [
       {
         nombre: "Suite Deluxe",
         fotos: "adc",
-        nombres: [
-          ["RateHawk", "Family Deluxe Room 2 Double Beds"],
-          ["TBO Holidays", "FAMILY DLX 2DB"],
-          ["RateHawk", "Deluxe Family Room"],
-        ],
       },
       {
         nombre: "Suite Deluxe vista al mar",
         fotos: "baf",
-        nombres: [
-          ["RateHawk", "Family Deluxe Ocean View 2 Double"],
-          ["TBO Holidays", "FAMILY DLX OV"],
-        ],
       },
       {
         nombre: "Junior Suite",
         fotos: "ec",
-        nombres: [
-          ["RateHawk", "Junior Suite King"],
-          ["TBO Holidays", "JR SUITE KG"],
-        ],
       },
       {
         nombre: "Suite familiar 2 recámaras",
         fotos: "",
-        nombres: [
-          ["RateHawk", "Two Bedroom Family Suite"],
-          ["TBO Holidays", "FAM STE 2BR"],
-        ],
       },
     ],
     cargos: [["Derecho de saneamiento ambiental", 6900, "MXN", "habitacion_noche"]],
@@ -179,9 +162,9 @@ const HOTELES: HotelSemilla[] = [
     portada: ["a", 2400, 1350],
     galeria: "fdcab",
     habitaciones: [
-      { nombre: "Deluxe con vista a la ciudad", fotos: "ab", nombres: [["RateHawk", "Deluxe City View"]] },
-      { nombre: "Junior Suite", fotos: "c", nombres: [["RateHawk", "Junior Suite"]] },
-      { nombre: "Suite familiar", fotos: "d", nombres: [["RateHawk", "Family Suite"]] },
+      { nombre: "Deluxe con vista a la ciudad", fotos: "ab" },
+      { nombre: "Junior Suite", fotos: "c" },
+      { nombre: "Suite familiar", fotos: "d" },
     ],
     cargos: [["Derecho de saneamiento ambiental", 6900, "MXN", "habitacion_noche"]],
     donde: [["RateHawk", "6620184"]],
@@ -202,10 +185,10 @@ const HOTELES: HotelSemilla[] = [
     portada: ["e", 2000, 1125],
     galeria: "ecbad",
     habitaciones: [
-      { nombre: "Estándar", fotos: "e", nombres: [["Casa Mexicana San Cristóbal", "Estándar matrimonial"]] },
-      { nombre: "Superior", fotos: "c", nombres: [["Casa Mexicana San Cristóbal", "Superior 2 dobles"]] },
-      { nombre: "Suite", fotos: "b", nombres: [["Casa Mexicana San Cristóbal", "Suite King"]] },
-      { nombre: "Familiar", fotos: "a", nombres: [["Casa Mexicana San Cristóbal", "Familiar"]] },
+      { nombre: "Estándar", fotos: "e" },
+      { nombre: "Superior", fotos: "c" },
+      { nombre: "Suite", fotos: "b" },
+      { nombre: "Familiar", fotos: "a" },
     ],
     sinCargos: true,
     donde: [["Casa Mexicana San Cristóbal", null]],
@@ -226,9 +209,9 @@ const HOTELES: HotelSemilla[] = [
     portada: ["f", 2400, 1350],
     galeria: "facbd",
     habitaciones: [
-      { nombre: "Cabaña frente al mar", fotos: "f", nombres: [["RateHawk", "Beachfront Cabana"]] },
-      { nombre: "Suite jardín", fotos: "c", nombres: [["RateHawk", "Garden Suite"]] },
-      { nombre: "Villa familiar", fotos: "a", nombres: [["RateHawk", "Family Villa"]] },
+      { nombre: "Cabaña frente al mar", fotos: "f" },
+      { nombre: "Suite jardín", fotos: "c" },
+      { nombre: "Villa familiar", fotos: "a" },
     ],
     cargos: [["Impuesto de visitante a Holbox", 5000, "MXN", "persona_noche"]],
     donde: [["RateHawk", "6702215"]],
@@ -249,9 +232,9 @@ const HOTELES: HotelSemilla[] = [
     portada: ["d", 2400, 1350],
     galeria: "fdaecb",
     habitaciones: [
-      { nombre: "Deluxe vista al jardín", fotos: "c", nombres: [["RateHawk", "Deluxe Garden View"]] },
-      { nombre: "Deluxe vista al mar", fotos: "f", nombres: [["RateHawk", "Deluxe Ocean View"]] },
-      { nombre: "Preferred Club Suite", fotos: "d", nombres: [["RateHawk", "Preferred Club Junior Suite"]] },
+      { nombre: "Deluxe vista al jardín", fotos: "c" },
+      { nombre: "Deluxe vista al mar", fotos: "f" },
+      { nombre: "Preferred Club Suite", fotos: "d" },
     ],
     donde: [["RateHawk", "6015530"]],
   },
@@ -271,8 +254,8 @@ const HOTELES: HotelSemilla[] = [
     portada: ["e", 2400, 1350],
     galeria: "ecabd",
     habitaciones: [
-      { nombre: "Habitación patio", fotos: "e", nombres: [["RateHawk", "Patio Room King"]] },
-      { nombre: "Suite con alberca", fotos: "f", nombres: [["RateHawk", "Pool Suite"]] },
+      { nombre: "Habitación patio", fotos: "e" },
+      { nombre: "Suite con alberca", fotos: "f" },
     ],
     sinCargos: true,
     donde: [["RateHawk", "6839902"]],
@@ -294,8 +277,8 @@ const HOTELES: HotelSemilla[] = [
     portada: ["e", 1080, 1080],
     galeria: "c",
     habitaciones: [
-      { nombre: "Doble con balcón", fotos: "e", nombres: [["TBO Holidays", "DBL BALCONY"]] },
-      { nombre: "Apartamento familiar", fotos: "c", nombres: [["TBO Holidays", "FAMILY APT 2BR"]] },
+      { nombre: "Doble con balcón", fotos: "e" },
+      { nombre: "Apartamento familiar", fotos: "c" },
     ],
     cargos: [["Impuesto de estancia", 250, "EUR", "persona_noche"]],
     donde: [["TBO Holidays", "1188402"]],
@@ -316,16 +299,12 @@ const HOTELES: HotelSemilla[] = [
     portada: ["d", 2400, 1350],
     galeria: "dfbaec",
     habitaciones: [
-      { nombre: "Deluxe vista a la ciudad", fotos: "b", nombres: [["TBO Holidays", "DLX CITY VIEW"]] },
+      { nombre: "Deluxe vista a la ciudad", fotos: "b" },
       {
         nombre: "Deluxe vista al mar",
         fotos: "f",
-        nombres: [
-          ["TBO Holidays", "DLX SEA VIEW"],
-          ["RateHawk", "Deluxe Sea View"],
-        ],
       },
-      { nombre: "Club Suite", fotos: "", nombres: [["RateHawk", "Club Suite"]] },
+      { nombre: "Club Suite", fotos: "" },
     ],
     cargos: [["Tasa turística de Barcelona", 750, "EUR", "persona_noche"]],
     donde: [
@@ -352,7 +331,7 @@ const HOTELES: HotelSemilla[] = [
     salida: "11:00",
     portada: ["a", 2400, 1350],
     galeria: "afb",
-    habitaciones: [{ nombre: "Deluxe Gold", fotos: "a", nombres: [["RateHawk", "Deluxe Gold"]] }],
+    habitaciones: [{ nombre: "Deluxe Gold", fotos: "a" }],
     donde: [["RateHawk", "6003318"]],
     archivado: "Ya no lo ofrecemos por quejas de servicio en 2026.",
   },
@@ -432,12 +411,6 @@ export async function sembrarHoteles(db: Db, admin: SupabaseClient, duenoId: str
           .insert(schema.fotos)
           .values({ hotelId: h.id, habitacionId: hab.id, ...f, orden: orden++, creadoPor: duenoId });
       }
-      if (r.nombres.length)
-        await db
-          .insert(schema.hotelHabitacionNombres)
-          .values(
-            r.nombres.map(([p, nombre]) => ({ habitacionId: hab.id, proveedorId: proveedor(p), nombre })),
-          );
     }
     if (s.cargos?.length)
       await db.insert(schema.hotelCargos).values(

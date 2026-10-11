@@ -99,12 +99,29 @@ test("tarifas y equipaje se editan en el panel", async ({ page }) => {
   const p = panel(page, "Volaris");
   await p.getByRole("button", { name: "Editar" }).click();
   await expect(p.getByRole("button", { name: "Eliminar aerolínea" })).toBeHidden();
-  await p.getByLabel("Documentada, Plus").fill("35 kg");
+  await p.getByLabel("Documentada, Plus: kilos por pieza").fill("35");
   await p.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByRole("row", { name: "Volaris" })).toContainText("Hasta 35 kg");
 
+  // Opciones cerradas: mano y documentada, cambios y artículo personal.
   await p.getByRole("button", { name: "Editar" }).click();
-  await p.getByLabel("Documentada, Plus").fill("25 kg");
+  await p.getByLabel("Documentada, Plus: kilos por pieza").fill("25");
+  await p.getByLabel("Mano, Básica: piezas").selectOption("1");
+  await p.getByLabel("Mano, Básica: kilos por pieza").fill("10");
+  await p.getByLabel("Cambios, Básica").selectOption({ label: "Sin cambios" });
+  await p.getByRole("switch", { name: "Artículo personal, Básica" }).click();
   await p.getByRole("button", { name: "Guardar" }).click();
   await expect(page.getByRole("row", { name: "Volaris" })).toContainText("Hasta 25 kg");
+  const basica = p.getByRole("row", { name: /Básica/ });
+  await expect(basica).toContainText("10 kg");
+  await expect(basica).toContainText("Sin cambios");
+  await expect(basica).toContainText("Sin artículo personal");
+
+  // Volaris se queda como estaba para las demás pruebas.
+  await p.getByRole("button", { name: "Editar" }).click();
+  await p.getByLabel("Mano, Básica: piezas").selectOption("0");
+  await p.getByLabel("Cambios, Básica").selectOption({ label: "Con cargo" });
+  await p.getByRole("switch", { name: "Artículo personal, Básica" }).click();
+  await p.getByRole("button", { name: "Guardar" }).click();
+  await expect(basica).toContainText("Con artículo personal");
 });

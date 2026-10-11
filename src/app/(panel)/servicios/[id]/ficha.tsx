@@ -8,7 +8,6 @@ import {
   modelo,
   nombreTipo,
   queSePide,
-  TIPOS,
   VARIANTES,
   type ModeloCobro,
   type TipoServicio,
@@ -198,7 +197,7 @@ function Formulario({
   alGuardar: () => void;
   alDescartar: () => void;
 }) {
-  const [tipo, setTipo] = useState<TipoServicio>(s.tipo);
+  const tipo: TipoServicio = s.tipo;
   const [cobro, setCobro] = useState<ModeloCobro>(s.modeloCobro);
   const [descripcion, setDescripcion] = useState(s.descripcion ?? "");
   const [variantes, setVariantes] = useState<VarianteEditable[]>(() =>
@@ -241,7 +240,6 @@ function Formulario({
       }}
       className="flex min-w-0 flex-col gap-4"
     >
-      <input type="hidden" name="tipo" value={tipo} />
       <input type="hidden" name="modeloCobro" value={cobro} />
       <input
         type="hidden"
@@ -266,14 +264,12 @@ function Formulario({
 
           <div className="mt-4 flex flex-col gap-1.5">
             <span className="text-[13px] font-semibold">Tipo</span>
-            <Opciones
-              etiqueta="Tipo"
-              opciones={TIPOS.map((t) => ({ valor: t.valor, etiqueta: t.nombre }))}
-              elegidas={[tipo]}
-              alCambiar={([t]) => cambiar(setTipo)(t)}
-            />
+            <span className="inline-flex h-9 items-center self-start rounded-[10px] bg-suave px-3 text-[13.5px] font-semibold text-tinta-2">
+              {nombreTipo(tipo)}
+            </span>
             <p className="text-[12.5px] text-tinta-3">
-              Define cómo se llaman las variantes y qué se sugiere para cobrar. Cambiarlo no borra nada.
+              El tipo se elige al crear el servicio y ya no cambia: de él dependen cómo se llaman las variantes y lo
+              que el armador pide al cotizar.
             </p>
           </div>
 

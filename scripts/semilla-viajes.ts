@@ -84,7 +84,11 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
 
   const servicio = async (nombre: string) =>
     (await db.select().from(schema.servicios).where(eq(schema.servicios.nombre, nombre)).limit(1))[0];
-  const traslado = await servicio("Traslado privado · Aeropuerto de Cancún");
+  const [vanAdaptada] = await db
+    .select()
+    .from(schema.trasladoUnidades)
+    .where(eq(schema.trasladoUnidades.nombre, "Van adaptada"))
+    .limit(1);
   const seguro = await servicio("Seguro de viaje");
   const variantes = await db.select().from(schema.servicioVariantes);
   const variante = (sId: string, n: string) => variantes.find((v) => v.servicioId === sId && v.nombre === n)?.id ?? null;
@@ -308,21 +312,48 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
     ]);
   }
 
-  if (traslado) {
+  if (vanAdaptada) {
     const p = await partida({
-      tipo: "servicio",
+      tipo: "traslado",
       orden: 30,
-      servicioId: traslado.id,
-      varianteId: variante(traslado.id, "Van adaptada"),
-      fechaInicio: "2026-10-21",
-      fechaFin: "2026-10-27",
+      trasladoUnidadId: vanAdaptada.id,
+      proveedorId: proveedor("TBO Holidays"),
       netoTotalCentavos: 2_400_00,
       utilidadPb: 1000,
-      detalle: { recoleccion: "redondo", duracionAprox: "30–40 min", personas: 6 },
+      detalle: {
+        modo: "aeropuerto_hotel",
+        servicio: "privado",
+        sentido: "redondo",
+        direccion: "llegada",
+        personas: 6,
+        maletas: 6,
+        duracionAprox: "30–40 min",
+      },
     });
+    // La hora y la fecha de cada vuelo quedan guardadas: si el vuelo cambia, el traslado queda por revisar.
     await db.insert(schema.partidaTrayectos).values([
-      { partidaId: p.id, orden: 0, desde: "Aeropuerto CUN", hasta: "Hotel", fecha: "2026-10-21", hora: "20:45", vueloTramoId: tramoIda },
-      { partidaId: p.id, orden: 1, desde: "Hotel", hasta: "Aeropuerto CUN", fecha: "2026-10-27", hora: "15:30", vueloTramoId: tramoRegreso },
+      {
+        partidaId: p.id,
+        orden: 0,
+        desde: "Aeropuerto de Cancún (CUN)",
+        hasta: "Seadust Cancún Family Resort",
+        fecha: "2026-10-21",
+        hora: "20:45",
+        vueloTramoId: tramoIda,
+        vueloFecha: tramoIda ? "2026-10-21" : null,
+        vueloHora: tramoIda ? "20:26" : null,
+      },
+      {
+        partidaId: p.id,
+        orden: 1,
+        desde: "Seadust Cancún Family Resort",
+        hasta: "Aeropuerto de Cancún (CUN)",
+        fecha: "2026-10-27",
+        hora: "15:30",
+        vueloTramoId: tramoRegreso,
+        vueloFecha: tramoRegreso ? "2026-10-27" : null,
+        vueloHora: tramoRegreso ? "18:13" : null,
+      },
     ]);
   }
   if (seguro) {

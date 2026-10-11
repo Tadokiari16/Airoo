@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db, schema } from "@/lib/db";
 import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
-import { MODELO_SUGERIDO, VALORES_MODELO, VALORES_TIPO } from "@/lib/servicios";
+import { MODELO_SUGERIDO, VALORES_MODELO, VALORES_TIPO_ALTA } from "@/lib/servicios";
 import { usuarioCon } from "@/lib/sesion";
 import { limpiar, normalizar } from "@/lib/texto";
 import { serviciosParecidos, type ServicioParecido } from "./datos";
@@ -38,7 +38,7 @@ export async function crearServicio(_: ResultadoAlta, f: FormData): Promise<Resu
   if (!yo) return { error: SIN_PERMISO };
   const nombre = limpiar(String(f.get("nombre") ?? ""));
   const destino = limpiar(String(f.get("destino") ?? ""));
-  const tipo = z.enum(VALORES_TIPO).safeParse(f.get("tipo"));
+  const tipo = z.enum(VALORES_TIPO_ALTA).safeParse(f.get("tipo"));
   if (nombre.length < 2) return { error: "Falta el nombre del servicio." };
   if (!tipo.success) return { error: "Falta elegir el tipo." };
   if (!destino) return { error: "Falta dónde aplica: una ciudad, una región o «Cualquier destino»." };
@@ -97,7 +97,6 @@ const Variante = z.object({
 
 const Ficha = z.object({
   nombre: z.string().transform(limpiar).pipe(z.string().min(2, "Falta el nombre del servicio.")),
-  tipo: z.enum(VALORES_TIPO, { error: "Falta elegir el tipo." }),
   destino: z
     .string()
     .transform(limpiar)
@@ -135,7 +134,6 @@ export async function guardarFicha(id: string, _: ResultadoFicha, f: FormData): 
   const texto = (k: string) => String(f.get(k) ?? "");
   const p = Ficha.safeParse({
     nombre: texto("nombre"),
-    tipo: texto("tipo"),
     destino: texto("destino"),
     ciudadId: texto("ciudadId"),
     modeloCobro: texto("modeloCobro"),
@@ -158,8 +156,9 @@ export async function guardarFicha(id: string, _: ResultadoFicha, f: FormData): 
     if (!ciudad) return { error: "Esa ciudad ya no está en la lista." };
   }
 
-  // Pasajeros y maletas solo tienen sentido en traslados.
-  const traslado = d.tipo === "traslado";
+  // El tipo no cambia después de crear el servicio. Pasajeros y maletas solo
+  // tenían sentido en los traslados viejos.
+  const traslado = antes.tipo === "traslado";
   await db.transaction(async (tx) => {
     await tx
       .update(schema.servicios)
@@ -183,7 +182,7 @@ export async function guardarFicha(id: string, _: ResultadoFicha, f: FormData): 
         entidad: "servicios",
         entidadId: id,
         antes: { nombre: antes.nombre, tipo: antes.tipo, modeloCobro: antes.modeloCobro },
-        despues: { nombre: d.nombre, tipo: d.tipo, modeloCobro: d.modeloCobro },
+        despues: { nombre: d.nombre, tipo: antes.tipo, modeloCobro: d.modeloCobro },
       },
       tx,
     );

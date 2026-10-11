@@ -16,8 +16,8 @@ const completa: ResumenFicha = {
   direccion: "Blvd. Kukulcán km 16.5",
   ligaMaps: "https://maps.app.goo.gl/x",
   habitaciones: [
-    { fotos: 3, nombres: 2 },
-    { fotos: 1, nombres: 1 },
+    { fotos: 3 },
+    { fotos: 1 },
   ],
   tripadvisorId: "1234517",
   tripadvisorCalificacion: 45,
@@ -28,11 +28,14 @@ const completa: ResumenFicha = {
 };
 
 describe("ficha del hotel", () => {
-  it("una ficha con todo marca 9 de 9", () => {
+  it("una ficha con todo marca 8 de 8", () => {
     const r = revisarFicha(completa);
-    expect(r).toHaveLength(9);
+    expect(r).toHaveLength(8);
     expect(r.every((x) => x.ok)).toBe(true);
     expect(textoFicha(r)).toBe("Completa");
+  });
+  it("los nombres que usa cada plataforma ya no son parte de la ficha", () => {
+    expect(revisarFicha(completa).map((x) => x.nombre)).not.toContain("Nombres en plataformas");
   });
   it("una portada cuadrada queda por ajustar", () => {
     const r = revisarFicha({ ...completa, portada: { ancho: 1080, alto: 1080 } });
@@ -42,7 +45,7 @@ describe("ficha del hotel", () => {
   it("cuenta las habitaciones sin fotos", () => {
     const r = revisarFicha({
       ...completa,
-      habitaciones: [...completa.habitaciones, { fotos: 0, nombres: 1 }],
+      habitaciones: [...completa.habitaciones, { fotos: 0 }],
     });
     expect(r.find((x) => x.clave === "fotos_hab")).toMatchObject({ ok: false, valor: "2 de 3" });
   });
@@ -66,7 +69,7 @@ describe("ficha del hotel", () => {
       cargos: 0,
       telefonoReservaciones: null,
     });
-    expect(textoFicha(r)).toBe("Faltan 9 cosas");
+    expect(textoFicha(r)).toBe("Faltan 8 cosas");
   });
   it("con 2 fotos explica cuántas conviene tener", () => {
     expect(revisarFicha({ ...completa, fotosGaleria: 2 })[1].falta).toBe(

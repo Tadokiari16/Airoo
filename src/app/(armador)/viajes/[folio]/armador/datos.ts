@@ -2,7 +2,9 @@ import "server-only";
 import { asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import type { FixCotizacion, Opcion, PartidaArmador } from "@/lib/armador";
-import { fichasDe, type FichaArmador } from "@/lib/catalogo-armador";
+import { fichasDe, fichasTraslados, type FichaArmador } from "@/lib/catalogo-armador";
+import type { FichaTrasladoArmador } from "@/lib/armador-fichas";
+import { llegarAntes } from "@/app/(panel)/aerolineas/datos";
 import { aPuntosBase, vigencia } from "@/lib/cotizacion";
 import { folioTexto, textoPersonas } from "@/lib/etapas";
 import { hoyEnCancun, rangoCorto } from "@/lib/fechas";
@@ -51,6 +53,8 @@ export type DatosArmador = {
   partidas: PartidaArmador[];
   opciones: Opcion[];
   fichas: Record<string, FichaArmador>;
+  /** Tipos de unidad de traslado: los activos para elegir y los archivados que ya se usan. */
+  unidades: FichaTrasladoArmador[];
   proveedores: ProveedorOpcion[];
   /** Aeropuertos de los vuelos de esta cotización; los demás llegan al buscarlos. */
   aeropuertos: Record<string, Aeropuerto>;
@@ -65,6 +69,8 @@ export type DatosArmador = {
     vigenciaDias: number;
     diasAntesViaje: number;
     hoy: string;
+    /** Horas para llegar al aeropuerto antes del vuelo (Configuración › Datos y horario). */
+    llegarAntes: { nacional: number; internacional: number };
   };
 };
 
@@ -98,7 +104,7 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
     opcionesCiudad(),
   ]);
   const claves = [...new Set(partidas.flatMap((p) => p.tramos.flatMap((t) => [t.origen, t.destino])).filter(Boolean))];
-  const [fichas, aeropuertos, aerolineas] = await Promise.all([
+  const [fichas, aeropuertos, aerolineas, unidades, horas] = await Promise.all([
     fichasDe(partidas),
     claves.length
       ? db
@@ -114,7 +120,10 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
           .where(inArray(schema.aeropuertos.iata, claves))
       : Promise.resolve([] as Aeropuerto[]),
     db.select({ iata: schema.aerolineas.iata }).from(schema.aerolineas),
+    fichasTraslados(),
+    llegarAntes(),
   ]);
+  const usadas = new Set(partidas.map((p) => p.trasladoUnidadId));
   const hoy = hoyEnCancun();
   return {
     viaje: {
@@ -149,6 +158,7 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
     partidas,
     opciones,
     fichas,
+    unidades: (unidades as FichaTrasladoArmador[]).filter((u) => !u.archivada || usadas.has(u.id)),
     proveedores,
     aeropuertos: Object.fromEntries(aeropuertos.map((a) => [a.iata, a])),
     aerolineas: aerolineas.map((a) => a.iata),
@@ -160,6 +170,7 @@ export async function cargarArmador(folio: number, yo: Usuario): Promise<DatosAr
       vigenciaDias: ajustes.vigencia_cotizacion.dias,
       diasAntesViaje: ajustes.pagos_flexibles.dias_antes,
       hoy,
+      llegarAntes: horas,
     },
   };
 }

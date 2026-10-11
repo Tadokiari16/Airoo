@@ -9,7 +9,7 @@
 import { diasEntre, sumarDias } from "./fechas";
 import type { Moneda } from "./dinero";
 
-export type TipoPartida = "hotel" | "vuelo" | "actividad" | "servicio";
+export type TipoPartida = "hotel" | "vuelo" | "actividad" | "traslado" | "servicio";
 export type PagoProveedor = "al_reservar" | "anticipo" | "en_el_lugar";
 
 /** Lo que el cálculo necesita de una partida. */
@@ -86,6 +86,7 @@ export const SECCION: Record<TipoPartida, "hospedaje" | "vuelos" | "actividades"
   hotel: "hospedaje",
   vuelo: "vuelos",
   actividad: "actividades",
+  traslado: "servicios",
   servicio: "servicios",
 };
 

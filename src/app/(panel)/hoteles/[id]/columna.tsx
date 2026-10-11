@@ -15,7 +15,6 @@ const ANCLA: Record<string, string> = {
   portada: "#fotos",
   galeria: "#fotos",
   fotos_hab: "#habitaciones",
-  nombres: "#habitaciones",
   cargos: "#llegada",
   reservaciones: "#equipo",
 };
@@ -185,7 +184,7 @@ export function ColumnaFicha({
             : {
                 permitido: true,
                 texto:
-                  "Todavía no se usa en ningún viaje. Se borra con sus fotos, habitaciones y nombres de proveedor, y no se puede deshacer.",
+                  "Todavía no se usa en ningún viaje. Se borra con sus fotos y habitaciones, y no se puede deshacer.",
               }
         }
       />
@@ -282,7 +281,7 @@ function UnirHotel({
       </label>
       {elegido ? (
         <ul className="mt-3 list-disc space-y-1 pl-5 text-[13.5px] text-tinta-2">
-          <li>Sus fotos, habitaciones y nombres de proveedor pasan a {este}.</li>
+          <li>Sus fotos y habitaciones pasan a {este}.</li>
           <li>Sus plataformas también, salvo las que {este} ya tiene.</li>
           <li>
             Lo que {este} no tiene (descripción, horarios, Tripadvisor) se toma de {elegido.nombre}.

@@ -23,7 +23,6 @@ export type Habitacion = {
   id: string;
   nombre: string;
   fotos: Foto[];
-  nombres: { id: string; proveedorId: string; proveedor: string; nombre: string }[];
 };
 
 export type Cargo = {
@@ -108,7 +107,7 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
   const ids = filas.map((f) => f.h.id);
 
   const usadoEnViajes = await viajesPorRegistro("hotelId");
-  const [fotos, habitaciones, nombres, cargos, donde] = await Promise.all([
+  const [fotos, habitaciones, cargos, donde] = await Promise.all([
     db
       .select()
       .from(schema.fotos)
@@ -119,16 +118,6 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
       .from(schema.hotelHabitaciones)
       .where(inArray(schema.hotelHabitaciones.hotelId, ids))
       .orderBy(asc(schema.hotelHabitaciones.orden), asc(schema.hotelHabitaciones.creadoEn)),
-    db
-      .select({ n: schema.hotelHabitacionNombres, proveedor: schema.proveedores.nombre })
-      .from(schema.hotelHabitacionNombres)
-      .innerJoin(schema.proveedores, eq(schema.proveedores.id, schema.hotelHabitacionNombres.proveedorId))
-      .innerJoin(
-        schema.hotelHabitaciones,
-        eq(schema.hotelHabitaciones.id, schema.hotelHabitacionNombres.habitacionId),
-      )
-      .where(inArray(schema.hotelHabitaciones.hotelId, ids))
-      .orderBy(asc(schema.proveedores.nombre)),
     db
       .select()
       .from(schema.hotelCargos)
@@ -165,14 +154,6 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
         id: r.id,
         nombre: r.nombreCliente,
         fotos: suyas.filter((f) => f.habitacionId === r.id).map(aFoto),
-        nombres: nombres
-          .filter((n) => n.n.habitacionId === r.id)
-          .map((n) => ({
-            id: n.n.id,
-            proveedorId: n.n.proveedorId,
-            proveedor: n.proveedor,
-            nombre: n.n.nombre,
-          })),
       }));
     const susCargos: Cargo[] = cargos
       .filter((c) => c.hotelId === x.id)
@@ -199,7 +180,7 @@ export async function cargarHoteles(soloId?: string): Promise<Hotel[]> {
       descripcion: x.descripcion,
       direccion: x.direccion,
       ligaMaps: x.ligaMaps,
-      habitaciones: habs.map((r) => ({ fotos: r.fotos.length, nombres: r.nombres.length })),
+      habitaciones: habs.map((r) => ({ fotos: r.fotos.length })),
       tripadvisorId: x.tripadvisorId,
       tripadvisorCalificacion: x.tripadvisorCalificacion,
       cargos: susCargos.length,

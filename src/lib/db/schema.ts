@@ -301,7 +301,9 @@ export const hotelHabitaciones = pgTable(
   (t) => [index().on(t.hotelId)],
 ).enableRLS();
 
-// El nombre que usa cada plataforma para la misma habitación.
+// Sin uso desde el 11 oct 2026: la habitación lleva solo el nombre que se
+// captura. La tabla se borra en una migración aparte al unir esta rama, para
+// no romper la versión anterior mientras comparten base.
 export const hotelHabitacionNombres = pgTable(
   "hotel_habitacion_nombres",
   {
@@ -498,6 +500,8 @@ export const fotos = pgTable(
 
 // ─── Servicios ───────────────────────────────────────────────────────────────
 
+// «traslado» ya no se usa: los traslados tienen su catálogo de unidades. El
+// valor se queda en el enum para no romper los servicios viejos.
 export const tipoServicio = pgEnum("tipo_servicio", [
   "traslado",
   "seguro",
@@ -571,6 +575,30 @@ export const servicioProveedores = pgTable(
   (t) => [uniqueIndex().on(t.servicioId, t.proveedorId), index().on(t.proveedorId)],
 ).enableRLS();
 
+// ─── Traslados ───────────────────────────────────────────────────────────────
+// Tipos de unidad (sedán, SUV, van…). Sin ciudad, sin proveedor y sin precio:
+// el resto (modo, privado o compartido, fechas, dónde se reserva, costo) se
+// define en el armador.
+
+export const trasladoUnidades = pgTable(
+  "traslado_unidades",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    nombre: text().notNull(),
+    nombreBusqueda: text().notNull(),
+    pasajeros: integer().notNull(),
+    maletas: integer().notNull(),
+    adaptada: boolean().notNull().default(false),
+    descripcion: text(),
+    // Una sola foto, en los dos tamaños webp de src/lib/imagenes.ts.
+    foto: text(),
+    orden: integer().notNull().default(0),
+    ...archivo(),
+    ...autoria(),
+  },
+  (t) => [index().on(t.nombreBusqueda)],
+).enableRLS();
+
 // ─── Aerolíneas ──────────────────────────────────────────────────────────────
 // No son proveedores. La lista IATA completa es solo referencia; el catálogo
 // tiene las que Airoo usa.
@@ -599,12 +627,16 @@ export const aerolineas = pgTable("aerolineas", {
   iata: text().notNull().unique(),
   nombre: text().notNull(),
   sitio: text(),
+  // Sin uso desde el 11 oct 2026; se borra al unir esta rama.
   comoSeCompra: text(),
   notaInterna: text(),
   ...archivo(),
   ...autoria(),
 }).enableRLS();
 
+export const cambiosTarifa = pgEnum("cambios_tarifa", ["sin_cambios", "con_cargo", "sin_cargo"]);
+
+// Equipaje con opciones cerradas: sin piezas es «No incluye».
 export const aerolineaTarifas = pgTable(
   "aerolinea_tarifas",
   {
@@ -613,9 +645,16 @@ export const aerolineaTarifas = pgTable(
       .notNull()
       .references(() => aerolineas.id, { onDelete: "cascade" }),
     nombre: text().notNull(),
+    // Texto libre de antes; sin uso desde el 11 oct 2026, se borra al unir esta rama.
     mano: text(),
     documentada: text(),
     cambios: text(),
+    manoPiezas: integer().notNull().default(0),
+    manoKg: integer(),
+    documentadoPiezas: integer().notNull().default(0),
+    documentadoKg: integer(),
+    cambiosRegla: cambiosTarifa(),
+    articuloPersonal: boolean().notNull().default(true),
     orden: integer().notNull().default(0),
   },
   (t) => [index().on(t.aerolineaId)],
@@ -809,7 +848,7 @@ export const cotizacionOpciones = pgTable(
   (t) => [index().on(t.cotizacionId)],
 ).enableRLS();
 
-export const tipoPartida = pgEnum("tipo_partida", ["hotel", "vuelo", "actividad", "servicio"]);
+export const tipoPartida = pgEnum("tipo_partida", ["hotel", "vuelo", "actividad", "servicio", "traslado"]);
 export const pagoProveedor = pgEnum("pago_proveedor", ["al_reservar", "anticipo", "en_el_lugar"]);
 
 // Cada servicio cotizado, con un solo costo neto total en la moneda de la
@@ -829,6 +868,8 @@ export const partidas = pgTable(
     actividadId: uuid().references(() => actividades.id),
     servicioId: uuid().references(() => servicios.id),
     aerolineaId: uuid().references(() => aerolineas.id),
+    // Unidad del traslado privado. El compartido no lleva unidad.
+    trasladoUnidadId: uuid().references(() => trasladoUnidades.id),
     // Plan de la actividad, variante del servicio o tarifa del vuelo.
     planId: uuid().references(() => actividadPlanes.id, { onDelete: "set null" }),
     varianteId: uuid().references(() => servicioVariantes.id, { onDelete: "set null" }),
@@ -941,6 +982,10 @@ export const partidaTrayectos = pgTable(
     fecha: date({ mode: "string" }),
     hora: time(),
     vueloTramoId: uuid().references(() => vueloTramos.id, { onDelete: "set null" }),
+    // Fecha y hora del vuelo cuando se ligó o se revisó. Si el vuelo cambia,
+    // el traslado queda «por revisar».
+    vueloFecha: date({ mode: "string" }),
+    vueloHora: time(),
   },
   (t) => [index().on(t.partidaId)],
 ).enableRLS();

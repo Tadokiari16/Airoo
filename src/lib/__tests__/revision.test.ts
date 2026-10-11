@@ -241,9 +241,12 @@ describe("actividades y traslados fuera del viaje", () => {
   });
   it("un traslado fuera de las fechas avisa", () => {
     const s = {
-      ...partidaNueva("servicio", { ...base, id: "s" }),
+      ...partidaNueva("traslado", { ...base, id: "s" }),
       netoTotal: 2_400_00,
-      trayectos: [{ id: "x", desde: "Aeropuerto CUN", hasta: "Hotel", fecha: "2026-10-20", hora: "20:45", vueloTramoId: null }],
+      detalle: { servicio: "compartido" as const, sentido: "sencillo" as const },
+      trayectos: [
+        { id: "x", desde: "Aeropuerto CUN", hasta: "Hotel", fecha: "2026-10-20", hora: "20:45", vueloTramoId: null, vueloFecha: null, vueloHora: null },
+      ],
     };
     expect(textos(s, "aviso")).toEqual([
       "Traslado: el trayecto Aeropuerto CUN → Hotel queda el Mar 20 oct, fuera de las fechas del viaje (21–27 oct).",
@@ -287,5 +290,65 @@ describe("toda la cotización", () => {
   it("faltan edades de menores o tipo de cambio", () => {
     const r = revisarCotizacion([hotel({ moneda: "EUR" })], { ...ctx, viaje: { ...ctx.viaje, edadesMenores: [8] } });
     expect(r.map((h) => h.texto)).toEqual(["Faltan edades de los menores", "Seadust en euros sin tipo de cambio"]);
+  });
+});
+
+describe("traslados", () => {
+  const ida: TramoArmador = { ...t("ida", "VB 2124", "GDL", "CUN", "2026-10-21", "16:55", "20:26"), id: "ida" };
+  const regreso: TramoArmador = { ...t("regreso", "VB 2125", "CUN", "GDL", "2026-10-27", "18:13", "19:45"), id: "reg" };
+  const conTramos = (tramos: TramoArmador[]): ContextoRevision => ({
+    ...ctx,
+    tramos: Object.fromEntries(tramos.map((x) => [x.id, x])),
+    unidades: { van: { nombre: "Van adaptada", pasajeros: 6, maletas: 6 } },
+  });
+  const traslado = (c: Partial<PartidaArmador> = {}): PartidaArmador => ({
+    ...partidaNueva("traslado", { ...base, id: "s" }),
+    netoTotal: 2_400_00,
+    trasladoUnidadId: "van",
+    detalle: { servicio: "privado", sentido: "redondo", personas: 6, maletas: 6 },
+    trayectos: [
+      { id: "x", desde: "Aeropuerto de Cancún (CUN)", hasta: "Seadust", fecha: "2026-10-21", hora: "20:45", vueloTramoId: "ida", vueloFecha: "2026-10-21", vueloHora: "20:26" },
+      { id: "y", desde: "Seadust", hasta: "Aeropuerto de Cancún (CUN)", fecha: "2026-10-27", hora: "15:30", vueloTramoId: "reg", vueloFecha: "2026-10-27", vueloHora: "18:13" },
+    ],
+    ...c,
+  });
+  const de = (p: PartidaArmador, c: ContextoRevision, nivel: string) =>
+    revisarPartida(p, c).filter((h) => h.nivel === nivel).map((h) => h.texto);
+
+  it("con el vuelo igual, no queda nada pendiente", () => {
+    expect(revisarPartida(traslado(), conTramos([ida, regreso]))).toEqual([]);
+  });
+  it("si el vuelo cambia de horario, queda por revisar", () => {
+    const tarde = { ...ida, llega: "21:40" };
+    expect(de(traslado(), conTramos([tarde, regreso]), "falta")).toEqual([
+      "Traslado por revisar: VB 2124 cambió de horario después de armar el traslado",
+    ]);
+  });
+  it("si el vuelo ya no está, queda por revisar", () => {
+    const sinLiga = traslado();
+    sinLiga.trayectos[1] = { ...sinLiga.trayectos[1], vueloTramoId: null };
+    expect(de(sinLiga, conTramos([ida]), "falta")).toEqual([
+      "Traslado por revisar: el vuelo del que salió ya no está en la cotización",
+    ]);
+  });
+  it("privado sin unidad falta; compartido no la pide", () => {
+    expect(de(traslado({ trasladoUnidadId: null }), conTramos([ida, regreso]), "falta")).toEqual(["Traslado sin unidad"]);
+    const compartido = traslado({ trasladoUnidadId: null, detalle: { servicio: "compartido", sentido: "redondo", personas: 6 } });
+    expect(de(compartido, conTramos([ida, regreso]), "falta")).toEqual([]);
+  });
+  it("avisa si pasajeros o maletas exceden la unidad", () => {
+    const p = traslado({ detalle: { servicio: "privado", sentido: "redondo", personas: 7, maletas: 9 } });
+    expect(de(p, conTramos([ida, regreso]), "aviso")).toEqual([
+      "Traslado: son 7 pasajeros y la unidad Van adaptada lleva hasta 6.",
+      "Traslado: son 9 maletas y la unidad Van adaptada lleva hasta 6.",
+    ]);
+  });
+  it("sin hora falta; el regreso antes de la ida es un error", () => {
+    const p = traslado();
+    p.trayectos[1] = { ...p.trayectos[1], hora: null };
+    expect(de(p, conTramos([ida, regreso]), "falta")).toEqual(["Traslado sin hora"]);
+    const q = traslado();
+    q.trayectos[1] = { ...q.trayectos[1], fecha: "2026-10-20" };
+    expect(de(q, conTramos([ida, regreso]), "error")).toContain("Traslado: el regreso (Mar 20 oct) queda antes de la ida (Mié 21 oct).");
   });
 });

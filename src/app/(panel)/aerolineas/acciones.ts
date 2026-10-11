@@ -1,18 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, notInArray } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
 import { viajesQueUsan } from "@/lib/catalogos";
 import { anotar } from "@/lib/bitacora";
-import { limpiarIata, RUTAS, textoFuente, type Fuente, type Ruta } from "@/lib/aerolineas";
+import { errorMaleta, limpiarIata, RUTAS, textoFuente, type Fuente, type Ruta } from "@/lib/aerolineas";
 import { usuarioCon } from "@/lib/sesion";
 import { limpiar } from "@/lib/texto";
 
 const RUTA = "/aerolineas";
 const SIN_PERMISO = "Tu rol puede consultar aerolíneas, pero no cambiarlas.";
-const COMO_SE_COMPRA = "En su sitio, con la forma de pago que ofrezca";
 
 async function aerolinea(id: string) {
   const [a] = await db.select().from(schema.aerolineas).where(eq(schema.aerolineas.id, id)).limit(1);
@@ -53,7 +52,7 @@ export async function agregarAerolinea(codigo: string, nombreAMano = ""): Promis
   const id = await db.transaction(async (tx) => {
     const [nueva] = await tx
       .insert(schema.aerolineas)
-      .values({ iata, nombre, comoSeCompra: COMO_SE_COMPRA, creadoPor: yo.id })
+      .values({ iata, nombre, creadoPor: yo.id })
       .returning({ id: schema.aerolineas.id });
     await tx
       .insert(schema.aerolineaCheckin)
@@ -82,12 +81,30 @@ const opcional = (max: number, msg: string) =>
     .transform((v) => limpiar(v ?? "") || null)
     .pipe(z.string().max(max, msg).nullable());
 
-const Tarifa = z.object({
-  nombre: z.string().transform(limpiar).pipe(z.string().min(1, "Falta el nombre de una tarifa.").max(40)),
-  mano: opcional(40, "El equipaje de mano lleva hasta 40 caracteres."),
-  documentada: opcional(40, "El equipaje documentado lleva hasta 40 caracteres."),
-  cambios: opcional(60, "Los cambios llevan hasta 60 caracteres."),
+const Maleta = z.object({
+  piezas: z.number().int(),
+  kg: z.number().int().nullable(),
 });
+
+const Tarifa = z
+  .object({
+    // Con id: una tarifa que ya existía; se actualiza para no soltar las cotizaciones que la usan.
+    id: z.uuid().nullable(),
+    nombre: z.string().transform(limpiar).pipe(z.string().min(1, "Falta el nombre de una tarifa.").max(40)),
+    mano: Maleta,
+    documentado: Maleta,
+    cambios: z.enum(["sin_cambios", "con_cargo", "sin_cargo"]).nullable(),
+    articuloPersonal: z.boolean(),
+  })
+  .superRefine((t, ctx) => {
+    for (const [m, cual] of [
+      [t.mano, `Mano de ${t.nombre}`],
+      [t.documentado, `Documentada de ${t.nombre}`],
+    ] as const) {
+      const e = errorMaleta(m, cual);
+      if (e) ctx.addIssue({ code: "custom", message: e });
+    }
+  });
 
 const Ventana = z.object({
   ruta: z.enum(["nacional", "internacional"]),
@@ -100,7 +117,6 @@ const Ventana = z.object({
 const Datos = z.object({
   nombre: z.string().transform(limpiar).pipe(z.string().min(2, "Falta el nombre.").max(80)),
   sitio: opcional(120, "El sitio lleva hasta 120 caracteres."),
-  comoSeCompra: opcional(200, "Cómo se compra lleva hasta 200 caracteres."),
   notaInterna: opcional(1000, "La nota lleva hasta 1000 caracteres."),
   tarifas: z.array(Tarifa).max(12, "Hasta 12 tarifas por aerolínea."),
   checkin: z.array(Ventana).length(2),
@@ -109,7 +125,7 @@ const Datos = z.object({
 export type DatosAerolinea = z.input<typeof Datos>;
 
 /**
- * Guarda tarifas, check-in y cómo se compra. Una ventana verificada sigue
+ * Guarda tarifas y check-in. Una ventana verificada sigue
  * verificada mientras sus horas no cambien; si cambian, vuelve a su fuente.
  */
 export async function guardarAerolinea(id: string, datos: DatosAerolinea): Promise<{ error?: string }> {
@@ -130,11 +146,35 @@ export async function guardarAerolinea(id: string, datos: DatosAerolinea): Promi
       .update(schema.aerolineas)
       .set({ ...d, actualizadoEn: new Date() })
       .where(eq(schema.aerolineas.id, id));
-    await tx.delete(schema.aerolineaTarifas).where(eq(schema.aerolineaTarifas.aerolineaId, id));
-    if (tarifas.length)
-      await tx
-        .insert(schema.aerolineaTarifas)
-        .values(tarifas.map((t, orden) => ({ ...t, aerolineaId: id, orden })));
+    // Las tarifas que siguen conservan su id: las cotizaciones que las usan no se sueltan.
+    const siguen = tarifas.map((t) => t.id).filter((x): x is string => !!x);
+    await tx
+      .delete(schema.aerolineaTarifas)
+      .where(
+        siguen.length
+          ? and(eq(schema.aerolineaTarifas.aerolineaId, id), notInArray(schema.aerolineaTarifas.id, siguen))
+          : eq(schema.aerolineaTarifas.aerolineaId, id),
+      );
+    for (const [orden, t] of tarifas.entries()) {
+      const valores = {
+        nombre: t.nombre,
+        manoPiezas: t.mano.piezas,
+        manoKg: t.mano.piezas ? t.mano.kg : null,
+        documentadoPiezas: t.documentado.piezas,
+        documentadoKg: t.documentado.piezas ? t.documentado.kg : null,
+        cambiosRegla: t.cambios,
+        articuloPersonal: t.articuloPersonal,
+        orden,
+      };
+      const [actualizada] = t.id
+        ? await tx
+            .update(schema.aerolineaTarifas)
+            .set(valores)
+            .where(and(eq(schema.aerolineaTarifas.id, t.id), eq(schema.aerolineaTarifas.aerolineaId, id)))
+            .returning({ id: schema.aerolineaTarifas.id })
+        : [];
+      if (!actualizada) await tx.insert(schema.aerolineaTarifas).values({ ...valores, aerolineaId: id });
+    }
     for (const v of checkin) {
       const previa = previas.find((x) => x.ruta === v.ruta);
       const sigueVerificada =

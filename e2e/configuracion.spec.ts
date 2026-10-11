@@ -111,6 +111,22 @@ test("las formas de pago se agregan y se dejan de usar", async ({ page }) => {
   await expect(nueva).toContainText("En desuso");
 });
 
+test("«Llegar antes» se cambia en Datos y horario y lo usa Aerolíneas", async ({ page }) => {
+  await entrarComo(page, CORREOS.dueno);
+  await page.goto("/configuracion/agencia");
+  await expect(seccion(page, "Llegar al aeropuerto")).toBeVisible();
+  await cambiarCampo(page, "Vuelos internacionales", "3.5");
+  await page.goto("/aerolineas?a=");
+  await page.getByRole("row", { name: "Volaris" }).click();
+  await expect(page.getByRole("complementary", { name: "Volaris" })).toContainText(
+    "2 h en nacional, 3.5 h en internacional",
+  );
+
+  // Deja el valor de siempre para la siguiente corrida.
+  await page.goto("/configuracion/agencia");
+  await cambiarCampo(page, "Vuelos internacionales", "3");
+});
+
 test("solo el dueño entra a Configuración", async ({ page }) => {
   await entrarComo(page, CORREOS.asesora);
   for (const ruta of ["/configuracion/precios", "/configuracion/cobros"]) {

@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react";
 import type { ResultadoCatalogo } from "@/lib/armador-fichas";
 import type { TipoPartida } from "@/lib/cotizacion";
-import { TIPOS as TIPOS_SERVICIO } from "@/lib/servicios";
+import { TIPOS_ALTA as TIPOS_SERVICIO } from "@/lib/servicios";
 import { Boton } from "@/components/ui/boton";
 import { Dialogo } from "@/components/ui/dialogo";
 import { Campo, Selector } from "@/components/ui/campo";
 import { ElegirCiudad, type OpcionCiudad } from "@/components/catalogo/elegir-ciudad";
 import { IconoBuscar, IconoMas, IconoOjo } from "@/components/iconos";
-import { agregarPartida, altaMinima, buscarCatalogo, type Agregado } from "./acciones";
+import { COMPARTIDO } from "@/lib/traslados";
+import { agregarPartida, altaMinima, buscarCatalogo, unidadPropuesta, type Agregado } from "./acciones";
 
 const TIPOS: { valor: TipoPartida; etiqueta: string; tecla: string; placeholder: string; nuevo: string }[] = [
   { valor: "hotel", etiqueta: "Hotel", tecla: "H", placeholder: "Nombre del hotel o zona", nuevo: "hotel" },
   { valor: "vuelo", etiqueta: "Vuelo", tecla: "V", placeholder: "Aerolínea o código, como VB", nuevo: "aerolínea" },
   { valor: "actividad", etiqueta: "Actividad", tecla: "A", placeholder: "Parque, tour o experiencia", nuevo: "actividad" },
-  { valor: "servicio", etiqueta: "Traslado o servicio", tecla: "S", placeholder: "Traslado, seguro, renta de auto…", nuevo: "servicio" },
+  { valor: "traslado", etiqueta: "Traslado", tecla: "T", placeholder: "Tipo de unidad: sedán, van, Sprinter…", nuevo: "traslado" },
+  { valor: "servicio", etiqueta: "Servicio", tecla: "S", placeholder: "Seguro, conectividad, renta de equipo…", nuevo: "servicio" },
 ];
 
 export type Colocacion = "estancia" | "opcion";
@@ -34,6 +36,7 @@ export function AgregarServicio({
   ciudades,
   agregaCiudades,
   editaCatalogo,
+  personas,
 }: {
   abierto: boolean;
   tipoInicial: TipoPartida;
@@ -49,6 +52,8 @@ export function AgregarServicio({
   ciudades: OpcionCiudad[];
   agregaCiudades: boolean;
   editaCatalogo: boolean;
+  /** Personas del viaje: con ellas se propone la unidad del traslado. */
+  personas: number;
 }) {
   return (
     <Dialogo
@@ -71,6 +76,7 @@ export function AgregarServicio({
         ciudades={ciudades}
         agregaCiudades={agregaCiudades}
         editaCatalogo={editaCatalogo}
+        personas={personas}
       />
     </Dialogo>
   );
@@ -89,6 +95,7 @@ function Contenido({
   ciudades,
   agregaCiudades,
   editaCatalogo,
+  personas,
 }: Omit<Parameters<typeof AgregarServicio>[0], "abierto">) {
   const [tipo, setTipo] = useState<TipoPartida>(tipoInicial);
   const [q, setQ] = useState("");
@@ -98,7 +105,7 @@ function Contenido({
   const [nombre, setNombre] = useState("");
   const [ciudad, setCiudad] = useState(ciudadId);
   const [iata, setIata] = useState("");
-  const [tipoServicio, setTipoServicio] = useState("traslado");
+  const [tipoServicio, setTipoServicio] = useState<string>(TIPOS_SERVICIO[0].valor);
   const [colocacion, setColocacion] = useState<Colocacion>(colocacionInicial);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -108,13 +115,26 @@ function Contenido({
     let vigente = true;
     const t = setTimeout(async () => {
       const r = await buscarCatalogo(tipo, q, ciudadId);
-      if (vigente) setResultados(r);
+      if (!vigente) return;
+      if (tipo === "traslado") {
+        // El compartido no lleva unidad; la propuesta es la unidad más chica en la que cabe el viaje.
+        setResultados([
+          ...r,
+          { id: COMPARTIDO, nombre: "Traslado compartido", sub: "Sin unidad: el viaje va con otros pasajeros", ciudadId: null, usos: 0 },
+        ]);
+        if (!q.trim()) {
+          const id = await unidadPropuesta(personas);
+          if (vigente) setElegido((e) => e ?? r.find((x) => x.id === id) ?? null);
+        }
+        return;
+      }
+      setResultados(r);
     }, 160);
     return () => {
       vigente = false;
       clearTimeout(t);
     };
-  }, [tipo, q, ciudadId]);
+  }, [tipo, q, ciudadId, personas]);
 
   // H, V, A, S cambian de tipo cuando no se está escribiendo.
   useEffect(() => {
@@ -282,7 +302,12 @@ function Contenido({
             )}
           </div>
 
-          {editaCatalogo ? (
+          {tipo === "traslado" ? (
+            <p className="text-[12.5px] text-tinta-3">
+              Los tipos de unidad se dan de alta en Catálogos › Traslados. La ruta, la fecha y la hora se ajustan en
+              el armador.
+            </p>
+          ) : editaCatalogo ? (
             <div>
               <p className="mb-1.5 text-[11.5px] font-bold tracking-[0.06em] text-tinta-3 uppercase">¿No aparece?</p>
               <button

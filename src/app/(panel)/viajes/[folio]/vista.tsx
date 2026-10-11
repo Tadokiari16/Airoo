@@ -18,6 +18,7 @@ import {
   IconoCandado,
   IconoHoteles,
   IconoServicios,
+  IconoTraslados,
   IconoWhatsapp,
 } from "@/components/iconos";
 import type { ItemResumen, ViajeCompleto } from "../datos";
@@ -28,6 +29,7 @@ const ICONO = {
   hotel: IconoHoteles,
   vuelo: IconoAerolineas,
   actividad: IconoActividades,
+  traslado: IconoTraslados,
   servicio: IconoServicios,
 };
 

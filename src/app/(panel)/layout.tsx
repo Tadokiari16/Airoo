@@ -31,6 +31,7 @@ export default async function LayoutPanel({ children }: { children: React.ReactN
               { href: "/hoteles", etiqueta: "Hoteles", icono: "hoteles" as const },
               { href: "/actividades", etiqueta: "Actividades", icono: "actividades" as const },
               { href: "/servicios", etiqueta: "Servicios", icono: "servicios" as const },
+              { href: "/traslados", etiqueta: "Traslados", icono: "traslados" as const },
               { href: "/aerolineas", etiqueta: "Aerolíneas", icono: "aerolineas" as const },
             ]
           : []),

@@ -29,7 +29,9 @@ import {
   IconoHoteles,
   IconoMas,
   IconoServicios,
+  IconoTraslados,
 } from "@/components/iconos";
+import { hotelesDelViaje } from "@/lib/traslados";
 import {
   acuerdoPropuesto,
   eliminarPartida,
@@ -42,22 +44,27 @@ import {
 import type { DatosArmador, ProveedorOpcion } from "./datos";
 import { AgregarServicio, type Colocacion } from "./agregar";
 import { EditorActividad, EditorHotel, EditorServicio, EditorVuelo } from "./editores";
+import { EditorTraslado } from "./traslado";
 import { PanelPrecio } from "./precio";
 import { AjustesCotizacion, AntesDeEnviar, Hallazgos, TotalPorOpcion, type VistaOpcion } from "./totales";
 
 const ESPERA_GUARDADO = 700;
 
-const AGREGAR: Record<ClaveSeccion, string> = {
-  hospedaje: "Agregar hotel",
-  vuelos: "Agregar vuelo",
-  actividades: "Agregar actividad o excursión",
-  servicios: "Agregar servicio",
+const AGREGAR: Record<ClaveSeccion, { tipo: TipoPartida; texto: string }[]> = {
+  hospedaje: [{ tipo: "hotel", texto: "Agregar hotel" }],
+  vuelos: [{ tipo: "vuelo", texto: "Agregar vuelo" }],
+  actividades: [{ tipo: "actividad", texto: "Agregar actividad o excursión" }],
+  servicios: [
+    { tipo: "traslado", texto: "Agregar traslado" },
+    { tipo: "servicio", texto: "Agregar servicio" },
+  ],
 };
 
 const ICONO: Record<TipoPartida, (p: { tam?: number }) => React.ReactNode> = {
   hotel: IconoHoteles,
   vuelo: IconoAerolineas,
   actividad: IconoActividades,
+  traslado: IconoTraslados,
   servicio: IconoServicios,
 };
 
@@ -66,7 +73,8 @@ const CATEGORIAS: Record<TipoPartida, string[]> = {
   hotel: ["Hoteles"],
   vuelo: [],
   actividad: ["Tours y parques"],
-  servicio: ["Traslados", "Seguros", "Otro"],
+  traslado: ["Traslados"],
+  servicio: ["Seguros", "Otro"],
 };
 
 const proveedoresPara = (tipo: TipoPartida, todos: ProveedorOpcion[]) =>
@@ -201,8 +209,10 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       aeropuertos,
       aerolineas: datos.aerolineas,
       nombres,
+      tramos: Object.fromEntries(partidas.filter((p) => p.tipo === "vuelo").flatMap((p) => p.tramos.map((t) => [t.id, t]))),
+      unidades: Object.fromEntries(datos.unidades.map((u) => [u.id, u])),
     }),
-    [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres],
+    [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres, partidas, datos.unidades],
   );
   useEffect(() => {
     contexto.current = ctx;
@@ -257,9 +267,10 @@ export function Armador({ datos }: { datos: DatosArmador }) {
   const alAgregar = (a: Agregado) => {
     setPartidas(a.partidas);
     setOpciones(a.opciones);
-    setFichas((f) => ({ ...f, [a.ficha.id]: a.ficha }));
+    const ficha = a.ficha;
+    if (ficha) setFichas((f) => ({ ...f, [ficha.id]: ficha }));
     setAgregar(null);
-    setAviso(`Se agregó ${nombrePartida(a.partida, a.ficha)}`);
+    setAviso(`Se agregó ${nombrePartida(a.partida, ficha ?? undefined)}`);
     irA(a.partida.id);
     if (a.partida.opcionId) setOpcionVista(a.partida.opcionId);
   };
@@ -318,6 +329,9 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       ? ["opcion", "estancia"]
       : ["estancia"];
   const tramosVuelo = partidas.filter((p) => p.tipo === "vuelo").flatMap((p) => p.tramos);
+  const hotelesTraslado = hotelesDelViaje(
+    hoteles.map((h) => ({ opcionId: h.opcionId, fechaInicio: h.fechaInicio, nombre: fichaDe(h)?.nombre ?? "Hotel" })),
+  );
   const ordenadas = [...opciones].sort((a, b) => a.orden - b.orden);
 
   const tarjeta = (p: PartidaArmador) => (
@@ -330,6 +344,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       utilidadBasePb={ajustes.utilidadBasePb}
       partidas={partidas}
       tramosVuelo={tramosVuelo}
+      hotelesTraslado={hotelesTraslado}
       hallazgos={deLaPartida(p.id)}
       aeropuertos={aeropuertos}
       alConocerAeropuertos={(lista) =>
@@ -407,10 +422,12 @@ export function Armador({ datos }: { datos: DatosArmador }) {
       <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_340px] items-start gap-5 px-5 py-5">
         <div className="flex min-w-0 flex-col gap-5">
           {SECCIONES.map((s) => {
-            const deSeccion = partidas.filter((p) => p.tipo === s.tipo).sort((a, b) => a.orden - b.orden);
-            const hayVuelo = s.tipo === "vuelo" && deSeccion.length > 0;
+            const tipos: readonly TipoPartida[] = s.tipos;
+            const deSeccion = partidas.filter((p) => tipos.includes(p.tipo)).sort((a, b) => a.orden - b.orden);
+            const hayVuelo = s.clave === "vuelos" && deSeccion.length > 0;
+            const esHospedaje = s.clave === "hospedaje";
             const hotelVisto =
-              s.tipo === "hotel" && opciones.length ? partidas.find((p) => p.opcionId === opcionVista) : undefined;
+              esHospedaje && opciones.length ? partidas.find((p) => p.opcionId === opcionVista) : undefined;
             return (
               <section
                 key={s.clave}
@@ -419,20 +436,25 @@ export function Armador({ datos }: { datos: DatosArmador }) {
               >
                 <div className="flex items-center justify-between border-b border-linea px-5 py-3.5">
                   <h2 className="text-[16px] font-bold">{s.titulo}</h2>
-                  <Boton
-                    variante="secundario"
-                    disabled={hayVuelo}
-                    title={hayVuelo ? "Ya hay un vuelo en esta cotización. Edítalo para cambiar el tipo de viaje." : undefined}
-                    onClick={() =>
-                      setAgregar({ tipo: s.tipo, colocacion: s.tipo === "hotel" ? colocaciones[0] : "estancia" })
-                    }
-                    className="disabled:opacity-50"
-                  >
-                    <IconoMas tam={14} /> {AGREGAR[s.clave]}
-                  </Boton>
+                  <div className="flex gap-2">
+                    {AGREGAR[s.clave].map((a) => (
+                      <Boton
+                        key={a.tipo}
+                        variante="secundario"
+                        disabled={hayVuelo}
+                        title={hayVuelo ? "Ya hay un vuelo en esta cotización. Edítalo para cambiar el tipo de viaje." : undefined}
+                        onClick={() =>
+                          setAgregar({ tipo: a.tipo, colocacion: a.tipo === "hotel" ? colocaciones[0] : "estancia" })
+                        }
+                        className="disabled:opacity-50"
+                      >
+                        <IconoMas tam={14} /> {a.texto}
+                      </Boton>
+                    ))}
+                  </div>
                 </div>
                 <div className="flex flex-col gap-4 p-5">
-                  {s.tipo === "hotel" && opciones.length ? (
+                  {esHospedaje && opciones.length ? (
                     <div className="flex flex-wrap items-center gap-2">
                       <div role="tablist" aria-label="Opciones de hospedaje" className="flex rounded-[12px] bg-suave p-1">
                         {ordenadas.map((o) => {
@@ -473,7 +495,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                     </div>
                   ) : null}
 
-                  {s.tipo === "hotel" && opciones.length ? (
+                  {esHospedaje && opciones.length ? (
                     hotelVisto ? (
                       tarjeta(hotelVisto)
                     ) : null
@@ -536,6 +558,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
           ciudades={datos.ciudades}
           agregaCiudades={datos.agregaCiudades}
           editaCatalogo={datos.editaCatalogo}
+          personas={personas}
         />
       ) : null}
 
@@ -576,6 +599,7 @@ function TarjetaPartida({
   utilidadBasePb,
   partidas,
   tramosVuelo,
+  hotelesTraslado,
   hallazgos,
   aeropuertos,
   alConocerAeropuertos,
@@ -595,6 +619,7 @@ function TarjetaPartida({
   utilidadBasePb: number;
   partidas: PartidaArmador[];
   tramosVuelo: PartidaArmador["tramos"];
+  hotelesTraslado: { llegada: string | null; salida: string | null };
   /** Errores y avisos de esta partida; lo que falta se ve en «Antes de enviar». */
   hallazgos: Hallazgo[];
   aeropuertos: Record<string, Aeropuerto>;
@@ -676,7 +701,18 @@ function TarjetaPartida({
 
       <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-4">
         <div className="min-w-0">
-          {ficha?.tipo === "hotel" ? (
+          {p.tipo === "traslado" ? (
+            <EditorTraslado
+              p={p}
+              unidades={datos.unidades}
+              viaje={viajeEditor}
+              tramosVuelo={tramosVuelo}
+              hoteles={hotelesTraslado}
+              aeropuertos={aeropuertos}
+              llegarAntes={reglas.llegarAntes}
+              alCambiar={alCambiar}
+            />
+          ) : ficha?.tipo === "hotel" ? (
             <EditorHotel
               p={p}
               ficha={ficha}

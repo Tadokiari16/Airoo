@@ -774,11 +774,11 @@ export function EditorServicio({
     const trayectos = [];
     if (r !== "regreso")
       trayectos.push(
-        actual("Aeropuerto") ?? { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: viaje.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null },
+        actual("Aeropuerto") ?? { id: nuevoId(), desde: "Aeropuerto", hasta: "Hotel", fecha: viaje.inicio, hora: ida?.llega ?? null, vueloTramoId: ida?.id ?? null, vueloFecha: null, vueloHora: null },
       );
     if (r !== "ida")
       trayectos.push(
-        actual("Hotel") ?? { id: nuevoId(), desde: "Hotel", hasta: "Aeropuerto", fecha: viaje.fin, hora: null, vueloTramoId: regreso?.id ?? null },
+        actual("Hotel") ?? { id: nuevoId(), desde: "Hotel", hasta: "Aeropuerto", fecha: viaje.fin, hora: null, vueloTramoId: regreso?.id ?? null, vueloFecha: null, vueloHora: null },
       );
     alCambiar({ detalle: { ...p.detalle, recoleccion: r }, trayectos });
   };

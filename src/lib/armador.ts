@@ -49,6 +49,9 @@ export type TrayectoArmador = {
   fecha: string | null;
   hora: string | null;
   vueloTramoId: string | null;
+  /** Fecha y hora del vuelo cuando se ligó o se revisó; si el vuelo cambia, queda «por revisar». */
+  vueloFecha: string | null;
+  vueloHora: string | null;
 };
 
 /** Lo propio de cada tipo, guardado en `partidas.detalle`. */
@@ -61,7 +64,14 @@ export type Detalle = {
   duracion?: string;
   inclusiones?: string;
   personas?: number;
-  // Servicio
+  // Traslado
+  modo?: "aeropuerto_hotel" | "libre";
+  servicio?: "privado" | "compartido";
+  sentido?: "sencillo" | "redondo";
+  /** Sencillo aeropuerto–hotel: llegada (aeropuerto → hotel) o salida (hotel → aeropuerto). */
+  direccion?: "llegada" | "salida";
+  maletas?: number;
+  // Servicio (los traslados viejos también usan recoleccion)
   recoleccion?: "ida" | "regreso" | "redondo";
   duracionAprox?: string;
   cobertura?: string;
@@ -78,6 +88,8 @@ export type PartidaArmador = {
   actividadId: string | null;
   servicioId: string | null;
   aerolineaId: string | null;
+  /** Traslado privado: el tipo de unidad. Compartido: null. */
+  trasladoUnidadId: string | null;
   planId: string | null;
   varianteId: string | null;
   tarifaId: string | null;
@@ -204,12 +216,14 @@ export function partidaNueva(
     actividadId: null,
     servicioId: null,
     aerolineaId: null,
+    trasladoUnidadId: null,
     planId: null,
     varianteId: null,
     tarifaId: null,
     proveedorId: null,
     regimen: null,
-    fechaInicio: tipo === "actividad" ? null : base.inicio,
+    // Las fechas del traslado van en sus trayectos.
+    fechaInicio: tipo === "actividad" || tipo === "traslado" ? null : base.inicio,
     fechaFin: tipo === "hotel" || tipo === "vuelo" || tipo === "servicio" ? base.fin : null,
     moneda: "MXN",
     netoTotal: null,

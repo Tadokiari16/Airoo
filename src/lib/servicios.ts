@@ -13,6 +13,13 @@ export const TIPOS = [
 export type TipoServicio = (typeof TIPOS)[number]["valor"];
 export type GrupoServicio = (typeof TIPOS)[number]["grupo"];
 export const VALORES_TIPO = TIPOS.map((t) => t.valor) as TipoServicio[];
+/**
+ * Los tipos con los que se da de alta un servicio. «Traslado» ya no: los
+ * traslados tienen su catálogo de unidades y se arman en el armador. El tipo
+ * queda arriba solo para leer los servicios viejos.
+ */
+export const TIPOS_ALTA = TIPOS.filter((t) => t.valor !== "traslado");
+export const VALORES_TIPO_ALTA = TIPOS_ALTA.map((t) => t.valor) as Exclude<TipoServicio, "traslado">[];
 export const nombreTipo = (t: string) => TIPOS.find((x) => x.valor === t)?.nombre ?? t;
 export const grupoDe = (t: TipoServicio): GrupoServicio => TIPOS.find((x) => x.valor === t)!.grupo;
 

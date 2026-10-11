@@ -3,16 +3,20 @@
 
 import type { PartidaArmador } from "./armador";
 import type { FichaArmador } from "./armador-fichas";
-import { noches } from "./cotizacion";
+import { noches, type TipoPartida } from "./cotizacion";
 import { formatoDia, rangoCorto, rangoLargo } from "./fechas";
 import { nombreRegimen } from "./hoteles";
 import { horaTexto } from "./armador";
 
-const NOMBRE_TIPO = { hotel: "Hotel", vuelo: "Vuelo", actividad: "Actividad", servicio: "Servicio" };
+const NOMBRE_TIPO = { hotel: "Hotel", vuelo: "Vuelo", actividad: "Actividad", traslado: "Traslado", servicio: "Servicio" };
 const GENERICAS = new Set(["hotel", "parque", "tour", "traslado", "seguro", "renta", "club", "casa", "hacienda", "villa", "hostal"]);
 
 /** «Xel-Há · Todo incluido», «Vuelo redondo · VivaAerobus», «Traslado privado · Van adaptada». */
 export function nombrePartida(p: PartidaArmador, f?: FichaArmador): string {
+  if (p.tipo === "traslado") {
+    if (p.detalle.servicio === "compartido") return "Traslado compartido";
+    return f?.tipo === "traslado" ? `Traslado privado · ${f.nombre}` : "Traslado privado";
+  }
   if (!f) return NOMBRE_TIPO[p.tipo];
   if (f.tipo === "vuelo") return `${p.detalle.redondo === false ? "Vuelo sencillo" : "Vuelo redondo"} · ${f.nombre}`;
   if (f.tipo === "actividad") {
@@ -28,7 +32,7 @@ export function nombrePartida(p: PartidaArmador, f?: FichaArmador): string {
 
 /** Nombre corto para avisos y pestañas: «Seadust», «Xel-Há», «Parque Xcaret». */
 export function nombreCorto(p: PartidaArmador, f?: FichaArmador): string {
-  if (!f) return NOMBRE_TIPO[p.tipo];
+  if (p.tipo === "traslado" || !f) return NOMBRE_TIPO[p.tipo];
   if (f.tipo === "vuelo") return `Vuelo ${f.iata}`;
   const palabras = f.nombre.split(/\s+/);
   const n = GENERICAS.has(palabras[0].toLowerCase()) ? 2 : 1;
@@ -92,6 +96,7 @@ export function lineasPartida(p: PartidaArmador, f?: FichaArmador): string[] {
         .join(" · "),
     ];
   }
+  if (p.tipo === "traslado") return [lineaTraslado(p)].filter(Boolean);
   // Servicio
   const trayectos = p.trayectos.map((t) => `${t.desde} → ${t.hasta}`).join(" · ");
   const fechas = p.fechaInicio && p.fechaFin ? rangoCorto(p.fechaInicio, p.fechaFin) : "";
@@ -102,10 +107,24 @@ export function lineasPartida(p: PartidaArmador, f?: FichaArmador): string[] {
   return [[personas, p.detalle.cobertura ?? "", fechas].filter(Boolean).join(" · ")].filter(Boolean);
 }
 
+/** «Aeropuerto de Cancún (CUN) ↔ Seadust · redondo · 6 pasajeros, 6 maletas». */
+function lineaTraslado(p: PartidaArmador): string {
+  const [a, b] = p.trayectos;
+  const redondo = p.detalle.sentido === "redondo";
+  const ruta = a ? `${a.desde || "—"} ${redondo ? "↔" : "→"} ${a.hasta || "—"}` : "";
+  const personas = p.detalle.personas ? plural(p.detalle.personas, "pasajero", "pasajeros") : "";
+  const maletas = p.detalle.maletas != null ? plural(p.detalle.maletas, "maleta", "maletas") : "";
+  const fechas = [a?.fecha, redondo ? b?.fecha : null].filter((x): x is string => !!x).map(formatoDia).join(" y ");
+  return [ruta, redondo ? "redondo" : "sencillo", fechas, [personas, maletas].filter(Boolean).join(", ")]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+/** Secciones del viaje. Traslados y servicios van juntos en «Servicios adicionales». */
 export const SECCIONES = [
-  { clave: "hospedaje", titulo: "Hospedaje", tipo: "hotel" },
-  { clave: "vuelos", titulo: "Vuelos", tipo: "vuelo" },
-  { clave: "actividades", titulo: "Actividades y excursiones", tipo: "actividad" },
-  { clave: "servicios", titulo: "Servicios adicionales", tipo: "servicio" },
-] as const;
+  { clave: "hospedaje", titulo: "Hospedaje", tipos: ["hotel"] },
+  { clave: "vuelos", titulo: "Vuelos", tipos: ["vuelo"] },
+  { clave: "actividades", titulo: "Actividades y excursiones", tipos: ["actividad"] },
+  { clave: "servicios", titulo: "Servicios adicionales", tipos: ["traslado", "servicio"] },
+] as const satisfies readonly { clave: string; titulo: string; tipos: readonly TipoPartida[] }[];
 export type ClaveSeccion = (typeof SECCIONES)[number]["clave"];

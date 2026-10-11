@@ -11,6 +11,7 @@
 
 import { horaTexto, tipoCambioDe, type FixCotizacion, type PartidaArmador, type TramoArmador } from "./armador";
 import { formatoDia, rangoCorto } from "./fechas";
+import { avisosCapacidad, estadoLiga, type Capacidad, type TramoLigable } from "./traslados";
 import {
   enZona,
   horarioReal,
@@ -33,6 +34,10 @@ export type ContextoRevision = {
   aerolineas: string[];
   /** Nombre corto de cada partida: «Seadust», «Xel-Há», «Vuelo VB». */
   nombres: Record<string, string>;
+  /** Tramos de los vuelos de la cotización, para saber si un traslado quedó por revisar. */
+  tramos?: Record<string, TramoLigable | undefined>;
+  /** Capacidad de cada tipo de unidad de traslado. */
+  unidades?: Record<string, (Capacidad & { nombre: string }) | undefined>;
 };
 
 // Límites de los avisos de vuelo, en minutos.
@@ -49,7 +54,7 @@ const plural = (n: number, una: string, varias: string) => `${n} ${n === 1 ? una
 /** Dónde empieza el servicio: la fecha contra la que se revisan pago y cancelación. */
 export function inicioDelServicio(p: PartidaArmador): string | null {
   if (p.tipo === "vuelo") return [...p.tramos].map((t) => t.fecha).filter((f): f is string => !!f).sort()[0] ?? null;
-  if (p.tipo === "servicio") {
+  if (p.tipo === "servicio" || p.tipo === "traslado") {
     const t = p.trayectos.map((x) => x.fecha).filter((f): f is string => !!f).sort()[0];
     return t ?? p.fechaInicio;
   }
@@ -110,13 +115,48 @@ export function revisarPartida(p: PartidaArmador, ctx: ContextoRevision): Hallaz
       aviso(`${nombre} queda el ${formatoDia(p.fechaInicio)}, fuera de las fechas del viaje (${fechasViaje}).`);
   }
 
-  if (p.tipo === "servicio") {
+  if (p.tipo === "servicio" || p.tipo === "traslado") {
     for (const t of p.trayectos)
       if (t.fecha && fueraDelViaje(t.fecha))
         aviso(`${nombre}: el trayecto ${t.desde} → ${t.hasta} queda el ${formatoDia(t.fecha)}, fuera de las fechas del viaje (${fechasViaje}).`);
   }
 
+  if (p.tipo === "traslado") salida.push(...revisarTraslado(p, ctx, nombre));
   if (p.tipo === "vuelo") salida.push(...revisarVuelo(p, ctx, nombre));
+  return salida;
+}
+
+// ─── Traslados ──────────────────────────────────────────────────────────────
+
+function revisarTraslado(p: PartidaArmador, ctx: ContextoRevision, nombre: string): Hallazgo[] {
+  const salida: Hallazgo[] = [];
+  const error = (texto: string) => salida.push({ partidaId: p.id, nivel: "error", texto });
+  const falta = (texto: string) => salida.push({ partidaId: p.id, nivel: "falta", texto });
+  const aviso = (texto: string) => salida.push({ partidaId: p.id, nivel: "aviso", texto });
+  const { viaje } = ctx;
+  const personas = p.detalle.personas ?? viaje.adultos + viaje.menores;
+
+  if (p.detalle.servicio !== "compartido") {
+    const u = p.trasladoUnidadId ? ctx.unidades?.[p.trasladoUnidadId] : undefined;
+    if (!p.trasladoUnidadId) falta(`${nombre} sin unidad`);
+    else if (u) for (const t of avisosCapacidad(u, personas, p.detalle.maletas ?? null)) aviso(`${nombre}: ${t.charAt(0).toLowerCase()}${t.slice(1)}`);
+  }
+  if (p.trayectos.length === 0) falta(`${nombre} sin trayecto`);
+  if (p.trayectos.some((t) => !t.desde.trim() || !t.hasta.trim())) falta(`${nombre} sin origen o destino`);
+  if (p.trayectos.some((t) => !t.fecha)) falta(`${nombre} sin fecha`);
+  else if (p.trayectos.some((t) => !t.hora)) falta(`${nombre} sin hora`);
+  const [ida, vuelta] = p.trayectos;
+  if (ida?.fecha && vuelta?.fecha && vuelta.fecha < ida.fecha)
+    error(`${nombre}: el regreso (${formatoDia(vuelta.fecha)}) queda antes de la ida (${formatoDia(ida.fecha)}).`);
+
+  // El vuelo del que salió cambió de horario o ya no está: alguien lo revisa antes de enviar.
+  for (const t of p.trayectos) {
+    const e = estadoLiga(t, ctx.tramos ?? {});
+    const tramo = t.vueloTramoId ? ctx.tramos?.[t.vueloTramoId] : undefined;
+    if (e === "cambio")
+      falta(`${nombre} por revisar: ${tramo?.numero.trim() || "el vuelo"} cambió de horario después de armar el traslado`);
+    else if (e === "sin_vuelo") falta(`${nombre} por revisar: el vuelo del que salió ya no está en la cotización`);
+  }
   return salida;
 }
 
