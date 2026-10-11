@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aCalculo, calcular, horaTexto, leerHora, partidaNueva, tipoCambioDe } from "../armador";
+import { aCalculo, calcular, completarRegreso, horaTexto, leerHora, partidaNueva, tipoCambioDe, type TramoArmador } from "../armador";
 import { aCentavos } from "../dinero";
 
 const fx = { fixUsd: 18_4200, fixEur: null, colchonPb: 150 };
@@ -51,5 +51,52 @@ describe("costo neto total por servicio", () => {
     expect(aCentavos("1,250.50")).toBe(1_250_50);
     expect(aCentavos("1250.5")).toBe(1_250_50);
     expect(aCentavos("1250.505")).toBeNull();
+  });
+});
+
+describe("regreso de un vuelo redondo", () => {
+  const t = (id: string, sentido: "ida" | "regreso", origen: string, destino: string): TramoArmador => ({
+    id,
+    sentido,
+    numero: "",
+    fecha: null,
+    origen,
+    destino,
+    terminalSalida: "",
+    terminalLlegada: "",
+    sale: null,
+    llega: null,
+    llegaDias: 0,
+  });
+  const ruta = (x: TramoArmador[]) => x.map((y) => `${y.origen || "—"}→${y.destino || "—"}`).join(" / ");
+
+  it("se prellena con la ruta invertida de la ida (GDL→CUN / CUN→GDL)", () => {
+    const antes = [t("i", "ida", "", ""), t("r", "regreso", "", "")];
+    const despues = [t("i", "ida", "GDL", "CUN"), t("r", "regreso", "", "")];
+    expect(ruta(completarRegreso(antes, despues))).toBe("GDL→CUN / CUN→GDL");
+  });
+
+  it("sigue a la ida mientras el regreso no se cambie a mano", () => {
+    const antes = [t("i", "ida", "GDL", "CUN"), t("r", "regreso", "CUN", "GDL")];
+    const despues = [t("i", "ida", "MEX", "CUN"), t("r", "regreso", "CUN", "GDL")];
+    expect(ruta(completarRegreso(antes, despues))).toBe("MEX→CUN / CUN→MEX");
+  });
+
+  it("respeta el regreso que alguien cambió a mano y sigue siendo editable", () => {
+    const antes = [t("i", "ida", "GDL", "CUN"), t("r", "regreso", "CUN", "MEX")];
+    const despues = [t("i", "ida", "GDL", "CZM"), t("r", "regreso", "CUN", "MEX")];
+    // El origen del regreso seguía a la ida; el destino lo puso una persona.
+    expect(ruta(completarRegreso(antes, despues))).toBe("GDL→CZM / CZM→MEX");
+  });
+
+  it("con escalas, el regreso va del último destino de la ida al primer origen", () => {
+    const antes = [t("i1", "ida", "GDL", "MEX"), t("i2", "ida", "MEX", ""), t("r", "regreso", "", "")];
+    const despues = [t("i1", "ida", "GDL", "MEX"), t("i2", "ida", "MEX", "CUN"), t("r", "regreso", "", "")];
+    expect(ruta(completarRegreso(antes, despues))).toBe("GDL→MEX / MEX→CUN / CUN→GDL");
+  });
+
+  it("no toca nada si la ruta de la ida no cambió", () => {
+    const x = [t("i", "ida", "GDL", "CUN"), t("r", "regreso", "", "")];
+    expect(completarRegreso(x, x.map((y) => ({ ...y, numero: "VB 1" })))).toEqual(x.map((y) => ({ ...y, numero: "VB 1" })));
   });
 });

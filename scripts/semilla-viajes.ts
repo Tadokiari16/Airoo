@@ -245,7 +245,7 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       netoTotalCentavos: 2_683_00,
       utilidadPb: 250,
       utilidadManual: true,
-      detalle: { redondo: true, pasajeros: 6, tua: "GDL $727 · CUN $382" },
+      detalle: { redondo: true, pasajeros: 6 },
     });
     const tramos = await db
       .insert(schema.vueloTramos)
@@ -279,6 +279,20 @@ export async function sembrarViajes(db: Db, duenoId: string, modo: { local: bool
       .returning();
     tramoIda = tramos[0].id;
     tramoRegreso = tramos[1].id;
+    // TUA informativa: una por aeropuerto de salida.
+    await db
+      .update(schema.partidas)
+      .set({
+        detalle: {
+          redondo: true,
+          pasajeros: 6,
+          tuas: [
+            { tramoId: tramos[0].id, iata: "GDL", centavos: 727_00, moneda: "MXN" },
+            { tramoId: tramos[1].id, iata: "CUN", centavos: 382_00, moneda: "MXN" },
+          ],
+        },
+      })
+      .where(eq(schema.partidas.id, v.id));
   }
 
   const actividades: [typeof xelha | undefined, string, string, number][] = [

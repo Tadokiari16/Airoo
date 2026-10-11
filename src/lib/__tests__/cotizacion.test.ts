@@ -6,6 +6,7 @@ import {
   huespedesNuevaHabitacion,
   netoEnPesos,
   planDePagos,
+  precioPorPersona,
   precioCliente,
   repartirHuespedes,
   textoTipoCambio,
@@ -178,5 +179,24 @@ describe("huéspedes", () => {
 describe("comisión de la asesora", () => {
   it("venta $20,000, utilidad $2,000 → Airoo $700, asesora $1,300", () => {
     expect(comision(2_000_00, 35)).toEqual({ airoo: 700_00, asesora: 1_300_00 });
+  });
+});
+
+describe("precio por persona", () => {
+  it("divide entre los pasajeros del viaje, no entre los huéspedes de las habitaciones", () => {
+    // $5,400 con 2 pasajeros: $2,700 por persona, aunque las habitaciones sumen 11 huéspedes.
+    expect(precioPorPersona(540_000, 2)).toBe(270_000);
+    // Con 11 huéspedes daba $490.91: ese cálculo ya no se usa.
+    expect(precioPorPersona(540_000, 11)).toBe(49_091);
+  });
+
+  it("redondea al centavo y no divide entre cero", () => {
+    expect(precioPorPersona(100_000, 3)).toBe(33_333);
+    expect(precioPorPersona(100_000, 0)).toBeNull();
+  });
+
+  it("el total de la opción también se reparte entre los pasajeros", () => {
+    const t = totales([], { cargoServicio: 540_000, conIva: false, ivaPb: 1600, personas: 2 });
+    expect(t.porPersona).toBe(270_000);
   });
 });

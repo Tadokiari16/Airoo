@@ -1,16 +1,19 @@
 // Lo que el armador revisa en cada servicio, sin acceso a la base.
 //
-// - error: lo capturado se contradice (origen igual a destino, llegada antes
-//   de la salida…). No se guarda hasta corregirlo.
+// - error: lo capturado se contradice (servicio fuera de las fechas del viaje,
+//   llegada antes de la salida, costo neto en cero). La captura se guarda, pero
+//   la cotización no se puede enviar hasta corregirlo.
 // - falta: dato que no está todavía (costo neto, fecha). Se guarda, pero la
 //   cotización no se puede enviar.
-// - aviso: algo raro que puede ser correcto (conexión corta, vuelo fuera de las
-//   fechas del viaje). Se guarda y aparece en «Antes de enviar».
+// - aviso: algo raro que puede ser correcto (conexión corta, fecha de pago o de
+//   cancelación posterior a la llegada). No bloquea.
+// - observacion: dato neutro que no bloquea ni afecta precios (las habitaciones
+//   suman más personas que el viaje; pueden sumarse más en destino).
 //
 // Los textos describen qué pasa y por qué, sin órdenes (CLAUDE.md › Tono).
 
 import { horaTexto, tipoCambioDe, type FixCotizacion, type PartidaArmador, type TramoArmador } from "./armador";
-import { formatoDia, rangoCorto } from "./fechas";
+import { formatoDia, rangoCorto, sumarDias } from "./fechas";
 import { avisosCapacidad, estadoLiga, type Capacidad, type TramoLigable } from "./traslados";
 import {
   enZona,
@@ -22,7 +25,7 @@ import {
   type Aeropuerto,
 } from "./vuelos";
 
-export type Nivel = "error" | "falta" | "aviso";
+export type Nivel = "error" | "falta" | "aviso" | "observacion";
 export type Hallazgo = { partidaId: string | null; nivel: Nivel; texto: string };
 
 export type ContextoRevision = {
@@ -61,6 +64,24 @@ export function inicioDelServicio(p: PartidaArmador): string | null {
   return p.fechaInicio;
 }
 
+/**
+ * Todas las fechas que toca un servicio, en orden: estancia, trayectos y, en
+ * vuelos, el día de salida y el de llegada de cada tramo.
+ */
+export function fechasDelServicio(p: PartidaArmador): string[] {
+  const fechas: (string | null)[] = [
+    p.fechaInicio,
+    p.tipo === "hotel" || p.tipo === "servicio" ? p.fechaFin : null,
+    ...p.trayectos.map((t) => t.fecha),
+    ...p.tramos.flatMap((t) => [t.fecha, t.fecha ? sumarDias(t.fecha, t.llegaDias) : null]),
+  ];
+  return fechas.filter((f): f is string => !!f).sort();
+}
+
+/** Las fechas del servicio que quedan fuera del rango del viaje (inclusive). */
+export const fechasFueraDelViaje = (p: PartidaArmador, inicio: string, fin: string) =>
+  fechasDelServicio(p).filter((f) => f < inicio || f > fin);
+
 // ─── Una partida ────────────────────────────────────────────────────────────
 
 /** Errores, faltas y avisos que dependen solo de esta partida. */
@@ -70,28 +91,38 @@ export function revisarPartida(p: PartidaArmador, ctx: ContextoRevision): Hallaz
   const error = (texto: string) => salida.push({ partidaId: p.id, nivel: "error", texto });
   const falta = (texto: string) => salida.push({ partidaId: p.id, nivel: "falta", texto });
   const aviso = (texto: string) => salida.push({ partidaId: p.id, nivel: "aviso", texto });
+  const observacion = (texto: string) => salida.push({ partidaId: p.id, nivel: "observacion", texto });
   const { viaje } = ctx;
   const personas = viaje.adultos + viaje.menores;
-  const fueraDelViaje = (dia: string) => dia < viaje.inicio || dia > viaje.fin;
   const fechasViaje = rangoCorto(viaje.inicio, viaje.fin);
 
   // Costo neto total: uno por servicio, mayor a cero.
   if (p.netoTotal === null) falta(`${nombre} sin costo neto`);
   else if (!Number.isInteger(p.netoTotal) || p.netoTotal <= 0)
-    error(`${nombre}: el costo neto total queda en $0. Se guarda cuando es mayor a cero.`);
+    error(`${nombre}: el costo neto total está en $0, y una cotización con un servicio sin costo no se puede enviar.`);
   if (p.netoTotal !== null && p.moneda !== "MXN" && tipoCambioDe(p.moneda, ctx.fx) === null)
     falta(`${nombre} en ${p.moneda === "USD" ? "dólares" : "euros"} sin tipo de cambio`);
 
-  // Fecha límite de pago y de cancelación: ni en el pasado ni después de que empieza el servicio.
+  // Fecha límite de pago y de cancelación: avisan si ya pasaron o si caen después de que empieza el servicio.
   const inicio = inicioDelServicio(p);
   for (const [fecha, que] of [
     [p.pagarAntes, "La fecha límite de pago"],
     [p.cancelacionGratisHasta, "La cancelación gratuita"],
   ] as const) {
     if (!fecha) continue;
-    if (fecha < ctx.hoy) error(`${nombre}: ${que.toLowerCase()} (${formatoDia(fecha)}) ya pasó.`);
+    if (fecha < ctx.hoy) aviso(`${nombre}: ${que.toLowerCase()} (${formatoDia(fecha)}) ya pasó.`);
     else if (inicio && fecha > inicio)
-      error(`${nombre}: ${que.toLowerCase()} (${formatoDia(fecha)}) queda después de que empieza el servicio (${formatoDia(inicio)}).`);
+      aviso(`${nombre}: ${que.toLowerCase()} (${formatoDia(fecha)}) queda después de que empieza el servicio (${formatoDia(inicio)}).`);
+  }
+
+  // Un servicio con alguna fecha fuera de las del viaje: impide enviar, no la captura.
+  // Los vuelos se revisan aparte, con la hora de llegada en el aeropuerto de destino.
+  if (p.tipo !== "vuelo" && fechasFueraDelViaje(p, viaje.inicio, viaje.fin).length) {
+    const fechas = fechasDelServicio(p);
+    const primera = fechas[0];
+    const ultima = fechas.at(-1)!;
+    const cuando = primera === ultima ? `el ${formatoDia(primera)}` : `del ${formatoDia(primera)} al ${formatoDia(ultima)}`;
+    error(`${nombre} queda ${cuando}, fuera de las fechas del viaje (${fechasViaje}).`);
   }
 
   if (p.tipo === "hotel") {
@@ -105,20 +136,16 @@ export function revisarPartida(p: PartidaArmador, ctx: ContextoRevision): Hallaz
       if (h.adultos + h.menores === 0) falta(`${nombre}: la habitación ${i + 1} no tiene huéspedes`);
     });
     const enHabitaciones = p.habitaciones.reduce((s, h) => s + h.adultos + h.menores, 0);
-    if (p.habitaciones.length && enHabitaciones !== personas)
+    if (p.habitaciones.length && enHabitaciones > personas)
+      observacion(
+        `${nombre}: las habitaciones suman ${plural(enHabitaciones, "huésped", "huéspedes")}; el viaje es para ${personas}. Pueden sumarse más personas en destino.`,
+      );
+    else if (p.habitaciones.length && enHabitaciones < personas)
       aviso(`${nombre}: las habitaciones suman ${plural(enHabitaciones, "persona", "personas")} y en el viaje van ${personas}.`);
   }
 
   if (p.tipo === "actividad") {
     if (!p.fechaInicio) falta(`${nombre} sin fecha`);
-    else if (fueraDelViaje(p.fechaInicio))
-      aviso(`${nombre} queda el ${formatoDia(p.fechaInicio)}, fuera de las fechas del viaje (${fechasViaje}).`);
-  }
-
-  if (p.tipo === "servicio" || p.tipo === "traslado") {
-    for (const t of p.trayectos)
-      if (t.fecha && fueraDelViaje(t.fecha))
-        aviso(`${nombre}: el trayecto ${t.desde} → ${t.hasta} queda el ${formatoDia(t.fecha)}, fuera de las fechas del viaje (${fechasViaje}).`);
   }
 
   if (p.tipo === "traslado") salida.push(...revisarTraslado(p, ctx, nombre));
@@ -211,7 +238,7 @@ function revisarVuelo(p: PartidaArmador, ctx: ContextoRevision, nombre: string):
     const llegaDia = enZona(h.llega, ap(t.destino)!.zonaHoraria).dia;
     const fecha = t.fecha!;
     if (fecha < viaje.inicio || llegaDia > viaje.fin)
-      aviso(`${v} vuela ${fecha === llegaDia ? `el ${formatoDia(fecha)}` : `del ${formatoDia(fecha)} al ${formatoDia(llegaDia)}`}, fuera de las fechas del viaje (${rangoCorto(viaje.inicio, viaje.fin)}).`);
+      error(`${v} vuela ${fecha === llegaDia ? `el ${formatoDia(fecha)}` : `del ${formatoDia(fecha)} al ${formatoDia(llegaDia)}`}, fuera de las fechas del viaje (${rangoCorto(viaje.inicio, viaje.fin)}).`);
   }
   if (incompleto) falta(`${nombre} sin horario completo`);
 
@@ -320,6 +347,6 @@ export function revisarCotizacion(partidas: PartidaArmador[], ctx: ContextoRevis
   return salida;
 }
 
-/** Solo los errores: lo que impide guardar. */
+/** Solo los errores: lo que impide enviar la cotización (la captura se guarda igual). */
 export const erroresDe = (p: PartidaArmador, ctx: ContextoRevision) =>
   revisarPartida(p, ctx).filter((h) => h.nivel === "error");

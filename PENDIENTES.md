@@ -16,7 +16,7 @@ Cosas que no bloquean la fase en curso pero no se pueden olvidar.
 - «Revisar y enviar» y «Vista previa» quedan apagados en la 2a; llegan con la entrega 2b junto con la propuesta del cliente.
 - Del prototipo del armador faltan «Duplicar como otra opción» y el «Deshacer» después de quitar algo. Hoy quitar un servicio pide confirmación.
 - El precio de cada servicio se captura en la tarjeta del armador después de «Agregar al viaje», no dentro del diálogo, para que hotel, vuelo, actividad y servicio usen el mismo editor.
-- Una fecha límite de pago o de cancelación que ya pasó es error: mientras siga así, ese servicio no se guarda. Con cotizaciones viejas (y los viajes de ejemplo, cuando pasen sus fechas) habrá que mover o borrar esa fecha antes de editar lo demás. Si estorba, se puede bajar a aviso para cotizaciones ya enviadas.
+- Tres niveles de revisión (ajuste del 11 oct 2026): el error no impide capturar, solo enviar; el aviso no bloquea; la observación es neutra y no afecta precios. Errores: servicio con fechas fuera del viaje, llegada de vuelo anterior a la salida, costo neto en cero (y los que ya había: número de vuelo inválido, mismo aeropuerto, estancia sin noche). Avisos: fecha de pago o de cancelación gratuita pasada o posterior a la llegada. Observación: las habitaciones suman más huéspedes que el viaje. Al construir «Revisar y enviar» (2b), el servidor tiene que volver a revisar los errores antes de enviar: hoy solo se muestran en pantalla.
 - El número de vuelo se valida contra el catálogo de Aerolíneas (la clave del número), no contra la aerolínea de la tarjeta: así caben los vuelos en código compartido.
 - Al pasar a «Costo neto total», los netos que ya había por habitación o por boleto se sumaron en uno. Un vuelo ya capturado con un aeropuerto escrito que no está en la lista quedó sin ese aeropuerto, para elegirlo otra vez.
 
@@ -32,3 +32,12 @@ Cosas que no bloquean la fase en curso pero no se pueden olvidar.
 
 - Migración aparte que borre lo que quedó sin usar: la tabla `hotel_habitacion_nombres`, `aerolineas.como_se_compra` y las columnas de texto `mano`, `documentada` y `cambios` de `aerolinea_tarifas`. Mientras la vista previa y producción compartan base, solo se agregan cosas.
 - Los traslados que quedaron como servicio (tipo «traslado» en Servicios, y sus partidas en cotizaciones viejas) se pasan al tipo de partida «traslado» con su unidad, y después se quita el tipo «traslado» de Servicios.
+
+## Ajustes de la entrega 2a (pedidos el 11 oct 2026)
+
+- **Mensajes:** los avisos nuevos (nota guardada, viaje actualizado) usan el estilo actual; se unifican en la pasada de consistencia.
+- **Editar cliente:** «Editar viaje» cambia el cliente del viaje (otro que ya existe o uno nuevo). Corregir el nombre o el WhatsApp de un cliente existente espera a la ficha del cliente, que sigue pendiente de diseño; el cambio tocaría todos sus viajes.
+- **Nombre y apellidos:** hoy `clientes.nombre` es un solo texto y la ficha toma la primera palabra como «nombre» (un «María José» queda como «María»). Los viajeros (`viajeros.nombres` y `apellidos`) llegan con Datos y pago; hasta entonces el viaje solo guarda cuántos adultos y menores son, y la edad de cada menor.
+- **Edades:** el campo de edades acepta de 0 a 17 años para los «Menores», pero el texto nuevo dice que los adultos son de 12 años o más. Falta definir si de 12 a 17 se cuenta como adulto o como menor al cotizar.
+- **Bebés:** no hay un contador aparte; un bebé es un menor con edad menor de 2.
+- **Editar viaje con la cotización enviada:** hoy se puede editar siempre que la asesora sea quien atiende el viaje (o el Dueño). Con «editar después de enviar = borrador de versión 2» (2b), cambiar fechas o pasajeros de una cotización ya enviada debería crear esa versión.

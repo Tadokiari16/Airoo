@@ -119,6 +119,13 @@ export type Totales = {
 export const partidasDeOpcion = <T extends { opcionId: string | null }>(partidas: T[], opcionId: string | null) =>
   partidas.filter((p) => p.opcionId === null || p.opcionId === opcionId);
 
+/**
+ * Precio por persona de un monto: se divide entre los pasajeros del viaje, no entre
+ * los huéspedes de las habitaciones. Se calcula al mostrar, no se guarda.
+ */
+export const precioPorPersona = (centavos: number, pasajeros: number): number | null =>
+  pasajeros > 0 ? Math.round(centavos / pasajeros) : null;
+
 export function totales(partidas: PartidaCalculo[], a: Ajustes): Totales {
   const secciones = { hospedaje: 0, vuelos: 0, actividades: 0, servicios: 0 };
   let costo = 0;
@@ -145,7 +152,7 @@ export function totales(partidas: PartidaCalculo[], a: Ajustes): Totales {
     subtotal,
     iva,
     total,
-    porPersona: a.personas > 0 ? Math.round(total / a.personas) : total,
+    porPersona: precioPorPersona(total, a.personas) ?? total,
     costo,
     ganancia,
     gananciaPb: subtotal > 0 ? Math.round((ganancia * 10_000) / subtotal) : 0,

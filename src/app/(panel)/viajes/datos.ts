@@ -8,6 +8,7 @@ import { calcular, type Opcion, type PartidaArmador } from "@/lib/armador";
 import { lineasPartida, nombreCorto, nombrePartida, SECCIONES, type ClaveSeccion } from "@/lib/armador-textos";
 import { comision, noches, type Totales } from "@/lib/cotizacion";
 import { formatoDinero } from "@/lib/dinero";
+import { fechasFueraDelViaje, fechasDelServicio } from "@/lib/revision";
 import { situacion, type Situacion, type Etapa, folioTexto, textoPersonas } from "@/lib/etapas";
 import { haceCuanto, rangoCorto } from "@/lib/fechas";
 import { puedeEditarViaje, puedeVerCostos, puede } from "@/lib/permisos";
@@ -172,6 +173,9 @@ export type ItemResumen = {
   proveedor: string | null;
   opcion: string | null;
   recomendada: boolean;
+  /** Todas las fechas que toca el servicio, para marcar las que quedan fuera del viaje. */
+  fechas: string[];
+  fueraDeFechas: boolean;
 };
 
 export type Dinero = {
@@ -189,10 +193,14 @@ export type ViajeCompleto = {
   folio: number;
   folioTexto: string;
   cliente: string;
+  clienteId: string;
+  clienteViajes: number;
   clienteNombre: string;
   whatsapp: string | null;
   destino: string;
+  destinoId: string;
   salida: string | null;
+  salidaId: string | null;
   inicio: string;
   fin: string;
   adultos: number;
@@ -211,6 +219,9 @@ export type ViajeCompleto = {
   puedeEditar: boolean;
   puedeReasignar: boolean;
   equipo: { id: string; nombre: string }[];
+  /** Ciudades para cambiar el destino; vacío si no puede editar. */
+  ciudades: { id: string; nombre: string; detalle: string; busqueda: string }[];
+  agregaCiudades: boolean;
 };
 
 export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeCompleto | null> {
@@ -234,6 +245,10 @@ export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeComp
   const personas = f.v.adultos + f.v.menores;
   const verCostos = puedeVerCostos(yo.rol, yo.id, f.v.aCargo);
   const fx = fixDe(c);
+  const [{ n: clienteViajes }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(schema.viajes)
+    .where(eq(schema.viajes.clienteId, f.v.clienteId));
 
   const nombreOpcion = (o: Opcion | undefined) => {
     if (!o) return null;
@@ -260,6 +275,8 @@ export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeComp
             (p.tipo === "vuelo" && ficha ? ficha.nombre : p.pagoProveedor === "en_el_lugar" ? "Se paga en el lugar" : null),
           opcion: o ? `Opción ${o.orden + 1}` : null,
           recomendada: !!o?.recomendada,
+          fechas: fechasDelServicio(p),
+          fueraDeFechas: fechasFueraDelViaje(p, f.v.inicio, f.v.fin).length > 0,
         };
       }),
   })).filter((s) => s.items.length > 0);
@@ -288,10 +305,14 @@ export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeComp
     folio: f.v.folio,
     folioTexto: folioTexto(f.v.folio),
     cliente: f.cliente,
+    clienteId: f.v.clienteId,
     clienteNombre: f.cliente.split(/\s+/)[0],
     whatsapp: f.clienteWhatsapp,
+    clienteViajes,
     destino: f.destino,
+    destinoId: f.v.ciudadDestinoId,
     salida: f.salida,
+    salidaId: f.v.ciudadSalidaId,
     inicio: f.v.inicio,
     fin: f.v.fin,
     adultos: f.v.adultos,
@@ -333,6 +354,8 @@ export async function cargarViaje(folio: number, yo: Usuario): Promise<ViajeComp
     puedeEditar: puedeEditarViaje(yo.rol, yo.id, f.v.aCargo),
     puedeReasignar: puede(yo.rol, "editar_todos_los_viajes"),
     equipo,
+    ciudades: puedeEditarViaje(yo.rol, yo.id, f.v.aCargo) ? await ciudadesActivas() : [],
+    agregaCiudades: puede(yo.rol, "configuracion"),
   };
 }
 
@@ -362,18 +385,21 @@ export async function buscarClientes(texto: string): Promise<ClienteOpcion[]> {
   return filas;
 }
 
+const ciudadesActivas = () =>
+  db
+    .select({
+      id: schema.ciudades.id,
+      nombre: schema.ciudades.nombre,
+      detalle: sql<string>`${schema.ciudades.region} || ', ' || ${schema.ciudades.pais}`,
+      busqueda: schema.ciudades.nombreBusqueda,
+    })
+    .from(schema.ciudades)
+    .where(isNull(schema.ciudades.archivadoEn))
+    .orderBy(asc(schema.ciudades.nombre));
+
 export async function opcionesNuevoViaje() {
   const [ciudades, equipo] = await Promise.all([
-    db
-      .select({
-        id: schema.ciudades.id,
-        nombre: schema.ciudades.nombre,
-        detalle: sql<string>`${schema.ciudades.region} || ', ' || ${schema.ciudades.pais}`,
-        busqueda: schema.ciudades.nombreBusqueda,
-      })
-      .from(schema.ciudades)
-      .where(isNull(schema.ciudades.archivadoEn))
-      .orderBy(asc(schema.ciudades.nombre)),
+    ciudadesActivas(),
     db
       .select({ id: schema.usuarios.id, nombre: schema.usuarios.nombre })
       .from(schema.usuarios)
@@ -381,4 +407,15 @@ export async function opcionesNuevoViaje() {
       .orderBy(asc(schema.usuarios.nombre)),
   ]);
   return { ciudades, equipo };
+}
+
+/** Los servicios de la cotización vigente con alguna fecha fuera de las del viaje. */
+export async function serviciosFueraDeFechas(viajeId: string, inicio: string, fin: string): Promise<string[]> {
+  const c = (await cotizacionesActuales([viajeId])).get(viajeId);
+  if (!c) return [];
+  const partidas = (await partidasDe([c.id])).get(c.id) ?? [];
+  const fichas = await fichasDe(partidas);
+  return partidas
+    .filter((p) => fechasFueraDelViaje(p, inicio, fin).length > 0)
+    .map((p) => nombrePartida(p, fichas[idCatalogo(p) ?? ""]));
 }

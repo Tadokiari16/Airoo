@@ -137,13 +137,14 @@ test("vuelo con escala: aeropuertos de la lista, duración, conexión, errores y
   await expect(vuelo.getByRole("group", { name: "Avisos del servicio" }).getByText(aviso)).toBeVisible();
   await expect(antesDeEnviar(page).getByRole("group", { name: "Avisos" }).getByText(aviso)).toBeVisible();
 
-  // Regreso desde Cancún a Cancún: error, no se guarda.
+  // Regreso desde Cancún a Cancún: error. Se guarda igual y impide enviar.
   await aeropuerto(vuelo, "Origen del vuelo de regreso", "CUN", "CUN");
   await aeropuerto(vuelo, "Destino del vuelo de regreso", "Cancún", "CUN");
   await expect(vuelo.getByRole("alert").getByText("El regreso sale y llega al mismo aeropuerto, Cancún (CUN).")).toBeVisible();
-  await expect(page.getByText("Sin guardar: hay un error por corregir")).toBeVisible();
+  await expect(antesDeEnviar(page)).toContainText("El regreso sale y llega al mismo aeropuerto, Cancún (CUN).");
+  await expect(antesDeEnviar(page).getByText("Todo listo para enviar")).toHaveCount(0);
 
-  // Al corregirlo se guarda, y la ida con escala sigue ahí al volver a abrir.
+  // Al corregirlo desaparece, y la ida con escala sigue ahí al volver a abrir.
   await aeropuerto(vuelo, "Destino del vuelo de regreso", "GDL", "GDL");
   await expect(vuelo.getByRole("alert")).toHaveCount(0);
   await expect(page.getByText("Guardado", { exact: true })).toBeVisible();

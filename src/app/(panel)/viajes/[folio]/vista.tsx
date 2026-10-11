@@ -24,6 +24,7 @@ import {
 import type { ItemResumen, ViajeCompleto } from "../datos";
 import { cambiarACargo, guardarNotaInterna } from "../acciones";
 import { AvatarACargo, Etiqueta } from "../piezas";
+import { EditarViaje } from "./editar";
 
 const ICONO = {
   hotel: IconoHoteles,
@@ -35,6 +36,7 @@ const ICONO = {
 
 export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestana: "resumen" | "historial" }) {
   const [aviso, setAviso] = useState<string | null>(null);
+  const [editando, setEditando] = useState(false);
   const [pendiente, iniciar] = useTransition();
   const wa = v.whatsapp ? ligaWhatsApp(v.whatsapp) : null;
   const iEtapa = BARRA.findIndex((e) => e.valor === v.etapa);
@@ -106,6 +108,11 @@ export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestan
                 </span>
               )}
             </div>
+            {v.puedeEditar ? (
+              <Boton variante="secundario" onClick={() => setEditando(true)}>
+                Editar viaje
+              </Boton>
+            ) : null}
             {wa ? (
               <a
                 href={wa}
@@ -234,6 +241,7 @@ export function VistaViaje({ viaje: v, pestana }: { viaje: ViajeCompleto; pestan
           </div>
         </>
       )}
+      <EditarViaje v={v} abierto={editando} alCerrar={() => setEditando(false)} alAvisar={setAviso} />
       <AvisoFlotante texto={aviso} alCerrar={() => setAviso(null)} />
     </>
   );
@@ -287,6 +295,7 @@ function Item({ it }: { it: ItemResumen }) {
         <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
           {it.nombre}
           {it.opcion ? <Insignia tono={it.recomendada ? "azul" : "gris"}>{it.opcion}{it.recomendada ? " · recomendada" : ""}</Insignia> : null}
+          {it.fueraDeFechas ? <Insignia tono="rojo">Fuera de las fechas del viaje</Insignia> : null}
         </p>
         {it.lineas.map((l, i) => (
           <p key={i} className="text-[13px] text-tinta-2">

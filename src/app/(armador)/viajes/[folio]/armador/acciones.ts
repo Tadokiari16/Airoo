@@ -25,9 +25,7 @@ import { limpiar, normalizar } from "@/lib/texto";
 import { tipoCambioVigente } from "@/lib/tipo-cambio";
 import { anotarEnViaje, opcionesDe, partidasDe } from "@/lib/viajes";
 import { cargarAjustes } from "@/app/(panel)/configuracion/datos";
-import { erroresDe, type ContextoRevision } from "@/lib/revision";
 import type { Aeropuerto } from "@/lib/vuelos";
-import { hoyEnCancun } from "@/lib/fechas";
 import { aPuntosBase } from "@/lib/cotizacion";
 import { ultimoAcuerdo } from "./datos";
 
@@ -526,6 +524,17 @@ const Partida = z.object({
     redondo: z.boolean().optional(),
     pasajeros: z.number().int().min(0).max(500).optional(),
     tua: texto(200).optional(),
+    tuas: z
+      .array(
+        z.object({
+          tramoId: z.string().max(64),
+          iata: z.string().max(3),
+          centavos: z.number().int().min(0).max(100_000_000).nullable(),
+          moneda: z.enum(["MXN", "USD", "EUR"]),
+        }),
+      )
+      .max(24)
+      .optional(),
     duracion: texto(80).optional(),
     inclusiones: texto(2000).optional(),
     personas: z.number().int().min(0).max(500).optional(),
@@ -741,9 +750,6 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
     for (const t of p.trayectos) if (t.vueloTramoId && !ok.has(t.vueloTramoId)) t.vueloTramoId = null;
   }
 
-  // Lo que se contradice no se guarda: el armador ya lo muestra; aquí se revisa otra vez.
-  const errores = erroresDe(p, await contextoRevision(c, v, [p]));
-  if (errores.length) return { error: errores[0].texto };
   if (p.aerolineaId) {
     const [a] = await db.select({ id: schema.aerolineas.id }).from(schema.aerolineas).where(eq(schema.aerolineas.id, p.aerolineaId)).limit(1);
     if (!a) return { error: "La aerolínea de este vuelo ya no está en el catálogo de Aerolíneas." };
@@ -768,27 +774,6 @@ export async function guardarPartida(cotizacionId: string, datos: PartidaArmador
   await anotarEdicion(v.id, yo.id, p.tipo);
   revalidar(v.folio);
   return fx;
-}
-
-/** Lo que la revisión necesita, leído de la base: aeropuertos de los tramos y aerolíneas del catálogo. */
-async function contextoRevision(
-  c: typeof schema.cotizaciones.$inferSelect,
-  v: typeof schema.viajes.$inferSelect,
-  partidas: PartidaArmador[],
-): Promise<ContextoRevision> {
-  const claves = [...new Set(partidas.flatMap((p) => p.tramos.flatMap((t) => [t.origen, t.destino])).filter(Boolean))];
-  const [aeropuertos, aerolineas] = await Promise.all([
-    claves.length ? db.select().from(schema.aeropuertos).where(inArray(schema.aeropuertos.iata, claves)) : [],
-    db.select({ iata: schema.aerolineas.iata }).from(schema.aerolineas),
-  ]);
-  return {
-    viaje: { inicio: v.inicio, fin: v.fin, adultos: v.adultos, menores: v.menores, edadesMenores: v.edadesMenores },
-    hoy: hoyEnCancun(),
-    fx: { fixUsd: c.fixUsd, fixEur: c.fixEur, colchonPb: c.colchonPb },
-    aeropuertos: Object.fromEntries(aeropuertos.map((a) => [a.iata, a])),
-    aerolineas: aerolineas.map((a) => a.iata),
-    nombres: {},
-  };
 }
 
 /** El campo de aeropuerto: busca por clave, ciudad o nombre. «CUN», «Cancún», «MEX». */

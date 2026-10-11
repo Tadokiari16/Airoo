@@ -5,13 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   aCalculo,
   calcular,
-  personasDe,
   vistasDeOpcion,
   type FixCotizacion,
   type Opcion,
   type PartidaArmador,
 } from "@/lib/armador";
-import { erroresDe, revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/revision";
+import { revisarCotizacion, type ContextoRevision, type Hallazgo } from "@/lib/revision";
 import type { Aeropuerto } from "@/lib/vuelos";
 import { idCatalogo, type FichaArmador } from "@/lib/armador-fichas";
 import { lineasPartida, nombreCorto, nombrePartida, SECCIONES, type ClaveSeccion } from "@/lib/armador-textos";
@@ -153,18 +152,14 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     return () => window.removeEventListener("beforeunload", antes);
   }, []);
 
-  // La revisión más reciente, para decidir al cambiar si la partida se puede guardar.
-  const contexto = useRef<ContextoRevision | null>(null);
-
   const cambiar = useCallback(
     (id: string, cambio: Partial<PartidaArmador>) => {
       setPartidas((todas) =>
         todas.map((p) => {
           if (p.id !== id) return p;
           const nueva = { ...p, ...cambio, detalle: { ...p.detalle, ...(cambio.detalle ?? {}) } };
-          // Con un error (origen igual a destino, llegada antes de la salida…) no se guarda:
-          // el servidor lo rechazaría. Se guarda en cuanto se corrige.
-          if (!contexto.current || erroresDe(nueva, contexto.current).length === 0) programar(nueva);
+          // Los errores no impiden la captura: se guardan y solo impiden enviar la cotización.
+          programar(nueva);
           return nueva;
         }),
       );
@@ -214,13 +209,8 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     }),
     [viaje, reglas.hoy, fx, aeropuertos, datos.aerolineas, nombres, partidas, datos.unidades],
   );
-  useEffect(() => {
-    contexto.current = ctx;
-  }, [ctx]);
-
   const hallazgos = useMemo(() => revisarCotizacion(partidas, ctx), [partidas, ctx]);
-  const errores = hallazgos.filter((h) => h.nivel === "error");
-  const bloquean = hallazgos.filter((h) => h.nivel !== "aviso");
+  const bloquean = hallazgos.filter((h) => h.nivel === "error" || h.nivel === "falta");
   const deLaPartida = (id: string) => hallazgos.filter((h) => h.partidaId === id && h.nivel !== "falta");
 
   const ajustesTotales = {
@@ -368,9 +358,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
     />
   );
 
-  const textoGuardado = errores.length
-    ? `Sin guardar: ${errores.length === 1 ? "hay un error por corregir" : `hay ${errores.length} errores por corregir`}`
-    : guardado.error
+  const textoGuardado = guardado.error
     ? guardado.error
     : guardado.pendientes > 0
       ? "Guardando…"
@@ -400,7 +388,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
         </div>
         <span
           aria-live="polite"
-          className={`ml-auto text-[12.5px] ${errores.length || guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
+          className={`ml-auto text-[12.5px] ${guardado.error ? "font-semibold text-rojo" : "text-tinta-3"}`}
         >
           {textoGuardado}
         </span>
@@ -511,10 +499,7 @@ export function Armador({ datos }: { datos: DatosArmador }) {
                     <NotaSeccion
                       key={s.clave}
                       inicial={datos.cotizacion.notas[s.clave] ?? ""}
-                      alGuardar={async (t) => {
-                        const r = await guardarNota(cotizacionId, s.clave, t);
-                        if (r.error) setAviso(r.error);
-                      }}
+                      alGuardar={async (t) => (await guardarNota(cotizacionId, s.clave, t)).error ?? null}
                     />
                   ) : null}
                 </div>
@@ -745,7 +730,7 @@ function TarjetaPartida({
           calc={calc}
           fx={fx}
           fixHoy={datos.fixHoy}
-          personas={personasDe(p) || viaje.adultos + viaje.menores}
+          personas={viaje.adultos + viaje.menores}
           utilidadBasePb={utilidadBasePb}
           utilidadFijaPb={p.tipo === "vuelo" ? reglas.utilidadVuelosPb : undefined}
           proveedores={proveedoresPara(p.tipo, datos.proveedores)}
@@ -766,10 +751,41 @@ function TarjetaPartida({
 
 // ─── Nota para el cliente de cada sección ───────────────────────────────────
 
-function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: string) => Promise<void> }) {
+function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: string) => Promise<string | null> }) {
   const [texto, setTexto] = useState(inicial);
   const [abierta, setAbierta] = useState(!!inicial);
-  const guardada = useRef(inicial);
+  const [guardada, setGuardada] = useState(inicial.trim());
+  const [estado, setEstado] = useState<"" | "guardando" | "guardado">("");
+  const [error, setError] = useState<string | null>(null);
+  const reloj = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => void (reloj.current && clearTimeout(reloj.current)), []);
+
+  const hayCambios = texto.trim() !== guardada;
+
+  // Guarda lo que hay en el campo (vacío quita la nota). Si falla, el texto se queda donde está.
+  const guardar = async (t: string) => {
+    const limpio = t.trim();
+    if (limpio === guardada) return;
+    setEstado("guardando");
+    setError(null);
+    const e = await alGuardar(limpio);
+    if (e) {
+      setEstado("");
+      setError(e);
+      return;
+    }
+    setGuardada(limpio);
+    setEstado("guardado");
+    if (reloj.current) clearTimeout(reloj.current);
+    reloj.current = setTimeout(() => setEstado(""), 3000);
+  };
+
+  const quitar = async () => {
+    setTexto("");
+    await guardar("");
+    setAbierta(false);
+  };
+
   if (!abierta)
     return (
       <div>
@@ -779,24 +795,44 @@ function NotaSeccion({ inicial, alGuardar }: { inicial: string; alGuardar: (t: s
       </div>
     );
   return (
-    <label className="block rounded-[12px] bg-suave/70 p-3 shadow-borde">
-      <span className="mb-1 block text-[12.5px] font-semibold text-tinta-2">
-        Nota para el cliente <span className="font-normal text-tinta-3">· la ve en su enlace, en esta sección</span>
-      </span>
-      <textarea
-        aria-label="Nota para el cliente"
-        value={texto}
-        maxLength={600}
-        rows={2}
-        onChange={(e) => setTexto(e.target.value)}
-        onBlur={() => {
-          if (texto.trim() === guardada.current.trim()) return;
-          guardada.current = texto;
-          void alGuardar(texto);
-        }}
-        placeholder="Por qué elegimos esto para el viaje."
-        className="w-full resize-y bg-transparent text-[13.5px] leading-relaxed outline-none placeholder:text-tinta-3/70"
-      />
-    </label>
+    <div className="rounded-[12px] bg-suave/70 p-3 shadow-borde">
+      <label>
+        <span className="mb-1 block text-[12.5px] font-semibold text-tinta-2">
+          Nota para el cliente <span className="font-normal text-tinta-3">· la ve en su enlace, en esta sección</span>
+        </span>
+        <textarea
+          aria-label="Nota para el cliente"
+          autoFocus={!inicial}
+          value={texto}
+          maxLength={600}
+          rows={2}
+          onChange={(e) => {
+            setTexto(e.target.value);
+            setEstado("");
+          }}
+          onBlur={() => void guardar(texto)}
+          placeholder="Por qué elegimos esto para el viaje."
+          className="w-full resize-y bg-transparent text-[13.5px] leading-relaxed outline-none placeholder:text-tinta-3/70"
+        />
+      </label>
+      <div className="mt-1.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <Boton
+            variante="texto"
+            disabled={!hayCambios || estado === "guardando"}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => void guardar(texto)}
+          >
+            Guardar nota
+          </Boton>
+          <Boton variante="texto" onMouseDown={(e) => e.preventDefault()} onClick={() => void quitar()}>
+            Quitar nota
+          </Boton>
+        </div>
+        <span role="status" className="text-[12px] text-tinta-3">
+          {error ? <span className="text-rojo">{error}</span> : estado === "guardando" ? "Guardando…" : estado === "guardado" ? "Guardado" : hayCambios ? "Sin guardar" : ""}
+        </span>
+      </div>
+    </div>
   );
 }

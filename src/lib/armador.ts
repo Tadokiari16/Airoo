@@ -54,12 +54,17 @@ export type TrayectoArmador = {
   vueloHora: string | null;
 };
 
+export type TuaAeropuerto = { tramoId: string; iata: string; centavos: number | null; moneda: Moneda };
+
 /** Lo propio de cada tipo, guardado en `partidas.detalle`. */
 export type Detalle = {
   // Vuelo
   redondo?: boolean;
   pasajeros?: number;
+  /** Texto libre de antes de que la TUA fuera una fila por aeropuerto; solo se lee. */
   tua?: string;
+  /** TUA informativa: un monto por aeropuerto de salida de cada tramo. No entra al costo. */
+  tuas?: TuaAeropuerto[];
   // Actividad
   duracion?: string;
   inclusiones?: string;
@@ -142,12 +147,30 @@ export function aCalculo(p: PartidaArmador, fx: FixCotizacion): PartidaCalculo {
 
 export const calcular = (p: PartidaArmador, fx: FixCotizacion) => calcularPartida(aCalculo(p, fx));
 
-/** Personas que cubre una partida: huéspedes del hotel, pasajeros o boletos. */
-export function personasDe(p: PartidaArmador): number {
-  if (p.tipo === "hotel") return p.habitaciones.reduce((s, h) => s + h.adultos + h.menores, 0);
-  if (p.tipo === "vuelo") return p.detalle.pasajeros ?? 0;
-  if (p.tipo === "actividad") return p.renglones.reduce((s, r) => s + r.cantidad, 0);
-  return p.detalle.personas ?? 0;
+/**
+ * Vuelo redondo: el regreso sale de donde llega la ida y llega a donde ella salió
+ * (GDL → CUN / CUN → GDL). Se completa solo cuando el campo está vacío o todavía
+ * tiene la ruta invertida anterior; si alguien lo cambió a mano, se respeta.
+ */
+export function completarRegreso(antes: TramoArmador[], despues: TramoArmador[]): TramoArmador[] {
+  const ruta = (t: TramoArmador[]) => {
+    const ida = t.filter((x) => x.sentido === "ida");
+    return { sale: ida[0]?.origen ?? "", llega: ida.at(-1)?.destino ?? "" };
+  };
+  const a = ruta(antes);
+  const d = ruta(despues);
+  if (a.sale === d.sale && a.llega === d.llega) return despues;
+  const regreso = despues.filter((x) => x.sentido === "regreso");
+  if (regreso.length === 0) return despues;
+  const primero = regreso[0].id;
+  const ultimo = regreso.at(-1)!.id;
+  return despues.map((t) => {
+    if (t.sentido !== "regreso") return t;
+    let nuevo = t;
+    if (t.id === primero && (t.origen === "" || t.origen === a.llega)) nuevo = { ...nuevo, origen: d.llega };
+    if (t.id === ultimo && (t.destino === "" || t.destino === a.sale)) nuevo = { ...nuevo, destino: d.sale };
+    return nuevo;
+  });
 }
 
 // ─── Opciones ───────────────────────────────────────────────────────────────
@@ -247,3 +270,18 @@ export const MARGENES = [800, 1000, 1200, 1500] as const;
 
 /** Un id nuevo para lo que se crea en el navegador (se respeta al guardar). */
 export const nuevoId = () => crypto.randomUUID();
+
+
+/** Una fila de TUA por cada tramo con aeropuerto de salida, con el monto ya capturado si coincide. */
+export function filasTua(
+  tramos: Pick<TramoArmador, "id" | "origen">[],
+  tuas: TuaAeropuerto[] | undefined,
+  monedaDe: (iata: string) => Moneda = () => "MXN",
+): TuaAeropuerto[] {
+  return tramos
+    .filter((t) => t.origen)
+    .map((t) => {
+      const ya = tuas?.find((x) => x.tramoId === t.id && x.iata === t.origen);
+      return ya ?? { tramoId: t.id, iata: t.origen, centavos: null, moneda: monedaDe(t.origen) };
+    });
+}
